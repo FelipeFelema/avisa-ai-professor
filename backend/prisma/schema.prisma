@@ -16,6 +16,21 @@ model User {
   refreshTokenId   String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  
+  announcements    Announcement[]
+}
+
+model Announcement {
+  id               String   @id @default(uuid())
+  title            String
+  content          String
+  expiresAt        DateTime
+
+  authorId         String
+  author           User     @relation(fields: [authorId], references: [id])
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 enum Role {
