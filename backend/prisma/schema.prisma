@@ -21,4 +21,5 @@ model User {
 enum Role {
   PARENT
   PROFESSOR
+  ADMIN
 }
