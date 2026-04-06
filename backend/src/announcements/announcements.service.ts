@@ -4,19 +4,19 @@ import { CreateAnnouncementDto } from './dto/create-announcement.dto';
 
 @Injectable()
 export class AnnouncementsService {
-    constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-    async create(userId: string, dto: CreateAnnouncementDto) {
-        const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + dto.durationInDays);
+  async create(userId: string, dto: CreateAnnouncementDto) {
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + dto.durationInDays);
 
-        return this.prisma.announcement.create({
-            data: {
-                title: dto.title,
-                content: dto.content,
-                expiresAt,
-                authorId: userId,
-            }
-        });
-    }
+    return this.prisma.announcement.create({
+      data: {
+        title: dto.title,
+        content: dto.content,
+        expiresAt,
+        authorId: userId,
+      },
+    });
+  }
 }

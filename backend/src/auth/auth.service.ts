@@ -5,128 +5,137 @@ import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { JwtPayload } from 'src/common/types/jwt-payload.type';
 
 @Injectable()
 export class AuthService {
-    constructor(
-        private readonly usersService: UsersService,
-        private jwtService: JwtService,
-        private configService: ConfigService,
-    ) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private jwtService: JwtService,
+    private configService: ConfigService,
+  ) {}
 
-    async validateUser(email: string, password: string) {
-        const user = await this.usersService.findByEmail(email);
+  async validateUser(email: string, password: string) {
+    const user = await this.usersService.findByEmail(email);
 
-        if (!user) {
-            throw new UnauthorizedException('Email ou senha inválidos');
-        }
-
-        const passWordMatch = await bcrypt.compare(password, user.password);
-
-        if (!passWordMatch) {
-            throw new UnauthorizedException('Email ou senha invalidos');
-        }
-
-        return {
-            id: user.id,
-            email: user.email,
-            role: user.role
-        }
+    if (!user) {
+      throw new UnauthorizedException('Email ou senha inválidos');
     }
 
-    async register (createUserDto: CreateUserDto) {
-        return this.usersService.create(createUserDto);
+    const passWordMatch = await bcrypt.compare(password, user.password);
+
+    if (!passWordMatch) {
+      throw new UnauthorizedException('Email ou senha invalidos');
     }
 
-    async login (email: string, password: string) {
-        const user = await this.validateUser(email, password);
+    return {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    };
+  }
 
-        const payload = {
-            sub: user.id,
-            email: user.email,
-            role: user.role,
-        };
+  async register(createUserDto: CreateUserDto) {
+    return this.usersService.create(createUserDto);
+  }
 
-        const accessToken = this.jwtService.sign(payload, {
-            expiresIn: '15m',
-        });
+  async login(email: string, password: string) {
+    const user = await this.validateUser(email, password);
 
-        const refreshTokenId = crypto.randomUUID();
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    };
 
-        const refreshToken = this.jwtService.sign(
-            {
-                ...payload,
-                tokenId: refreshTokenId,
-            },
-            {
-                secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-                expiresIn: '7d',
-            }
-        );
+    const accessToken = this.jwtService.sign(payload, {
+      expiresIn: '15m',
+    });
 
-        await this.usersService.updateRefreshToken(user.id, refreshToken, refreshTokenId);
+    const refreshTokenId = crypto.randomUUID();
 
-        return {
-            access_token: accessToken,
-            refresh_token: refreshToken,
-        };
+    const refreshToken = this.jwtService.sign(
+      {
+        ...payload,
+        tokenId: refreshTokenId,
+      },
+      {
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+        expiresIn: '7d',
+      },
+    );
+
+    await this.usersService.updateRefreshToken(
+      user.id,
+      refreshToken,
+      refreshTokenId,
+    );
+
+    return {
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    };
+  }
+
+  async refreshToken(refreshToken: string) {
+    let payload: JwtPayload;
+
+    try {
+      payload = this.jwtService.verify<JwtPayload>(refreshToken, {
+        secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
+      });
+    } catch {
+      throw new UnauthorizedException();
     }
 
-    async refreshToken(refreshToken: string) {
-        let payload;
+    const user = await this.usersService.findByIdInternal(payload.sub);
 
-        try {
-            payload = this.jwtService.verify(refreshToken, {
-                secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-            });
-        } catch {
-            throw new UnauthorizedException();
-        }
-
-        const user = await this.usersService.findByIdInternal(payload.sub);
-
-        if (!user || !user.refreshTokenHash || !user.refreshTokenId) {
-            throw new UnauthorizedException();
-        }
-
-        if (!payload.tokenId || payload.tokenId !== user.refreshTokenId) {
-            throw new UnauthorizedException();
-        }
-
-        const isMatch = await bcrypt.compare(refreshToken, user.refreshTokenHash);
-
-        if (!isMatch) {
-            throw new UnauthorizedException();
-        }
-
-        const newPayload = {
-            sub: user.id,
-            email: user.email,
-            role: user.role,
-        };
-
-        const newAccessToken = this.jwtService.sign(newPayload, {
-            expiresIn: '15m',
-        });
-
-        const newRefreshTokenId = crypto.randomUUID();
-        
-        const newRefreshToken = this.jwtService.sign(
-            {
-                ...newPayload,
-                tokenId: newRefreshTokenId,
-            },
-            {
-                secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-                expiresIn: '7d'
-            }
-        );
-
-        await this.usersService.updateRefreshToken(user.id, newRefreshToken, newRefreshTokenId);
-
-        return {
-            access_token: newAccessToken,
-            refresh_token: newRefreshToken
-        }
+    if (!user || !user.refreshTokenHash || !user.refreshTokenId) {
+      throw new UnauthorizedException();
     }
+
+    if (!payload.tokenId || payload.tokenId !== user.refreshTokenId) {
+      throw new UnauthorizedException();
+    }
+
+    const isMatch = await bcrypt.compare(refreshToken, user.refreshTokenHash);
+
+    if (!isMatch) {
+      throw new UnauthorizedException();
+    }
+
+    const newPayload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    };
+
+    const newAccessToken = this.jwtService.sign(newPayload, {
+      expiresIn: '15m',
+    });
+
+    const newRefreshTokenId = crypto.randomUUID();
+
+    const newRefreshToken = this.jwtService.sign(
+      {
+        ...newPayload,
+        tokenId: newRefreshTokenId,
+      },
+      {
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+        expiresIn: '7d',
+      },
+    );
+
+    await this.usersService.updateRefreshToken(
+      user.id,
+      newRefreshToken,
+      newRefreshTokenId,
+    );
+
+    return {
+      access_token: newAccessToken,
+      refresh_token: newRefreshToken,
+    };
+  }
 }
