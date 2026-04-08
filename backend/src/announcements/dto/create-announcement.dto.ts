@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsInt, Min } from 'class-validator';
+import { IsNotEmpty, IsString, IsInt, Min, IsUUID } from 'class-validator';
 
 export class CreateAnnouncementDto {
   @IsString()
@@ -12,4 +12,9 @@ export class CreateAnnouncementDto {
   @IsInt()
   @Min(1)
   durationInDays!: number;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsUUID()
+  classroomId!: string;
 }
