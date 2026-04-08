@@ -1,4 +1,12 @@
-import { Controller, Post, Body, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Request,
+  Get,
+  Param,
+} from '@nestjs/common';
 import { AnnouncementsService } from './announcements.service';
 import { CreateAnnouncementDto } from './dto/create-announcement.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
@@ -13,6 +21,18 @@ import { AuthUser } from 'src/common/types/auth-user.type';
 })
 export class AnnouncementsController {
   constructor(private announcementsService: AnnouncementsService) {}
+
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  findAll() {
+    return this.announcementsService.findAll();
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.announcementsService.findOne(id);
+  }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.PROFESSOR)

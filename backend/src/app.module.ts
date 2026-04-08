@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { AnnouncementsModule } from './announcements/announcements.module';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
+import { ClassroomsModule } from './classrooms/classrooms.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { PrismaModule } from './prisma/prisma.module';
     UsersModule,
     AuthModule,
     AnnouncementsModule,
+    ClassroomsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
