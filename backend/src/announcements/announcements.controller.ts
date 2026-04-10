@@ -24,14 +24,14 @@ export class AnnouncementsController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  findAll() {
-    return this.announcementsService.findAll();
+  findAll(@Request() req: { user: AuthUser }) {
+    return this.announcementsService.findAll(req.user.id);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.announcementsService.findOne(id);
+  findOne(@Param('id') id: string, @Request() req: { user: AuthUser }) {
+    return this.announcementsService.findOneById(req.user.id, id);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
