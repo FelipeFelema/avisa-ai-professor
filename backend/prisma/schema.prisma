@@ -19,7 +19,7 @@ model User {
   
   announcements    Announcement[]
 
-  classrooms       Classroom[] 
+  userClassrooms UserClassroom[]
 }
 
 model Announcement {
@@ -45,8 +45,19 @@ model Classroom {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
-  users            User[]
   announcements    Announcement[]
+
+  userClassrooms UserClassroom[]
+}
+
+model UserClassroom {
+  userId           String
+  classroomId      String
+
+  user             User     @relation(fields: [userId], references: [id])
+  classroom        Classroom @relation(fields: [classroomId], references: [id])
+
+  @@id([userId, classroomId])
 }
 
 enum Role {
