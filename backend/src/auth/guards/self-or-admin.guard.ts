@@ -9,7 +9,7 @@ import { AuthUser } from '../../common/types/auth-user.type';
 
 @Injectable()
 export class SelfOrAdminGuard implements CanActivate {
-  canActivate(context: ExecutionContext): boolean {
+  canActivate(context: ExecutionContext): boolean | Promise<boolean> {
     const request = context.switchToHttp().getRequest<{
       user: AuthUser;
       params: { id: string };
