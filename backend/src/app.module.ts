@@ -7,6 +7,7 @@ import { AnnouncementsModule } from './announcements/announcements.module';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { ClassroomsModule } from './classrooms/classrooms.module';
+import { InvitesCodeModule } from './invites-code/invites-code.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { ClassroomsModule } from './classrooms/classrooms.module';
     AuthModule,
     AnnouncementsModule,
     ClassroomsModule,
+    InvitesCodeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

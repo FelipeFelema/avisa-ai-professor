@@ -6,11 +6,13 @@ import * as crypto from 'crypto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { JwtPayload } from 'src/common/types/jwt-payload.type';
+import { InviteCodeService } from '../invites-code/invite-code.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
+    private readonly inviteCodeService: InviteCodeService,
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {}

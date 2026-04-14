@@ -3,10 +3,14 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Prisma, Role, User } from '@prisma/client';
+import { InviteCodeService } from 'src/invites-code/invite-code.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly inviteCodeService: InviteCodeService,
+  ) {}
 
   private userSelect: Prisma.UserSelect = {
     id: true,
@@ -31,13 +35,21 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) {
     try {
-      const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+      const { teacherCode, ...userData } = createUserDto;
+
+      const hashedPassword = await bcrypt.hash(userData.password, 10);
+
+      let role: Role = Role.PARENT;
+
+      if (teacherCode) {
+        role = await this.inviteCodeService.validateInviteCode(teacherCode);
+      }
 
       const user = await this.prisma.user.create({
         data: {
-          ...createUserDto,
+          ...userData,
           password: hashedPassword,
-          role: Role.PARENT,
+          role,
         },
         select: this.userSelect,
       });
