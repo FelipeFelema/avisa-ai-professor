@@ -1,18 +1,214 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { InviteCodeService } from 'src/invites-code/invite-code.service';
+import * as bcrypt from 'bcrypt';
+import { BadRequestException, ConflictException } from '@nestjs/common';
+
+jest.mock('bcrypt', () => ({
+  hash: jest.fn(),
+}));
+
+const mockPrisma = {
+  user: {
+    create: jest.fn(),
+    findUnique: jest.fn(),
+    update: jest.fn(),
+  },
+};
+
+const mockInviteCodeService = {
+  validateInviteCode: jest.fn(),
+};
 
 describe('UsersService', () => {
   let service: UsersService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [UsersService],
+      providers: [
+        UsersService,
+        {
+          provide: PrismaService,
+          useValue: mockPrisma,
+        },
+        {
+          provide: InviteCodeService,
+          useValue: mockInviteCodeService,
+        },
+      ],
     }).compile();
 
     service = module.get<UsersService>(UsersService);
+
+    jest.clearAllMocks();
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
+  it('should create a user successfully', async () => {
+    const createUserDto = {
+      name: 'Test User',
+      email: 'test@example.com',
+      password: 'password123',
+    };
+    (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
+    mockPrisma.user.create.mockResolvedValue({
+      id: 'user-id',
+      name: createUserDto.name,
+      email: createUserDto.email,
+      role: 'PARENT',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const result = await service.create(createUserDto);
+
+    expect(bcrypt.hash).toHaveBeenCalledTimes(1);
+    expect(bcrypt.hash).toHaveBeenCalledWith(createUserDto.password, 10);
+    expect(mockPrisma.user.create).toHaveBeenCalledTimes(1);
+    expect(mockPrisma.user.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: {
+          name: createUserDto.name,
+          email: createUserDto.email,
+          password: 'hashedPassword',
+          role: 'PARENT',
+        },
+      }),
+    );
+    expect(result).toEqual(
+      expect.objectContaining({
+        id: 'user-id',
+        name: createUserDto.name,
+        email: createUserDto.email,
+        role: 'PARENT',
+      }),
+    );
+  });
+
+  it('should throw ConflictException if email already exists', async () => {
+    const createUserDto = {
+      name: 'Test User',
+      email: 'test@example.com',
+      password: 'password123',
+    };
+
+    (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
+
+    mockPrisma.user.create.mockRejectedValue({
+      code: 'P2002',
+    });
+
+    await expect(service.create(createUserDto)).rejects.toThrow(
+      ConflictException,
+    );
+
+    expect(mockPrisma.user.create).toHaveBeenCalledTimes(1);
+  });
+
+  it('should assign TEACHER role when invite code is valid', async () => {
+    const createUserDto = {
+      name: 'Teacher User',
+      email: 'teacher@example.com',
+      password: 'password123',
+      teacherCode: 'valid-code',
+    };
+
+    (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
+
+    mockInviteCodeService.validateInviteCode.mockResolvedValue('TEACHER');
+    mockPrisma.user.create.mockResolvedValue({
+      id: 'teacher-id',
+      name: createUserDto.name,
+      email: createUserDto.email,
+      role: 'TEACHER',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const result = await service.create(createUserDto);
+
+    expect(mockInviteCodeService.validateInviteCode).toHaveBeenCalledTimes(1);
+    expect(mockInviteCodeService.validateInviteCode).toHaveBeenCalledWith(
+      createUserDto.teacherCode,
+    );
+    expect(bcrypt.hash).toHaveBeenCalledTimes(1);
+    expect(bcrypt.hash).toHaveBeenCalledWith(createUserDto.password, 10);
+    expect(mockPrisma.user.create).toHaveBeenCalledTimes(1);
+    expect(mockPrisma.user.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: {
+          name: createUserDto.name,
+          email: createUserDto.email,
+          password: 'hashedPassword',
+          role: 'TEACHER',
+        },
+      }),
+    );
+    expect(result).toEqual(
+      expect.objectContaining({
+        id: 'teacher-id',
+        name: createUserDto.name,
+        email: createUserDto.email,
+        role: 'TEACHER',
+      }),
+    );
+  });
+
+  it('should throw BadRequestException when invite code is invalid', async () => {
+    const createUserDto = {
+      name: 'Teacher User',
+      email: 'teacher@example.com',
+      password: 'password123',
+      teacherCode: 'invalid-code',
+    };
+
+    (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
+
+    mockInviteCodeService.validateInviteCode.mockRejectedValue(
+      new BadRequestException('Código de convite inválido'),
+    );
+
+    await expect(service.create(createUserDto)).rejects.toThrow(
+      BadRequestException,
+    );
+
+    expect(mockPrisma.user.create).not.toHaveBeenCalled();
+  });
+
+  it('should hash and store refresh token', async () => {
+    const userId = 'user-id';
+    const refreshToken = 'refresh-token';
+    const refreshTokenId = 'refresh-token-id';
+
+    (bcrypt.hash as jest.Mock).mockResolvedValue('hashedRefreshToken');
+
+    await service.updateRefreshToken(userId, refreshToken, refreshTokenId);
+
+    expect(bcrypt.hash).toHaveBeenCalledTimes(1);
+    expect(bcrypt.hash).toHaveBeenCalledWith(refreshToken, 10);
+    expect(mockPrisma.user.update).toHaveBeenCalledTimes(1);
+    expect(mockPrisma.user.update).toHaveBeenCalledWith({
+      where: { id: userId },
+      data: {
+        refreshTokenHash: 'hashedRefreshToken',
+        refreshTokenId: 'refresh-token-id',
+      },
+    });
+  });
+
+  it('should clear refresh token when null is provided', async () => {
+    const userId = 'user-id';
+
+    await service.updateRefreshToken(userId, null);
+
+    expect(bcrypt.hash).not.toHaveBeenCalled();
+    expect(mockPrisma.user.update).toHaveBeenCalledTimes(1);
+    expect(mockPrisma.user.update).toHaveBeenCalledWith({
+      where: { id: userId },
+      data: {
+        refreshTokenHash: null,
+        refreshTokenId: null,
+      },
+    });
   });
 });

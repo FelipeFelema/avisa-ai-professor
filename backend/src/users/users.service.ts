@@ -5,6 +5,10 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { Prisma, Role, User } from '@prisma/client';
 import { InviteCodeService } from 'src/invites-code/invite-code.service';
 
+function isPrismaError(error: unknown): error is { code: string } {
+  return error !== null && typeof error === 'object' && 'code' in error;
+}
+
 @Injectable()
 export class UsersService {
   constructor(
@@ -56,10 +60,7 @@ export class UsersService {
 
       return user;
     } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2002'
-      ) {
+      if (isPrismaError(error) && error.code === 'P2002') {
         throw new ConflictException('Esse email já existe');
       }
 
