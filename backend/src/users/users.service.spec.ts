@@ -3,7 +3,11 @@ import { UsersService } from './users.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { InviteCodeService } from 'src/invites-code/invite-code.service';
 import * as bcrypt from 'bcrypt';
-import { BadRequestException, ConflictException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 
 jest.mock('bcrypt', () => ({
   hash: jest.fn(),
@@ -210,5 +214,82 @@ describe('UsersService', () => {
         refreshTokenId: null,
       },
     });
+  });
+
+  it('should return user when email exists', async () => {
+    const email = 'test@example.com';
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: 'user-id',
+      name: 'Test User',
+      email,
+      role: 'PARENT',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const result = await service.findByEmail(email);
+
+    expect(mockPrisma.user.findUnique).toHaveBeenCalledTimes(1);
+    expect(mockPrisma.user.findUnique).toHaveBeenCalledWith({
+      where: { email },
+    });
+    expect(result).toEqual(
+      expect.objectContaining({
+        id: 'user-id',
+        name: 'Test User',
+        email,
+        role: 'PARENT',
+      }),
+    );
+  });
+
+  it('should return null when email does not exist', async () => {
+    const email = 'nonexistent@example.com';
+
+    mockPrisma.user.findUnique.mockResolvedValue(null);
+
+    const result = await service.findByEmail(email);
+
+    expect(mockPrisma.user.findUnique).toHaveBeenCalledTimes(1);
+    expect(mockPrisma.user.findUnique).toHaveBeenCalledWith({
+      where: { email },
+    });
+    expect(result).toBeNull();
+  });
+
+  it('should return user when id exists', async () => {
+    const userId = 'user-id';
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: userId,
+      name: 'Test User',
+      email: 'test@example.com',
+      role: 'PARENT',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const result = await service.findByIdInternal(userId);
+
+    expect(mockPrisma.user.findUnique).toHaveBeenCalledTimes(1);
+    expect(mockPrisma.user.findUnique).toHaveBeenCalledWith({
+      where: { id: userId },
+    });
+    expect(result).toEqual(
+      expect.objectContaining({
+        id: userId,
+        name: 'Test User',
+        email: 'test@example.com',
+        role: 'PARENT',
+      }),
+    );
+  });
+
+  it('should throw error when id does not exist', async () => {
+    const userId = 'nonexistent-id';
+    mockPrisma.user.findUnique.mockResolvedValue(null);
+
+    await expect(service.findByIdInternal(userId)).rejects.toThrow(
+      NotFoundException,
+    );
   });
 });
