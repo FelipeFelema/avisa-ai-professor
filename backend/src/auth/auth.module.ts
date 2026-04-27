@@ -6,7 +6,6 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { RefreshStrategy } from './strategies/refresh.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { UsersModule } from 'src/users/users.module';
-import { InvitesCodeModule } from 'src/invites-code/invites-code.module';
 
 @Module({
   imports: [
@@ -14,11 +13,10 @@ import { InvitesCodeModule } from 'src/invites-code/invites-code.module';
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET'),
+        secret: configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
         signOptions: { expiresIn: '15m' },
       }),
     }),
-    InvitesCodeModule,
   ],
   providers: [AuthService, JwtStrategy, RefreshStrategy],
   controllers: [AuthController],

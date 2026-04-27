@@ -19,7 +19,7 @@ jest.mock('crypto', () => ({
 
 const mockUsersService = {
   findByEmail: jest.fn(),
-  create: jest.fn(),
+  createUser: jest.fn(),
   updateRefreshToken: jest.fn(),
   findByIdInternal: jest.fn(),
 };
@@ -123,6 +123,49 @@ describe('AuthService', () => {
 
       expect(bcrypt.compare).toHaveBeenCalledTimes(1);
       expect(bcrypt.compare).toHaveBeenCalledWith('wrong', 'hashed');
+    });
+  });
+
+  describe('register', () => {
+    it('should create user, generate tokens and return auth data', async () => {
+      const dto = {
+        name: 'Test User',
+        email: 'test@example.com',
+        password: '123',
+      };
+
+      const mockUser = {
+        id: 'user-id',
+        name: dto.name,
+        email: dto.email,
+        role: 'PARENT',
+      };
+
+      mockUsersService.createUser.mockResolvedValue(mockUser);
+
+      (crypto.randomUUID as jest.Mock).mockReturnValue(
+        '00000000-0000-0000-0000-000000000000',
+      );
+
+      mockJwtService.sign.mockReturnValue('token');
+
+      const result = await service.register(dto);
+
+      expect(mockUsersService.createUser).toHaveBeenCalledWith(dto);
+      expect(mockJwtService.sign).toHaveBeenCalledTimes(2);
+      expect(mockUsersService.updateRefreshToken).toHaveBeenCalledWith(
+        'user-id',
+        'token',
+        '00000000-0000-0000-0000-000000000000',
+      );
+      expect(result).toEqual(
+        expect.objectContaining({
+          id: 'user-id',
+          email: dto.email,
+          access_token: 'token',
+          refresh_token: 'token',
+        }),
+      );
     });
   });
 
