@@ -1,6 +1,8 @@
 import {
   Controller,
   Post,
+  Patch,
+  Delete,
   Body,
   UseGuards,
   Request,
@@ -42,5 +44,23 @@ export class AnnouncementsController {
     @Body() dto: CreateAnnouncementDto,
   ) {
     return this.announcementsService.create(req.user.id, dto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.PROFESSOR)
+  @Patch(':id')
+  update(
+    @Param('id') id: string,
+    @Request() req: { user: AuthUser },
+    @Body() dto: CreateAnnouncementDto,
+  ) {
+    return this.announcementsService.update(req.user.id, id, dto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.PROFESSOR)
+  @Delete(':id')
+  remove(@Param('id') id: string, @Request() req: { user: AuthUser }) {
+    return this.announcementsService.delete(req.user.id, id);
   }
 }
