@@ -47,7 +47,7 @@ export class UsersService {
     });
   }
 
-  async create(createUserDto: CreateUserDto) {
+  async createUser(createUserDto: CreateUserDto) {
     try {
       const { teacherCode, ...userData } = createUserDto;
 

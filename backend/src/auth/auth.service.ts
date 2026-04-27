@@ -6,13 +6,11 @@ import * as crypto from 'crypto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { JwtPayload } from 'src/common/types/jwt-payload.type';
-import { InviteCodeService } from '../invites-code/invite-code.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
-    private readonly inviteCodeService: InviteCodeService,
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {}
@@ -38,7 +36,23 @@ export class AuthService {
   }
 
   async register(createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+    const user = await this.usersService.createUser(createUserDto);
+
+    const tokens = this.generateTokens(user.id, user.email, user.role);
+
+    await this.usersService.updateRefreshToken(
+      user.id,
+      tokens.refresh_token,
+      tokens.tokenId,
+    );
+
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      ...tokens,
+    };
   }
 
   async login(email: string, password: string) {
@@ -51,6 +65,7 @@ export class AuthService {
     };
 
     const accessToken = this.jwtService.sign(payload, {
+      secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
       expiresIn: '15m',
     });
 
@@ -62,7 +77,7 @@ export class AuthService {
         tokenId: refreshTokenId,
       },
       {
-        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+        secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
         expiresIn: '7d',
       },
     );
@@ -76,6 +91,32 @@ export class AuthService {
     return {
       access_token: accessToken,
       refresh_token: refreshToken,
+    };
+  }
+
+  generateTokens(userId: string, email: string, role: string) {
+    const tokenId = crypto.randomUUID();
+
+    const access_token = this.jwtService.sign(
+      { sub: userId, email, role },
+      {
+        secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
+        expiresIn: '15m',
+      },
+    );
+
+    const refresh_token = this.jwtService.sign(
+      { sub: userId, email, role, tokenId },
+      {
+        secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
+        expiresIn: '7d',
+      },
+    );
+
+    return {
+      access_token,
+      refresh_token,
+      tokenId,
     };
   }
 
@@ -113,6 +154,7 @@ export class AuthService {
     };
 
     const newAccessToken = this.jwtService.sign(newPayload, {
+      secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
       expiresIn: '15m',
     });
 
@@ -124,7 +166,7 @@ export class AuthService {
         tokenId: newRefreshTokenId,
       },
       {
-        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+        secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
         expiresIn: '7d',
       },
     );
