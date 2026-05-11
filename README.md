@@ -81,14 +81,19 @@ npm install
 ```bash
 cp .env.example .env
 ```
+4. Rode o prisma generate:
 
-4. Rode as migrations:
+```bash
+npx prisma generate
+```
+
+5. Rode as migrations:
 
 ```bash
 npx prisma migrate dev
 ```
 
-5. Inicie a API:
+6. Inicie a API:
 
 ```bash
 npm run start:dev
