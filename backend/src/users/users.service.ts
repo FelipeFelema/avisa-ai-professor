@@ -8,6 +8,7 @@ import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Prisma, Role, User } from '@prisma/client';
 import { InviteCodeService } from 'src/invites-code/invite-code.service';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 function isPrismaError(error: unknown): error is { code: string } {
   return error !== null && typeof error === 'object' && 'code' in error;
@@ -96,6 +97,21 @@ export class UsersService {
     await this.prisma.user.update({
       where: { id: userId },
       data,
+    });
+  }
+
+  async getProfile(userId: string) {
+    return await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: this.userSelect,
+    });
+  }
+
+  async updateProfile(userId: string, updateData: UpdateUserDto) {
+    return await this.prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+      select: this.userSelect,
     });
   }
 }
