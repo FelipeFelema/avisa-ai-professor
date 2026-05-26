@@ -34,5 +34,8 @@ build/
 # vscode
 .vscode/
 
+# local Codex/session files
+.codex
+
 # coverage
 coverage/

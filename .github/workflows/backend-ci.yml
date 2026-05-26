@@ -16,6 +16,26 @@ jobs:
     name: Run backend checks
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: avisa_ai
+        ports:
+        - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/avisa_ai
+      JWT_ACCESS_SECRET: test_access_secret
+      JWT_REFRESH_SECRET: test_refresh_secret
+
     defaults:
       run:
         working-directory: ./backend
@@ -37,6 +57,9 @@ jobs:
     - name: Generate Prisma client
       run: npx prisma generate
 
+    - name: Apply database migrations
+      run: npx prisma migrate deploy
+
     - name: Check code formatting
       run: npm run format:check
 
@@ -45,6 +68,9 @@ jobs:
 
     - name: Run tests with coverage
       run: npm run test:cov
+
+    - name: Run integration tests
+      run: npm run test:integration
     
     - name: Build project
       run: npm run build

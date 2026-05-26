@@ -7,20 +7,20 @@ import {
   View,
 } from "react-native";
 
-import { AnnouncementCard } from "@/src/components/announcement-card";
+import { ClassroomCard } from "@/src/components/classroom-card";
 import { useAuth } from "@/src/features/auth/auth-context";
-import { useAnnouncements } from "@/src/hooks/use-announcements";
+import { useClassrooms } from "@/src/hooks/use-classrooms";
 
-export default function AnnouncementsScreen() {
+export default function ClassroomsScreen() {
   const { logout } = useAuth();
-  const { announcements, error, isLoading } = useAnnouncements();
+  const { classrooms, error, isLoading } = useClassrooms();
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.title}>Comunicados</Text>
-          <Text style={styles.subtitle}>Dados carregados do backend.</Text>
+          <Text style={styles.title}>Turmas</Text>
+          <Text style={styles.subtitle}>Suas turmas cadastradas.</Text>
         </View>
 
         <Pressable onPress={logout} style={styles.logoutButton}>
@@ -40,12 +40,12 @@ export default function AnnouncementsScreen() {
       ) : (
         <FlatList
           contentContainerStyle={styles.listContent}
-          data={announcements}
+          data={classrooms}
           keyExtractor={(item) => item.id}
           ListEmptyComponent={
-            <Text style={styles.mutedText}>Nenhum comunicado encontrado.</Text>
+            <Text style={styles.mutedText}>Nenhuma turma encontrada.</Text>
           }
-          renderItem={({ item }) => <AnnouncementCard announcement={item} />}
+          renderItem={({ item }) => <ClassroomCard classroom={item} />}
         />
       )}
     </View>
