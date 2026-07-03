@@ -6,9 +6,12 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateAnnouncementDto } from './dto/create-announcement.dto';
+import { UpdateAnnouncementDto } from './dto/update-announcement.dto';
 
 @Injectable()
 export class AnnouncementsService {
+  private readonly maxActiveAnnouncementsPerClassroom = 10;
+
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(userId: string) {
@@ -106,6 +109,21 @@ export class AnnouncementsService {
       throw new ForbiddenException('Usuário não pertence à turma');
     }
 
+    const activeAnnouncementsCount = await this.prisma.announcement.count({
+      where: {
+        classroomId: dto.classroomId,
+        expiresAt: {
+          gte: new Date(),
+        },
+      },
+    });
+
+    if (activeAnnouncementsCount >= this.maxActiveAnnouncementsPerClassroom) {
+      throw new BadRequestException(
+        'A turma já possui o limite de 10 comunicados ativos',
+      );
+    }
+
     return this.prisma.announcement.create({
       data: {
         title: dto.title,
@@ -120,7 +138,7 @@ export class AnnouncementsService {
   async update(
     userId: string,
     announcementId: string,
-    dto: CreateAnnouncementDto,
+    dto: UpdateAnnouncementDto,
   ) {
     const announcement = await this.prisma.announcement.findFirst({
       where: {

@@ -127,7 +127,7 @@ describe('AuthService', () => {
   });
 
   describe('register', () => {
-    it('should create user, generate tokens and return auth data', async () => {
+    it('should create user and return user data with tokens', async () => {
       const dto = {
         name: 'Test User',
         email: 'test@example.com',
@@ -139,33 +139,34 @@ describe('AuthService', () => {
         name: dto.name,
         email: dto.email,
         role: 'PARENT',
+        createdAt: new Date(),
       };
 
       mockUsersService.createUser.mockResolvedValue(mockUser);
-
       (crypto.randomUUID as jest.Mock).mockReturnValue(
         '00000000-0000-0000-0000-000000000000',
       );
-
       mockJwtService.sign.mockReturnValue('token');
+      mockConfigService.get.mockReturnValue('secret');
 
       const result = await service.register(dto);
+      const createdAtMatcher = expect.any(Date) as Date;
 
       expect(mockUsersService.createUser).toHaveBeenCalledWith(dto);
-      expect(mockJwtService.sign).toHaveBeenCalledTimes(2);
       expect(mockUsersService.updateRefreshToken).toHaveBeenCalledWith(
         'user-id',
         'token',
         '00000000-0000-0000-0000-000000000000',
       );
-      expect(result).toEqual(
-        expect.objectContaining({
-          id: 'user-id',
-          email: dto.email,
-          access_token: 'token',
-          refresh_token: 'token',
-        }),
-      );
+      expect(result).toEqual({
+        id: 'user-id',
+        name: 'Test User',
+        email: 'test@example.com',
+        role: 'PARENT',
+        createdAt: createdAtMatcher,
+        access_token: 'token',
+        refresh_token: 'token',
+      });
     });
   });
 

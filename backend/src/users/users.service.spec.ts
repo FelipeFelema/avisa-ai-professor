@@ -137,6 +137,7 @@ describe('UsersService', () => {
         password: 'password123',
       };
       (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
+      mockPrisma.user.findUnique.mockResolvedValue(null);
       mockPrisma.user.create.mockResolvedValue({
         id: 'user-id',
         name: createUserDto.name,
@@ -178,20 +179,20 @@ describe('UsersService', () => {
         password: 'password123',
       };
 
-      (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
-
-      mockPrisma.user.create.mockRejectedValue({
-        code: 'P2002',
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'existing-user-id',
+        email: createUserDto.email,
       });
 
       await expect(service.createUser(createUserDto)).rejects.toThrow(
         ConflictException,
       );
 
-      expect(mockPrisma.user.create).toHaveBeenCalledTimes(1);
+      expect(bcrypt.hash).not.toHaveBeenCalled();
+      expect(mockPrisma.user.create).not.toHaveBeenCalled();
     });
 
-    it('should assign TEACHER role when invite code is valid', async () => {
+    it('should assign PROFESSOR role when invite code is valid', async () => {
       const createUserDto = {
         name: 'Teacher User',
         email: 'teacher@example.com',
@@ -201,12 +202,13 @@ describe('UsersService', () => {
 
       (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
 
-      mockInviteCodeService.validateInviteCode.mockResolvedValue('TEACHER');
+      mockPrisma.user.findUnique.mockResolvedValue(null);
+      mockInviteCodeService.validateInviteCode.mockResolvedValue('PROFESSOR');
       mockPrisma.user.create.mockResolvedValue({
         id: 'teacher-id',
         name: createUserDto.name,
         email: createUserDto.email,
-        role: 'TEACHER',
+        role: 'PROFESSOR',
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -226,7 +228,7 @@ describe('UsersService', () => {
             name: createUserDto.name,
             email: createUserDto.email,
             password: 'hashedPassword',
-            role: 'TEACHER',
+            role: 'PROFESSOR',
           },
         }),
       );
@@ -235,7 +237,7 @@ describe('UsersService', () => {
           id: 'teacher-id',
           name: createUserDto.name,
           email: createUserDto.email,
-          role: 'TEACHER',
+          role: 'PROFESSOR',
         }),
       );
     });
@@ -250,6 +252,7 @@ describe('UsersService', () => {
 
       (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
 
+      mockPrisma.user.findUnique.mockResolvedValue(null);
       mockInviteCodeService.validateInviteCode.mockRejectedValue(
         new BadRequestException('Código de convite inválido'),
       );
@@ -258,6 +261,27 @@ describe('UsersService', () => {
         BadRequestException,
       );
 
+      expect(mockPrisma.user.create).not.toHaveBeenCalled();
+    });
+
+    it('should not consume invite code when email already exists', async () => {
+      const createUserDto = {
+        name: 'Teacher User',
+        email: 'teacher@example.com',
+        password: 'password123',
+        teacherCode: 'valid-code',
+      };
+
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'existing-user-id',
+        email: createUserDto.email,
+      });
+
+      await expect(service.createUser(createUserDto)).rejects.toThrow(
+        ConflictException,
+      );
+
+      expect(mockInviteCodeService.validateInviteCode).not.toHaveBeenCalled();
       expect(mockPrisma.user.create).not.toHaveBeenCalled();
     });
   });

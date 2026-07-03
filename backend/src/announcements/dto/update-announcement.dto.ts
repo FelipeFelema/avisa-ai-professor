@@ -2,15 +2,13 @@ import {
   IsNotEmpty,
   IsString,
   IsInt,
-  IsUUID,
   IsIn,
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { ANNOUNCEMENT_ALLOWED_DURATIONS } from './create-announcement.dto';
 
-export const ANNOUNCEMENT_ALLOWED_DURATIONS = [1, 3, 7, 15, 30] as const;
-
-export class CreateAnnouncementDto {
+export class UpdateAnnouncementDto {
   @IsString({ message: 'O título deve ser uma string' })
   @IsNotEmpty({ message: 'O título não pode estar vazio' })
   @MinLength(3, { message: 'O título deve ter no mínimo 3 caracteres' })
@@ -28,9 +26,4 @@ export class CreateAnnouncementDto {
     message: 'A duração deve ser 1, 3, 7, 15 ou 30 dias',
   })
   durationInDays!: number;
-
-  @IsString({ message: 'O ID da turma deve ser uma string' })
-  @IsNotEmpty({ message: 'O ID da turma não pode estar vazio' })
-  @IsUUID('4', { message: 'O ID da turma deve ser um UUID válido' })
-  classroomId!: string;
 }

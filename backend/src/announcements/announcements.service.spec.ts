@@ -11,6 +11,7 @@ const mockPrisma = {
   announcement: {
     findMany: jest.fn(),
     findFirst: jest.fn(),
+    count: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
     delete: jest.fn(),
@@ -89,6 +90,8 @@ describe('AnnouncementsService', () => {
 
       mockPrisma.userClassroom.findUnique.mockResolvedValue({});
 
+      mockPrisma.announcement.count.mockResolvedValue(0);
+
       const mockResult = { id: 'announcement-id' };
 
       mockPrisma.announcement.create.mockResolvedValue(mockResult);
@@ -151,6 +154,29 @@ describe('AnnouncementsService', () => {
       await expect(service.create('userid', dto)).rejects.toThrow(
         ForbiddenException,
       );
+    });
+
+    it('should throw BadRequestException if classroom has 10 active announcements', async () => {
+      const dto = {
+        title: 'Test',
+        content: 'Content',
+        durationInDays: 3,
+        classroomId: 'c1',
+      };
+
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'user-id',
+        role: 'PROFESSOR',
+      });
+
+      mockPrisma.userClassroom.findUnique.mockResolvedValue({});
+      mockPrisma.announcement.count.mockResolvedValue(10);
+
+      await expect(service.create('user-id', dto)).rejects.toThrow(
+        BadRequestException,
+      );
+
+      expect(mockPrisma.announcement.create).not.toHaveBeenCalled();
     });
   });
 

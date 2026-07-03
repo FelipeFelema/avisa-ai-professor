@@ -1,4 +1,8 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import {
+  INestApplication,
+  ValidationPipe,
+  VersioningType,
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { App } from 'supertest/types';
@@ -32,6 +36,9 @@ describe('Users Integration Tests', () => {
 
     app = moduleFixture.createNestApplication();
     app.setGlobalPrefix('api');
+    app.enableVersioning({
+      type: VersioningType.URI,
+    });
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
@@ -53,13 +60,13 @@ describe('Users Integration Tests', () => {
     await app.close();
   });
 
-  describe('GET /api/users/profile', () => {
+  describe('GET /api/v1/users/profile', () => {
     it('should get user profile with valid token', async () => {
       const email = makeEmail('profile');
 
       // Register a new user
       const registerResponse = await request(app.getHttpServer())
-        .post('/api/auth/register')
+        .post('/api/v1/auth/register')
         .send({
           name: 'Test User',
           email,
@@ -70,7 +77,7 @@ describe('Users Integration Tests', () => {
 
       // Access the profile endpoint with the token
       const profileResponse = await request(app.getHttpServer())
-        .get('/api/users/profile')
+        .get('/api/v1/users/profile')
         .set('Authorization', `Bearer ${accessToken}`)
         .expect(200);
 
@@ -84,23 +91,25 @@ describe('Users Integration Tests', () => {
     });
 
     it('should return 401 without token', async () => {
-      await request(app.getHttpServer()).get('/api/users/profile').expect(401);
+      await request(app.getHttpServer())
+        .get('/api/v1/users/profile')
+        .expect(401);
     });
 
     it('should return 401 with invalid token', async () => {
       await request(app.getHttpServer())
-        .get('/api/users/profile')
+        .get('/api/v1/users/profile')
         .set('Authorization', 'Bearer invalid-token')
         .expect(401);
     });
   });
 
-  describe('PATCH /api/users/profile', () => {
+  describe('PATCH /api/v1/users/profile', () => {
     it('should update user profile successfully', async () => {
       const email = makeEmail('update');
 
       const registerResponse = await request(app.getHttpServer())
-        .post('/api/auth/register')
+        .post('/api/v1/auth/register')
         .send({
           name: 'Original Name',
           email,
@@ -110,7 +119,7 @@ describe('Users Integration Tests', () => {
       const accessToken = (registerResponse.body as AuthResponse).access_token;
 
       const updateResponse = await request(app.getHttpServer())
-        .patch('/api/users/profile')
+        .patch('/api/v1/users/profile')
         .set('Authorization', `Bearer ${accessToken}`)
         .send({ name: 'Updated Name' })
         .expect(200);
@@ -124,7 +133,7 @@ describe('Users Integration Tests', () => {
       const email = makeEmail('empty-name');
 
       const registerResponse = await request(app.getHttpServer())
-        .post('/api/auth/register')
+        .post('/api/v1/auth/register')
         .send({
           name: 'Test User',
           email,
@@ -134,7 +143,7 @@ describe('Users Integration Tests', () => {
       const accessToken = (registerResponse.body as AuthResponse).access_token;
 
       await request(app.getHttpServer())
-        .patch('/api/users/profile')
+        .patch('/api/v1/users/profile')
         .set('Authorization', `Bearer ${accessToken}`)
         .send({ name: '' })
         .expect(400);

@@ -10,6 +10,8 @@ import { Prisma, Role, User } from '@prisma/client';
 import { InviteCodeService } from 'src/invites-code/invite-code.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 
+const PASSWORD_SALT_ROUNDS = 10;
+
 function isPrismaError(error: unknown): error is { code: string } {
   return error !== null && typeof error === 'object' && 'code' in error;
 }
@@ -52,7 +54,17 @@ export class UsersService {
     try {
       const { teacherCode, ...userData } = createUserDto;
 
-      const hashedPassword = await bcrypt.hash(userData.password, 10);
+      const normalizedEmail = userData.email.trim().toLowerCase();
+      const existingUser = await this.findByEmail(normalizedEmail);
+
+      if (existingUser) {
+        throw new ConflictException('Esse email já existe');
+      }
+
+      const hashedPassword = await bcrypt.hash(
+        userData.password,
+        PASSWORD_SALT_ROUNDS,
+      );
 
       let role: Role = Role.PARENT;
 
@@ -63,6 +75,7 @@ export class UsersService {
       const user = await this.prisma.user.create({
         data: {
           ...userData,
+          email: normalizedEmail,
           password: hashedPassword,
           role,
         },
@@ -87,7 +100,10 @@ export class UsersService {
     const data: Prisma.UserUpdateInput = {};
 
     if (refreshToken) {
-      data.refreshTokenHash = await bcrypt.hash(refreshToken, 10);
+      data.refreshTokenHash = await bcrypt.hash(
+        refreshToken,
+        PASSWORD_SALT_ROUNDS,
+      );
       data.refreshTokenId = refreshTokenId ?? null;
     } else {
       data.refreshTokenHash = null;
@@ -108,9 +124,17 @@ export class UsersService {
   }
 
   async updateProfile(userId: string, updateData: UpdateUserDto) {
+    const { password, ...profileData } = updateData;
+
+    const data: Prisma.UserUpdateInput = { ...profileData };
+
+    if (password) {
+      data.password = await bcrypt.hash(password, PASSWORD_SALT_ROUNDS);
+    }
+
     return await this.prisma.user.update({
       where: { id: userId },
-      data: updateData,
+      data,
       select: this.userSelect,
     });
   }
