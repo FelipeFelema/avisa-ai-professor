@@ -7,6 +7,9 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { JwtPayload } from 'src/common/types/jwt-payload.type';
 
+const ACCESS_TOKEN_TTL = '15m';
+const REFRESH_TOKEN_TTL = '7d';
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -37,36 +40,33 @@ export class AuthService {
 
   async register(createUserDto: CreateUserDto) {
     const user = await this.usersService.createUser(createUserDto);
-
-    const tokens = this.generateTokens(user.id, user.email, user.role);
-
-    await this.usersService.updateRefreshToken(
+    const { access_token, refresh_token, tokenId } = this.generateTokens(
       user.id,
-      tokens.refresh_token,
-      tokens.tokenId,
+      user.email,
+      user.role,
     );
+
+    await this.usersService.updateRefreshToken(user.id, refresh_token, tokenId);
 
     return {
       id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,
-      ...tokens,
+      createdAt: user.createdAt,
+      access_token,
+      refresh_token,
     };
   }
 
   async login(email: string, password: string) {
     const user = await this.validateUser(email, password);
 
-    const payload = {
-      sub: user.id,
-      email: user.email,
-      role: user.role,
-    };
+    const payload = this.createJwtPayload(user.id, user.email, user.role);
 
     const accessToken = this.jwtService.sign(payload, {
       secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
-      expiresIn: '15m',
+      expiresIn: ACCESS_TOKEN_TTL,
     });
 
     const refreshTokenId = crypto.randomUUID();
@@ -78,7 +78,7 @@ export class AuthService {
       },
       {
         secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
-        expiresIn: '7d',
+        expiresIn: REFRESH_TOKEN_TTL,
       },
     );
 
@@ -98,18 +98,18 @@ export class AuthService {
     const tokenId = crypto.randomUUID();
 
     const access_token = this.jwtService.sign(
-      { sub: userId, email, role },
+      this.createJwtPayload(userId, email, role),
       {
         secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
-        expiresIn: '15m',
+        expiresIn: ACCESS_TOKEN_TTL,
       },
     );
 
     const refresh_token = this.jwtService.sign(
-      { sub: userId, email, role, tokenId },
+      { ...this.createJwtPayload(userId, email, role), tokenId },
       {
         secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
-        expiresIn: '7d',
+        expiresIn: REFRESH_TOKEN_TTL,
       },
     );
 
@@ -147,15 +147,11 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    const newPayload = {
-      sub: user.id,
-      email: user.email,
-      role: user.role,
-    };
+    const newPayload = this.createJwtPayload(user.id, user.email, user.role);
 
     const newAccessToken = this.jwtService.sign(newPayload, {
       secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
-      expiresIn: '15m',
+      expiresIn: ACCESS_TOKEN_TTL,
     });
 
     const newRefreshTokenId = crypto.randomUUID();
@@ -167,7 +163,7 @@ export class AuthService {
       },
       {
         secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
-        expiresIn: '7d',
+        expiresIn: REFRESH_TOKEN_TTL,
       },
     );
 
@@ -180,6 +176,14 @@ export class AuthService {
     return {
       access_token: newAccessToken,
       refresh_token: newRefreshToken,
+    };
+  }
+
+  private createJwtPayload(userId: string, email: string, role: string) {
+    return {
+      sub: userId,
+      email,
+      role,
     };
   }
 }

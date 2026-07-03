@@ -1,4 +1,8 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import {
+  INestApplication,
+  ValidationPipe,
+  VersioningType,
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { App } from 'supertest/types';
@@ -26,7 +30,7 @@ describe('Auth Integration Tests', () => {
   };
 
   const registerUser = (email: string): request.Test =>
-    request(app.getHttpServer()).post('/api/auth/register').send({
+    request(app.getHttpServer()).post('/api/v1/auth/register').send({
       name: 'Integration Test User',
       email,
       password: testPassword,
@@ -40,6 +44,10 @@ describe('Auth Integration Tests', () => {
     app = moduleFixture.createNestApplication();
 
     app.setGlobalPrefix('api');
+
+    app.enableVersioning({
+      type: VersioningType.URI,
+    });
 
     app.useGlobalPipes(
       new ValidationPipe({
@@ -78,7 +86,7 @@ describe('Auth Integration Tests', () => {
     await registerUser(email).expect(201);
 
     const response = await request(app.getHttpServer())
-      .post('/api/auth/login')
+      .post('/api/v1/auth/login')
       .send({
         email,
         password: testPassword,
@@ -97,7 +105,7 @@ describe('Auth Integration Tests', () => {
     await registerUser(email).expect(201);
 
     await request(app.getHttpServer())
-      .post('/api/auth/register')
+      .post('/api/v1/auth/register')
       .send({
         name: 'Duplicated User',
         email,
@@ -112,7 +120,7 @@ describe('Auth Integration Tests', () => {
     await registerUser(email).expect(201);
 
     await request(app.getHttpServer())
-      .post('/api/auth/login')
+      .post('/api/v1/auth/login')
       .send({
         email,
         password: 'wrongpassword',
@@ -122,7 +130,7 @@ describe('Auth Integration Tests', () => {
 
   it('should not register invalid payload', async () => {
     await request(app.getHttpServer())
-      .post('/api/auth/register')
+      .post('/api/v1/auth/register')
       .send({
         name: '',
         email: 'invalid-email',

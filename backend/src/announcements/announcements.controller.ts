@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { AnnouncementsService } from './announcements.service';
 import { CreateAnnouncementDto } from './dto/create-announcement.dto';
+import { UpdateAnnouncementDto } from './dto/update-announcement.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorator/roles.decorator';
@@ -52,7 +53,7 @@ export class AnnouncementsController {
   update(
     @Param('id') id: string,
     @Request() req: { user: AuthUser },
-    @Body() dto: CreateAnnouncementDto,
+    @Body() dto: UpdateAnnouncementDto,
   ) {
     return this.announcementsService.update(req.user.id, id, dto);
   }

@@ -7,6 +7,7 @@ const mockPrisma = {
   classroom: {
     create: jest.fn(),
     findUnique: jest.fn(),
+    findFirst: jest.fn(),
     findUniqueOrThrow: jest.fn(),
     findMany: jest.fn(),
   },
@@ -34,16 +35,17 @@ describe('ClassroomsService', () => {
   });
 
   describe('create', () => {
-    it('should create a classroom and add user', async () => {
+    it('should create a classroom and add user using an uppercase name', async () => {
       const userId = 'user-id';
-      const name = 'Classroom A';
+      const name = '1° ano A';
 
       const mockClassroom = {
         id: 'classroom-id',
-        name,
+        name: '1° ANO A',
         userClassrooms: [],
       };
 
+      mockPrisma.classroom.findFirst.mockResolvedValue(null);
       mockPrisma.classroom.create.mockResolvedValue(mockClassroom);
 
       const result = await service.create(userId, name);
@@ -51,7 +53,7 @@ describe('ClassroomsService', () => {
       expect(mockPrisma.classroom.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: {
-            name,
+            name: '1° ANO A',
             userClassrooms: {
               create: { userId },
             },
@@ -60,6 +62,14 @@ describe('ClassroomsService', () => {
       );
 
       expect(result).toEqual(mockClassroom);
+    });
+
+    it('should throw BadRequestException when classroom name already exists ignoring case', async () => {
+      mockPrisma.classroom.findFirst.mockResolvedValue({ id: 'existing-id' });
+
+      await expect(service.create('user-id', '1° ano a')).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 

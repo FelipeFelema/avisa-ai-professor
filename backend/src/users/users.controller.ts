@@ -14,7 +14,10 @@ interface JwtRequest extends Express.Request {
   user: { id: string; email: string; role: string };
 }
 
-@Controller('users')
+@Controller({
+  path: 'users',
+  version: '1',
+})
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
