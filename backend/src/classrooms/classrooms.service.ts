@@ -9,10 +9,19 @@ import { ClassroomWithUsers } from 'src/common/types/classroom-with-users.type';
 @Injectable()
 export class ClassroomsService {
   constructor(private readonly prisma: PrismaService) {}
+
   async create(userId: string, name: string): Promise<ClassroomWithUsers> {
+    const normalizedName = this.normalizeClassroomName(name);
+
+    if (!normalizedName) {
+      throw new BadRequestException('O nome da turma não pode estar vazio');
+    }
+
+    await this.ensureUniqueClassroomName(normalizedName);
+
     return this.prisma.classroom.create({
       data: {
-        name,
+        name: normalizedName,
         userClassrooms: {
           create: { userId },
         },
@@ -126,5 +135,24 @@ export class ClassroomsService {
         },
       },
     });
+  }
+
+  private normalizeClassroomName(name: string): string {
+    return name?.trim().toUpperCase() ?? '';
+  }
+
+  private async ensureUniqueClassroomName(name: string): Promise<void> {
+    const existingClassroom = await this.prisma.classroom.findFirst({
+      where: {
+        name: {
+          equals: name,
+          mode: 'insensitive',
+        },
+      },
+    });
+
+    if (existingClassroom) {
+      throw new BadRequestException('Já existe uma turma com esse nome');
+    }
   }
 }
