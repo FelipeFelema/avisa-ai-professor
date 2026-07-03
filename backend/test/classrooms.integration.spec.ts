@@ -1,4 +1,8 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import {
+  INestApplication,
+  ValidationPipe,
+  VersioningType,
+} from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
@@ -21,7 +25,8 @@ describe('Classrooms Integration Tests', () => {
 
   const makeEmail = (label: string) => `${testPrefix}-${label}@email.com`;
   const makeInviteCode = (label: string) => `PROF-${testPrefix}-${label}`;
-  const makeClassroomName = (label: string) => `${testPrefix}-${label}`;
+  const makeClassroomName = (label: string) =>
+    `${testPrefix}-${label}`.toUpperCase();
 
   const deleteTestData = async () => {
     await prisma.userClassroom.deleteMany({
@@ -29,6 +34,7 @@ describe('Classrooms Integration Tests', () => {
         classroom: {
           name: {
             startsWith: testPrefix,
+            mode: 'insensitive',
           },
         },
       },
@@ -38,6 +44,7 @@ describe('Classrooms Integration Tests', () => {
       where: {
         name: {
           startsWith: testPrefix,
+          mode: 'insensitive',
         },
       },
     });
@@ -46,6 +53,7 @@ describe('Classrooms Integration Tests', () => {
       where: {
         code: {
           startsWith: `PROF-${testPrefix}`,
+          mode: 'insensitive',
         },
       },
     });
@@ -54,6 +62,7 @@ describe('Classrooms Integration Tests', () => {
       where: {
         email: {
           startsWith: testPrefix,
+          mode: 'insensitive',
         },
       },
     });
@@ -71,7 +80,7 @@ describe('Classrooms Integration Tests', () => {
     });
 
     const response = await request(app.getHttpServer())
-      .post('/api/auth/register')
+      .post('/api/v1/auth/register')
       .send({
         name: 'Professor Integration Test',
         email: makeEmail(label),
@@ -93,6 +102,10 @@ describe('Classrooms Integration Tests', () => {
     app = moduleFixture.createNestApplication();
 
     app.setGlobalPrefix('api');
+
+    app.enableVersioning({
+      type: VersioningType.URI,
+    });
 
     app.useGlobalPipes(
       new ValidationPipe({
@@ -121,22 +134,36 @@ describe('Classrooms Integration Tests', () => {
     const classroomName = makeClassroomName('created');
 
     const response = await request(app.getHttpServer())
-      .post('/api/classrooms')
+      .post('/api/v1/classrooms')
       .set('Authorization', `Bearer ${professorToken}`)
       .send({
         name: classroomName,
       })
       .expect(201);
 
-    const body = response.body as Record<string, unknown>;
+    const body = response.body as {
+      id: string;
+      name: string;
+      userClassrooms: Array<{
+        user: {
+          name: string;
+        };
+      }>;
+    };
 
     expect(body).toHaveProperty('id');
     expect(body).toHaveProperty('name', classroomName);
+    expect(body).toHaveProperty('userClassrooms');
+    expect(
+      body.userClassrooms.some(
+        (membership) => membership.user.name === 'Professor Integration Test',
+      ),
+    ).toBe(true);
   });
 
   it('should not create classroom without authentication', async () => {
     await request(app.getHttpServer())
-      .post('/api/classrooms')
+      .post('/api/v1/classrooms')
       .send({
         name: makeClassroomName('without-auth'),
       })
