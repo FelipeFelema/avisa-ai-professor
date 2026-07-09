@@ -1,6 +1,8 @@
-import axios from "axios";
+import axios from 'axios';
+
+import { env } from '@/config';
 
 export const api = axios.create({
-  baseURL: "",
+  baseURL: env.apiUrl,
   timeout: 10000,
 });

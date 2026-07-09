@@ -1,7 +1,7 @@
 import { QueryClientProvider } from '@tanstack/react-query';
 import { PropsWithChildren } from 'react';
 
-import { queryClient } from '../config/query-client';
+import { queryClient } from '@/config';
 
 type AppProviderProps = PropsWithChildren;
 

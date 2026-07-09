@@ -1,5 +1,7 @@
-import { Redirect } from "expo-router";
+import { queryClient } from '@/config';
 
-export default function Index() {
-  return <Redirect href="/login" />;
+export default function Home() {
+  console.log(queryClient);
+
+  return null;
 }
