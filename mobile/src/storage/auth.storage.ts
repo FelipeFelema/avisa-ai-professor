@@ -10,6 +10,21 @@ export async function saveTokens(tokens: LoginResponse) {
   await SecureStore.setItemAsync(STORAGE_KEYS.refreshToken, tokens.refreshToken);
 }
 
-export async function getTokens() {}
+export async function getTokens(): Promise<LoginResponse | null> {
+  const accessToken = await SecureStore.getItemAsync(STORAGE_KEYS.accessToken);
+  const refreshToken = await SecureStore.getItemAsync(STORAGE_KEYS.refreshToken);
 
-export async function clearTokens() {}
+  if (!accessToken || !refreshToken) {
+    return null;
+  }
+
+  return {
+    accessToken,
+    refreshToken,
+  };
+}
+
+export async function clearTokens() {
+  await SecureStore.deleteItemAsync(STORAGE_KEYS.accessToken);
+  await SecureStore.deleteItemAsync(STORAGE_KEYS.refreshToken);
+}
