@@ -5,11 +5,21 @@ export interface AuthUser {
   role: string;
 }
 
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  accessToken: string;
+  refreshToken: string;
+}
+
 export interface AuthContextData {
   user: AuthUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
 
-  login: () => Promise<void>;
+  login: (data: LoginRequest) => Promise<void>;
   logout: () => Promise<void>;
 }
