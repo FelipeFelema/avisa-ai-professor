@@ -8,6 +8,7 @@ export const api = create({
   timeout: 10000,
 });
 
+// Atach the access token to every authenticated request.
 api.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
   const tokens = await getTokens();
 
