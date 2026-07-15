@@ -1,16 +1,23 @@
 import { View, Text, Pressable, TextInput, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Controller, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { loginSchema, LoginFormData } from '@/validations/login.schema';
 
 export default function LoginScreen() {
-  const { control, handleSubmit } = useForm({
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: '',
       password: '',
     },
   });
 
-  const onSubmit = (data: { email: string; password: string }) => {
+  const onSubmit = (data: LoginFormData) => {
     console.log(data);
   };
   return (
@@ -37,6 +44,9 @@ export default function LoginScreen() {
               />
             )}
           />
+
+          {errors.email && <Text>{errors.email.message}</Text>}
+
           <Controller
             control={control}
             name="password"
@@ -50,6 +60,8 @@ export default function LoginScreen() {
               />
             )}
           />
+
+          {errors.password && <Text>{errors.password.message}</Text>}
 
           <Pressable onPress={handleSubmit(onSubmit)}>
             <Text>Entrar</Text>
