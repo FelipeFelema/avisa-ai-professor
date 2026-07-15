@@ -1,12 +1,13 @@
 import { Redirect, Stack } from 'expo-router';
 
+import { SplashScreen } from '@/components/SplashScreen';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function AppLayout() {
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
-    return <Redirect href="/splash" />;
+    return <SplashScreen />;
   }
 
   if (!isAuthenticated) {
