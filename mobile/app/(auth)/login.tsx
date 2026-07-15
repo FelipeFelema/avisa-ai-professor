@@ -1,7 +1,18 @@
 import { View, Text, Pressable, TextInput, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Controller, useForm } from 'react-hook-form';
 
 export default function LoginScreen() {
+  const { control, handleSubmit } = useForm({
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
+
+  const onSubmit = (data: { email: string; password: string }) => {
+    console.log(data);
+  };
   return (
     <SafeAreaView style={styles.container}>
       <View>
@@ -13,11 +24,34 @@ export default function LoginScreen() {
 
         {/* Login Form */}
         <View>
-          <TextInput placeholder="E-mail" />
+          <Controller
+            control={control}
+            name="email"
+            render={({ field: { onChange, value } }) => (
+              <TextInput
+                placeholder="E-mail"
+                value={value}
+                onChangeText={onChange}
+                autoCapitalize="none"
+                keyboardType="email-address"
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name="password"
+            render={({ field: { onChange, value } }) => (
+              <TextInput
+                placeholder="Senha"
+                secureTextEntry
+                value={value}
+                onChangeText={onChange}
+                autoCapitalize="none"
+              />
+            )}
+          />
 
-          <TextInput placeholder="Senha" secureTextEntry />
-
-          <Pressable>
+          <Pressable onPress={handleSubmit(onSubmit)}>
             <Text>Entrar</Text>
           </Pressable>
         </View>
