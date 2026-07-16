@@ -3,6 +3,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, LoginFormData } from '@/validations/login.schema';
+import { useAuth } from '@/hooks/useAuth';
+import { useMutation } from '@tanstack/react-query';
+import { useState } from 'react';
+import { isAxiosError } from 'axios';
+import { HTTP_STATUS } from '@/constants/http-status';
 
 export default function LoginScreen() {
   const {
@@ -17,8 +22,38 @@ export default function LoginScreen() {
     },
   });
 
-  const onSubmit = (data: LoginFormData) => {
-    console.log(data);
+  const { login } = useAuth();
+
+  const [loginError, setLoginError] = useState('');
+
+  const loginMutation = useMutation({
+    mutationFn: login,
+    onSuccess: (response) => {
+      console.log(response);
+    },
+    onError: (error) => {
+      if (isAxiosError(error) && error.response?.status === HTTP_STATUS.UNAUTHORIZED) {
+        setLoginError('E-mail ou senha inválidos.');
+        return;
+      }
+
+      if (isAxiosError(error) && !error.response) {
+        setLoginError('Verifique sua conexão com a internet.');
+        return;
+      }
+
+      if (isAxiosError(error) && error.response?.status === HTTP_STATUS.INTERNAL_SERVER_ERROR) {
+        setLoginError('Ocorreu um erro no servidor. Tente novamente mais tarde.');
+        return;
+      }
+
+      setLoginError('Não foi possível realizar o login.');
+    },
+  });
+
+  const onSubmit = async (data: LoginFormData) => {
+    setLoginError(''); // Clear any previous error messages
+    await loginMutation.mutateAsync(data);
   };
   return (
     <SafeAreaView style={styles.container}>
@@ -44,9 +79,7 @@ export default function LoginScreen() {
               />
             )}
           />
-
-          {errors.email && <Text>{errors.email.message}</Text>}
-
+          {errors.email?.message ? <Text>{errors.email.message}</Text> : null}
           <Controller
             control={control}
             name="password"
@@ -60,11 +93,10 @@ export default function LoginScreen() {
               />
             )}
           />
-
-          {errors.password && <Text>{errors.password.message}</Text>}
-
-          <Pressable onPress={handleSubmit(onSubmit)}>
-            <Text>Entrar</Text>
+          {errors.password?.message ? <Text>{errors.password.message}</Text> : null}
+          {loginError ? <Text>{loginError}</Text> : null}
+          <Pressable onPress={handleSubmit(onSubmit)} disabled={loginMutation.isPending}>
+            <Text>{loginMutation.isPending ? 'Entrando...' : 'Entrar'}</Text>
           </Pressable>
         </View>
 

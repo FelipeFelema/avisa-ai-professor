@@ -1,7 +1,14 @@
-import { queryClient } from '@/config';
+import { View, Text, Pressable } from 'react-native';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function Home() {
-  console.log(queryClient);
-
-  return null;
+  const { logout } = useAuth();
+  return (
+    <View>
+      <Text>Usuário autenticado!</Text>
+      <Pressable onPress={logout}>
+        <Text>Sair</Text>
+      </Pressable>
+    </View>
+  );
 }
