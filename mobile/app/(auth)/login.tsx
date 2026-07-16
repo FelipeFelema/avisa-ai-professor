@@ -8,6 +8,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 import { isAxiosError } from 'axios';
 import { HTTP_STATUS } from '@/constants/http-status';
+import { useRouter } from 'expo-router';
 
 export default function LoginScreen() {
   const {
@@ -23,6 +24,8 @@ export default function LoginScreen() {
   });
 
   const { login } = useAuth();
+
+  const router = useRouter();
 
   const [loginError, setLoginError] = useState('');
 
@@ -104,7 +107,7 @@ export default function LoginScreen() {
         <View>
           <Text>Não possui uma conta?</Text>
 
-          <Pressable>
+          <Pressable onPress={() => router.push('/register')}>
             <Text>Criar conta</Text>
           </Pressable>
         </View>
