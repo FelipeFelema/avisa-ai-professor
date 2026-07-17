@@ -163,7 +163,40 @@ describe('ClassroomsService', () => {
 
   describe('findMyClassrooms', () => {
     it('should return user classroms', async () => {
-      const mockResult = [{ id: 'classroom-1' }, { id: 'classroom-2' }];
+      const mockResult = [
+        {
+          id: 'classroom-1',
+          name: '1° Ano A',
+          userClassrooms: [
+            {
+              user: {
+                id: 'teacher-1',
+                name: 'Professor Test',
+              },
+            },
+          ],
+          announcements: [
+            {
+              id: 'announcement-1',
+              title: 'Anúncio 1',
+              createdAt: new Date(),
+            },
+          ],
+        },
+        {
+          id: 'classroom-2',
+          name: '1° Ano B',
+          userClassrooms: [
+            {
+              user: {
+                id: 'teacher-2',
+                name: 'Professor Test 2',
+              },
+            },
+          ],
+          announcements: [],
+        },
+      ];
 
       mockPrisma.classroom.findMany.mockResolvedValue(mockResult);
 
@@ -179,7 +212,30 @@ describe('ClassroomsService', () => {
         }),
       );
 
-      expect(result).toEqual(mockResult);
+      expect(result).toEqual([
+        {
+          id: 'classroom-1',
+          name: '1° Ano A',
+          teacher: {
+            id: 'teacher-1',
+            name: 'Professor Test',
+          },
+          lastAnnouncement: {
+            id: 'announcement-1',
+            title: 'Anúncio 1',
+            createdAt: mockResult[0].announcements[0].createdAt,
+          },
+        },
+        {
+          id: 'classroom-2',
+          name: '1° Ano B',
+          teacher: {
+            id: 'teacher-2',
+            name: 'Professor Test 2',
+          },
+          lastAnnouncement: null,
+        },
+      ]);
     });
   });
 });
