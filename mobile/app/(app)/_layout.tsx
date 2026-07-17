@@ -14,5 +14,9 @@ export default function AppLayout() {
     return <Redirect href="/login" />;
   }
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(tabs)" />
+    </Stack>
+  );
 }

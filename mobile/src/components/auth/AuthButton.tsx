@@ -1,4 +1,4 @@
-import { Pressable, PressableProps, StyleSheet, Text, ViewStyle } from 'react-native';
+import { Pressable, PressableProps, StyleSheet, Text, ViewStyle, StyleProp } from 'react-native';
 
 import { AUTH_THEME } from '@/theme/auth';
 
@@ -6,7 +6,7 @@ type AuthButtonProps = PressableProps & {
   label: string;
   loadingLabel?: string;
   isLoading?: boolean;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 };
 
 export function AuthButton({
