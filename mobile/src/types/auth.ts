@@ -21,5 +21,18 @@ export interface AuthContextData {
   isLoading: boolean;
 
   login: (data: LoginRequest) => Promise<void>;
+  register: (data: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
+}
+
+export interface RegisterRequest {
+  name: string;
+  email: string;
+  password: string;
+  teacherCode?: string;
+}
+
+export interface RegisterResponse {
+  accessToken: string;
+  refreshToken: string;
 }

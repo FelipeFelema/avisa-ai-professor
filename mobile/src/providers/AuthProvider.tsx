@@ -1,7 +1,7 @@
-import { PropsWithChildren, useMemo, useState, useEffect } from 'react';
+import { PropsWithChildren, useMemo, useState, useEffect, useCallback } from 'react';
 
 import { AuthContext } from '@/contexts/AuthContext';
-import type { AuthContextData, AuthUser, LoginRequest } from '@/types/auth';
+import type { AuthContextData, AuthUser, LoginRequest, RegisterRequest } from '@/types/auth';
 import * as authService from '@/services/auth';
 import { saveTokens, clearTokens, getTokens } from '@/storage';
 
@@ -11,33 +11,52 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  async function login(data: LoginRequest): Promise<void> {
-    setIsLoading(true);
-
-    try {
-      // Authenticate the user and retrieve JWT tokens from the backend.
-      const tokens = await authService.login(data);
-
-      // Persist the authentication session on the device.
+  const createSession = useCallback(
+    async (tokens: { accessToken: string; refreshToken: string }) => {
       await saveTokens(tokens);
 
-      // Retrieve the authenticated user's profile.
-      const user = await authService.getProfile();
+      const profile = await authService.getProfile();
 
-      // Update the global authentication state.
-      setUser(user);
-    } finally {
-      setIsLoading(false);
-    }
-  }
+      setUser(profile);
+    },
+    [],
+  );
 
-  async function logout() {
+  const login = useCallback(
+    async (data: LoginRequest): Promise<void> => {
+      setIsLoading(true);
+
+      try {
+        const tokens = await authService.login(data);
+        await createSession(tokens);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [createSession],
+  );
+
+  const register = useCallback(
+    async (data: RegisterRequest): Promise<void> => {
+      setIsLoading(true);
+
+      try {
+        const tokens = await authService.register(data);
+        await createSession(tokens);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [createSession],
+  );
+
+  const logout = useCallback(async () => {
     // Remove the persisted authentication session.
     await clearTokens();
 
     // Clear the authenticated user from the application state.
     setUser(null);
-  }
+  }, []);
 
   async function restoreSession(): Promise<void> {
     try {
@@ -68,9 +87,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       isAuthenticated: !!user,
       isLoading,
       login,
+      register,
       logout,
     }),
-    [user, isLoading],
+    [user, isLoading, login, register, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
