@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ClassroomWithUsers } from 'src/common/types/classroom-with-users.type';
+import { ClassroomSummaryDto } from './dto/classroom-summary.dto';
 
 @Injectable()
 export class ClassroomsService {
@@ -115,16 +116,26 @@ export class ClassroomsService {
     }) as Promise<ClassroomWithUsers>;
   }
 
-  async findMyClassrooms(userId: string): Promise<ClassroomWithUsers[]> {
-    return this.prisma.classroom.findMany({
+  async findMyClassrooms(userId: string): Promise<ClassroomSummaryDto[]> {
+    const classrooms = await this.prisma.classroom.findMany({
       where: {
         userClassrooms: {
-          some: { userId },
+          some: {
+            userId,
+          },
         },
       },
-      include: {
+      select: {
+        id: true,
+        name: true,
+
         userClassrooms: {
-          include: {
+          where: {
+            user: {
+              role: 'PROFESSOR',
+            },
+          },
+          select: {
             user: {
               select: {
                 id: true,
@@ -133,8 +144,32 @@ export class ClassroomsService {
             },
           },
         },
+
+        announcements: {
+          where: {
+            expiresAt: {
+              gte: new Date(),
+            },
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+          take: 1,
+          select: {
+            id: true,
+            title: true,
+            createdAt: true,
+          },
+        },
       },
     });
+
+    return classrooms.map((classroom) => ({
+      id: classroom.id,
+      name: classroom.name,
+      teacher: classroom.userClassrooms[0]?.user ?? null,
+      lastAnnouncement: classroom.announcements[0] ?? null,
+    }));
   }
 
   private normalizeClassroomName(name: string): string {
