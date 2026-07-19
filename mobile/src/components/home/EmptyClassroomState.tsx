@@ -5,7 +5,7 @@ import { AuthButton } from '@/components/auth';
 import { AUTH_THEME } from '@/theme/auth';
 
 type EmptyClassroomStateProps = {
-  onPress: () => void;
+  onPress?: () => void;
 };
 
 export function EmptyClassroomState({ onPress }: EmptyClassroomStateProps) {
@@ -21,7 +21,7 @@ export function EmptyClassroomState({ onPress }: EmptyClassroomStateProps) {
         </Text>
       </View>
 
-      <AuthButton label="Ver turmas" onPress={onPress} />
+      {onPress ? <AuthButton label="Ver turmas" onPress={onPress} /> : null}
     </View>
   );
 }

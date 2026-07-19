@@ -6,7 +6,6 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ClassroomWithUsers } from 'src/common/types/classroom-with-users.type';
 import { ClassroomSummaryDto } from './dto/classroom-summary.dto';
-
 @Injectable()
 export class ClassroomsService {
   constructor(private readonly prisma: PrismaService) {}
@@ -114,6 +113,75 @@ export class ClassroomsService {
         },
       },
     }) as Promise<ClassroomWithUsers>;
+  }
+
+  async findAvailableClassrooms(
+    userId: string,
+    search?: string,
+  ): Promise<ClassroomSummaryDto[]> {
+    const classrooms = await this.prisma.classroom.findMany({
+      where: {
+        ...(search
+          ? {
+              name: {
+                contains: search,
+                mode: 'insensitive',
+              },
+            }
+          : {}),
+
+        userClassrooms: {
+          none: {
+            userId,
+          },
+        },
+      },
+
+      select: {
+        id: true,
+        name: true,
+
+        userClassrooms: {
+          where: {
+            user: {
+              role: 'PROFESSOR',
+            },
+          },
+          select: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+
+        announcements: {
+          where: {
+            expiresAt: {
+              gte: new Date(),
+            },
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+          take: 1,
+          select: {
+            id: true,
+            title: true,
+            createdAt: true,
+          },
+        },
+      },
+    });
+
+    return classrooms.map((classroom) => ({
+      id: classroom.id,
+      name: classroom.name,
+      teacher: classroom.userClassrooms[0]?.user ?? null,
+      lastAnnouncement: classroom.announcements[0] ?? null,
+    }));
   }
 
   async findMyClassrooms(userId: string): Promise<ClassroomSummaryDto[]> {

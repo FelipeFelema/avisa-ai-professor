@@ -47,6 +47,40 @@ export class AnnouncementsService {
     });
   }
 
+  async findByClassroom(userId: string, classroomId: string) {
+    return this.prisma.announcement.findMany({
+      where: {
+        classroomId,
+        expiresAt: {
+          gte: new Date(),
+        },
+        classroom: {
+          userClassrooms: {
+            some: {
+              userId,
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        createdAt: true,
+        expiresAt: true,
+        author: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+  }
+
   async findOneById(userId: string, announcementId: string) {
     const announcement = await this.prisma.announcement.findFirst({
       where: {
