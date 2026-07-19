@@ -58,27 +58,41 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(null);
   }, []);
 
-  async function restoreSession(): Promise<void> {
-    try {
-      // Retrieve any persisted authentication session from the device.
-      const tokens = await getTokens();
-
-      if (!tokens) {
-        return;
-      }
-
-      // Retrieve the authenticated user's profile from the backend.
-      const profile = await authService.getProfile();
-
-      // Restore the authenticated user into the application state.
-      setUser(profile);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
   useEffect(() => {
-    void restoreSession();
+    let cancelled = false;
+
+    void (async () => {
+      try {
+        // Retrieve any persisted authentication session from the device.
+        const tokens = await getTokens();
+
+        if (!tokens) {
+          return;
+        }
+
+        // Retrieve the authenticated user's profile from the backend.
+        const profile = await authService.getProfile();
+
+        if (!cancelled) {
+          // Restore the authenticated user into the application state.
+          setUser(profile);
+        }
+      } catch {
+        await clearTokens();
+
+        if (!cancelled) {
+          setUser(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const value = useMemo<AuthContextData>(
