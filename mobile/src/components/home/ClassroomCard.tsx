@@ -5,11 +5,25 @@ import { AUTH_THEME } from '@/theme/auth';
 type ClassroomCardProps = {
   name: string;
   teacher: string;
-  lastAnnouncement?: string | null;
+  lastAnnouncement?: string;
+
+  actionVariant?: 'primary' | 'danger';
+
+  actionLabel?: string;
+  onActionPress?: () => void;
+
   onPress?: () => void;
 };
 
-export function ClassroomCard({ name, teacher, lastAnnouncement, onPress }: ClassroomCardProps) {
+export function ClassroomCard({
+  name,
+  teacher,
+  lastAnnouncement,
+  actionVariant = 'primary',
+  actionLabel,
+  onActionPress,
+  onPress,
+}: ClassroomCardProps) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -25,6 +39,19 @@ export function ClassroomCard({ name, teacher, lastAnnouncement, onPress }: Clas
       <Text style={styles.label}>Último comunicado</Text>
 
       <Text style={styles.announcement}>{lastAnnouncement ?? 'Nenhum comunicado disponível.'}</Text>
+
+      {actionLabel && onActionPress ? (
+        <Pressable
+          style={({ pressed }) => [
+            styles.actionButton,
+            actionVariant === 'danger' ? styles.dangerButton : styles.primaryButton,
+            pressed && styles.actionButtonPressed,
+          ]}
+          onPress={onActionPress}
+        >
+          <Text style={styles.actionButtonText}>{actionLabel}</Text>
+        </Pressable>
+      ) : null}
     </Pressable>
   );
 }
@@ -78,5 +105,31 @@ const styles = StyleSheet.create({
   announcement: {
     color: AUTH_THEME.colors.muted,
     lineHeight: 20,
+  },
+
+  actionButton: {
+    alignSelf: 'flex-end',
+    marginTop: AUTH_THEME.spacing.md,
+    paddingHorizontal: AUTH_THEME.spacing.lg,
+    paddingVertical: AUTH_THEME.spacing.sm,
+    borderRadius: AUTH_THEME.radius.md,
+  },
+
+  actionButtonPressed: {
+    opacity: 0.9,
+  },
+
+  actionButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: AUTH_THEME.typography.label,
+  },
+
+  primaryButton: {
+    backgroundColor: AUTH_THEME.colors.primary,
+  },
+
+  dangerButton: {
+    backgroundColor: '#DC2626',
   },
 });

@@ -32,6 +32,15 @@ export class AnnouncementsController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('classrooms/:classroomId')
+  findByClassroom(
+    @Request() req: { user: AuthUser },
+    @Param('classroomId') classroomId: string,
+  ) {
+    return this.announcementsService.findByClassroom(req.user.id, classroomId);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string, @Request() req: { user: AuthUser }) {
     return this.announcementsService.findOneById(req.user.id, id);

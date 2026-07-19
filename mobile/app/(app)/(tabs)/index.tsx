@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { EmptyClassroomState, HomeHeader, ClassroomCard } from '@/components/home';
@@ -12,7 +12,7 @@ export default function HomeScreen() {
   const { data: classrooms, isLoading } = useMyClassrooms();
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       <HomeHeader name={user?.name ?? 'Usuário'} />
 
       {isLoading ? null : classrooms && classrooms.length > 0 ? (
@@ -22,19 +22,19 @@ export default function HomeScreen() {
             name={classroom.name}
             teacher={classroom.teacher?.name ?? 'Professor não informado'}
             lastAnnouncement={classroom.lastAnnouncement?.title}
-            onPress={() => {}}
+            onPress={() => router.push(`/classrooms/${classroom.id}`)}
           />
         ))
       ) : (
         <EmptyClassroomState onPress={() => router.push('/classrooms')} />
       )}
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  content: {
+    flexGrow: 1,
     backgroundColor: AUTH_THEME.colors.background,
     paddingHorizontal: AUTH_THEME.spacing.xl,
     paddingTop: AUTH_THEME.spacing.xxl,

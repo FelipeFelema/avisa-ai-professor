@@ -6,6 +6,7 @@ import {
   UseGuards,
   Param,
   Get,
+  Query,
 } from '@nestjs/common';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Role } from '@prisma/client';
@@ -45,5 +46,14 @@ export class ClassroomsController {
   @Get('my')
   findMyClassrooms(@Request() req: { user: AuthUser }) {
     return this.classroomsService.findMyClassrooms(req.user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  findAvailable(
+    @Request() req: { user: AuthUser },
+    @Query('search') search?: string,
+  ) {
+    return this.classroomsService.findAvailableClassrooms(req.user.id, search);
   }
 }
