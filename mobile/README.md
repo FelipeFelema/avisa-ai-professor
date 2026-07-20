@@ -1,34 +1,98 @@
-# Avisa AI Professor Mobile
+# Avisa Aí Professor — Mobile
 
-Aplicativo Expo/React Native para consumir a API do Avisa AI Professor.
+> MVP estável — versão 1.0
 
-## Como rodar
+Aplicativo mobile do Avisa Aí Professor, desenvolvido com React Native e Expo. Ele permite que professores organizem turmas e publiquem comunicados, enquanto responsáveis acompanham e participam das turmas de interesse.
 
-1. Instale as dependências:
+## Recursos disponíveis
 
-```bash
-npm install
-```
+- Cadastro e login com sessão persistente.
+- Renovação automática do token de acesso.
+- Validação de formulários com mensagens claras para o usuário.
+- Visualização do perfil e logout.
+- Busca, entrada e saída de turmas.
+- Criação de turmas para professores.
+- Listagem, criação, edição e exclusão de comunicados para professores.
+- Visualização de comunicados ativos pelos participantes das turmas.
 
-2. Configure a URL da API:
+## Stack
+
+- React Native e Expo SDK 57
+- TypeScript
+- Expo Router
+- TanStack React Query
+- Axios
+- React Hook Form e Zod
+- Expo Secure Store
+
+## Pré-requisitos
+
+- Node.js 22 ou superior
+- npm
+- API backend em execução
+
+## Configuração
+
+Crie o arquivo de ambiente a partir do exemplo:
 
 ```bash
 cp .env.example .env
 ```
 
-3. Inicie o app:
+Defina a URL base da API em `mobile/.env`:
+
+```env
+EXPO_PUBLIC_API_URL=http://localhost:3000/api/v1
+```
+
+Em um dispositivo físico, `localhost` aponta para o próprio aparelho. Use o IP local da máquina que executa a API:
+
+```env
+EXPO_PUBLIC_API_URL=http://SEU_IP_LOCAL:3000/api/v1
+```
+
+## Execução
 
 ```bash
+npm install
 npm start
 ```
 
-## Funcionalidades atuais
+Comandos adicionais:
 
-- Login usando o backend NestJS.
-- Proteção das abas quando o usuário não está autenticado.
-- Listagem de comunicados do usuário autenticado.
-- Listagem das turmas do usuário autenticado.
+```bash
+npm run android
+npm run ios
+npm run web
+```
 
-## Observações
+## Organização do código
 
-O app ainda guarda os tokens apenas em memória. Persistência segura, refresh automático e telas de criação/edição entram nos próximos passos.
+```text
+app/
+  (auth)/                 # telas públicas: login e cadastro
+  (app)/                  # telas autenticadas: turmas, comunicados e perfil
+src/
+  components/             # componentes reutilizáveis de interface
+  config/                 # configuração de ambiente
+  hooks/                  # queries e mutations do React Query
+  lib/                    # clientes HTTP e integrações compartilhadas
+  providers/              # estado e contexto de autenticação
+  services/               # comunicação com a API
+  storage/                # armazenamento seguro de tokens
+  theme/                  # tokens visuais da aplicação
+  types/                  # contratos TypeScript
+  validations/            # schemas de validação dos formulários
+```
+
+## Qualidade
+
+```bash
+npm run typecheck
+npm run lint
+npm run format:check
+```
+
+## API
+
+O aplicativo depende da API descrita em [../backend/README.md](../backend/README.md).

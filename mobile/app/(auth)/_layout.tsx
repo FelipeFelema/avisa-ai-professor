@@ -1,6 +1,5 @@
-import { Redirect, Stack } from "expo-router";
-
-import { useAuth } from "@/src/features/auth/auth-context";
+import { Redirect, Stack } from 'expo-router';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function AuthLayout() {
   const { isAuthenticated } = useAuth();
@@ -8,6 +7,5 @@ export default function AuthLayout() {
   if (isAuthenticated) {
     return <Redirect href="/" />;
   }
-
   return <Stack screenOptions={{ headerShown: false }} />;
 }

@@ -33,6 +33,42 @@ export class AnnouncementsService {
       },
       select: {
         id: true,
+        classroomId: true,
+        title: true,
+        content: true,
+        createdAt: true,
+        expiresAt: true,
+        author: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+  }
+
+  async findByClassroom(userId: string, classroomId: string) {
+    return this.prisma.announcement.findMany({
+      where: {
+        classroomId,
+        expiresAt: {
+          gte: new Date(),
+        },
+        classroom: {
+          userClassrooms: {
+            some: {
+              userId,
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      select: {
+        id: true,
+        classroomId: true,
         title: true,
         content: true,
         createdAt: true,
@@ -58,6 +94,7 @@ export class AnnouncementsService {
       },
       select: {
         id: true,
+        classroomId: true,
         title: true,
         content: true,
         createdAt: true,
