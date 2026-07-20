@@ -1,113 +1,102 @@
 # Avisa Aí Professor
 
-API para comunicação escolar entre professores e responsáveis, com autenticação, turmas, comunicados e controle de acesso por perfil.
+> MVP estável — versão 1.0
 
-## Objetivo
+Plataforma de comunicação escolar que conecta professores e responsáveis por meio de turmas e comunicados com prazo de validade. O projeto reúne uma API REST em NestJS e um aplicativo mobile em React Native/Expo.
 
-Este projeto simula uma aplicação onde professores podem criar comunicados para turmas, e responsáveis podem acompanhar os avisos vinculados às turmas em que participam.
+## Recursos
 
-## Tecnologias
-
-- Node.js
-- NestJS
-- TypeScript
-- Prisma ORM
-- PostgreSQL
-- JWT Authentication
-- Jest
-- Docker Compose
-
-## Pré-requisitos
-
-Antes de rodar o projeto, você precisa ter instalado:
-
-- Node.js 22 ou superior
-- npm
-- Docker
-- Docker Compose
-- Git
-
-## Funcionalidades
-
-- Cadastro e login de usuários
-- Autenticação com access token e refresh token
-- Perfis de usuário: responsável, professor e admin
-- Criação e entrada em turmas
-- Comunicados com data de expiração
-- Código de convite para liberar cadastro de professores/admins
-- Testes unitários dos principais serviços
+- Cadastro, login, renovação de sessão e logout seguros.
+- Perfis de responsável e professor, com controle de acesso por função.
+- Criação de turmas por professores.
+- Busca, entrada e saída de turmas.
+- Criação, edição, visualização e exclusão de comunicados por professores.
+- Exibição de comunicados ativos para participantes da turma.
+- Perfil da conta no aplicativo mobile.
+- Códigos de convite para controlar o cadastro de perfis privilegiados.
 
 ## Arquitetura
 
-O projeto está organizado como um monorepo com backend NestJS e estrutura inicial para aplicação mobile.
+| Componente           | Tecnologia                       | Responsabilidade                                          |
+| -------------------- | -------------------------------- | --------------------------------------------------------- |
+| `backend/`           | NestJS, Prisma e PostgreSQL      | API REST, autenticação, regras de negócio e persistência. |
+| `mobile/`            | React Native, Expo e Expo Router | Experiência mobile para professores e responsáveis.       |
+| `docker-compose.yml` | Docker Compose                   | Banco PostgreSQL local para desenvolvimento.              |
 
-O backend segue uma divisão por módulos de domínio:
+## Pré-requisitos
 
-- `auth`: autenticação, estratégias JWT e guards
-- `users`: cadastro, busca e refresh token dos usuários
-- `classrooms`: criação e vínculo de usuários com turmas
-- `invites-code`: códigos de convite para professores e administradores
-- `prisma`: acesso ao banco de dados via Prisma Client
+- Node.js 22 ou superior
+- npm
+- Docker e Docker Compose
 
-O PostgreSQL local é executado via Docker Compose, enquanto a API roda localmente com Node.js durante o desenvolvimento.
+## Execução local
 
-## Decisões Técnicas
+### 1. Suba o banco de dados
 
-- Separação entre access token e refresh token, usando secrets diferentes.
-- Refresh tokens são armazenados como hash no banco, reduzindo impacto em caso de vazamento.
-- Códigos de convite são usados para controlar cadastro de perfis privilegiados.
-- O consumo do código de convite usa atualização condicional para evitar uso duplicado em requisições concorrentes.
-- DTOs com `class-validator` validam os dados de entrada antes das regras de negócio.
-- Prisma centraliza o acesso ao PostgreSQL e o histórico de migrations.
-- Testes unitários cobrem regras de autenticação, usuários, turmas, comunicados e convites.
-
-## Como rodar o backend
-
-1. Suba o banco:
+Na raiz do projeto:
 
 ```bash
 docker compose up -d
 ```
 
-2. Instale as dependências:
+### 2. Configure e inicie a API
 
 ```bash
 cd backend
-npm install
-```
-
-3. Configure o ambiente:
-
-```bash
 cp .env.example .env
-```
-4. Rode o prisma generate:
-
-```bash
+npm install
 npx prisma generate
-```
-
-5. Rode as migrations:
-
-```bash
 npx prisma migrate dev
-```
-
-6. Inicie a API:
-
-```bash
 npm run start:dev
 ```
 
-A API ficará disponível em:
+A API estará disponível em `http://localhost:3000/api/v1`.
 
-**http://localhost:3000/api/v1**
+### 3. Configure e inicie o aplicativo mobile
 
-## Testes
+Em outro terminal:
 
-A API contém testes unitários automatizados utilizando Jest.
+```bash
+cd mobile
+cp .env.example .env
+npm install
+npm start
+```
+
+Para executar em um dispositivo físico, informe no arquivo `mobile/.env` o endereço IP da sua máquina na rede local:
+
+```env
+EXPO_PUBLIC_API_URL=http://SEU_IP_LOCAL:3000/api/v1
+```
+
+Para emuladores ou web local, use `http://localhost:3000/api/v1` quando esse endereço alcançar a API.
+
+## Qualidade
+
+### Mobile
+
+```bash
+cd mobile
+npm run typecheck
+npm run lint
+npm run format:check
+```
+
+### Backend
 
 ```bash
 cd backend
+npm run lint
 npm test
+npm run test:integration
+npm run test:e2e
 ```
+
+## Documentação por componente
+
+- [Aplicativo mobile](mobile/README.md)
+- [API backend](backend/README.md)
+
+## Licença
+
+Projeto privado, destinado a fins educacionais e de portfólio.
