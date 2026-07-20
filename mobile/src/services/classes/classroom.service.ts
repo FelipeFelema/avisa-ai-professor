@@ -1,5 +1,9 @@
 import { api } from '@/lib';
-import type { ClassroomSummary } from '@/types/classroom';
+import type { ClassroomSummary, CreateClassroomRequest } from '@/types/classroom';
+
+export async function createClassroom(data: CreateClassroomRequest): Promise<void> {
+  await api.post('/classrooms', data);
+}
 
 export async function getMyClassrooms(): Promise<ClassroomSummary[]> {
   const response = await api.get<ClassroomSummary[]>('/classrooms/my');

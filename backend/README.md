@@ -1,55 +1,115 @@
-# Backend
+# Avisa Aí Professor — Backend
 
-API do projeto Avisa Aí Professor, construída com NestJS, Prisma e PostgreSQL.
+> MVP estável — versão 1.0
 
-## Responsabilidades
+API REST do Avisa Aí Professor. A aplicação centraliza autenticação, regras de acesso, gerenciamento de turmas e comunicados para o aplicativo mobile.
 
-- Autenticação com access token e refresh token
-- Cadastro de usuários com perfis
-- Criação e entrada em turmas
-- Gerenciamento de comunicados
-- Geração e validação de códigos de convite
-- Validação de entrada com DTOs
-- Testes unitários dos principais serviços
+## Tecnologias
 
-## Estrutura
+- Node.js e TypeScript
+- NestJS
+- Prisma ORM
+- PostgreSQL
+- JWT e Passport
+- class-validator
+- Jest e Supertest
 
-- `src/auth`: autenticação, JWT, refresh token e guards
-- `src/users`: cadastro e persistência de usuários
-- `src/classrooms`: criação e participação em turmas
-- `src/announcements`: comunicados vinculados a turmas
-- `src/invites-code`: códigos de convite para perfis privilegiados
-- `src/prisma`: integração com Prisma Client
+## Funcionalidades
 
-## Ambiente
+- Cadastro, login e renovação de tokens de acesso.
+- Tokens de atualização armazenados como hash.
+- Perfis `PARENT`, `PROFESSOR` e `ADMIN`.
+- Códigos de convite para o cadastro de perfis privilegiados.
+- Criação de turmas por professores e participação de usuários em turmas.
+- Comunicados com prazo de expiração e operações de criação, leitura, atualização e exclusão.
+- Validação de entradas por DTOs e controle de acesso por guards e funções.
 
-Crie o arquivo `.env` a partir do exemplo:
+## Rotas principais
+
+Todas as rotas têm o prefixo `/api/v1`.
+
+| Recurso               | Rotas                                                                                              | Acesso                              |
+| --------------------- | -------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| Autenticação          | `POST /auth/register`, `POST /auth/login`, `POST /auth/refresh`                                    | Público                             |
+| Turmas                | `GET /classrooms`, `GET /classrooms/my`, `POST /classrooms/:id/join`, `POST /classrooms/:id/leave` | Autenticado                         |
+| Criação de turma      | `POST /classrooms`                                                                                 | Professor                           |
+| Comunicados           | `GET /announcements`, `GET /announcements/:id`, `GET /announcements/classrooms/:classroomId`       | Autenticado e participante da turma |
+| Gestão de comunicados | `POST /announcements`, `PATCH /announcements/:id`, `DELETE /announcements/:id`                     | Professor autor do comunicado       |
+
+## Pré-requisitos
+
+- Node.js 22 ou superior
+- npm
+- PostgreSQL 15 ou superior, ou Docker e Docker Compose
+
+## Configuração
+
+Crie o arquivo de ambiente:
 
 ```bash
 cp .env.example .env
 ```
 
-Depois configure as variáveis conforme necessário.
+Variáveis necessárias:
 
-## Banco de Dados
+| Variável             | Descrição                                                               |
+| -------------------- | ----------------------------------------------------------------------- |
+| `DATABASE_URL`       | URL de conexão do PostgreSQL.                                           |
+| `JWT_ACCESS_SECRET`  | Secret usado para assinar access tokens.                                |
+| `JWT_REFRESH_SECRET` | Secret usado para assinar refresh tokens.                               |
+| `PORT`               | Porta HTTP da API. O padrão é `3000`.                                   |
+| `CORS_ORIGIN`        | Origens permitidas, separadas por vírgula. Opcional em desenvolvimento. |
 
-O banco de dados é executado via Docker Compose a partir da raiz do projeto:
+Nunca use secrets de exemplo em ambientes compartilhados ou de produção.
+
+## Banco de dados
+
+O PostgreSQL local pode ser iniciado a partir da raiz do repositório:
 
 ```bash
 docker compose up -d
 ```
 
-Para aplicar as migrations:
-
-```bash
-npx prisma migrate dev
-```
-
-## Scripts
+Instale as dependências, gere o client Prisma e aplique as migrations:
 
 ```bash
 npm install
-npm run start:dev
-npm test
-npm run build
+npx prisma generate
+npx prisma migrate dev
 ```
+
+## Execução
+
+```bash
+npm run start:dev
+```
+
+A API estará disponível em `http://localhost:3000/api/v1`.
+
+## Scripts
+
+| Comando                    | Descrição                                |
+| -------------------------- | ---------------------------------------- |
+| `npm run start:dev`        | Inicia a API em modo de desenvolvimento. |
+| `npm run build`            | Gera a build de produção.                |
+| `npm run lint`             | Executa o ESLint.                        |
+| `npm run format:check`     | Verifica a formatação com Prettier.      |
+| `npm test`                 | Executa os testes unitários.             |
+| `npm run test:integration` | Executa os testes de integração.         |
+| `npm run test:e2e`         | Executa os testes end-to-end.            |
+
+## Estrutura
+
+```text
+src/
+  auth/                   # JWT, estratégias, guards e autenticação
+  users/                  # usuários e perfil
+  classrooms/             # turmas e participação
+  announcements/          # comunicados
+  invites-code/           # códigos de convite
+  prisma/                 # acesso ao banco via Prisma
+```
+
+## Documentação relacionada
+
+Consulte o [README principal](../README.md) para executar todos os componentes do projeto e o [README do mobile](../mobile/README.md) para o cliente Expo.
