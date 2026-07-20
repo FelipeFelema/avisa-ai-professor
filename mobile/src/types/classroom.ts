@@ -13,3 +13,7 @@ export interface ClassroomSummary {
     createdAt: string;
   } | null;
 }
+
+export interface CreateClassroomRequest {
+  name: string;
+}

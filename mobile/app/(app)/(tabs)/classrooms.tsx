@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { ClassroomCard, EmptyClassroomState } from '@/components/home';
 import { useMyClassrooms } from '@/hooks/useMyClassrooms';
@@ -8,6 +8,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useJoinClassroom } from '@/hooks/useJoinClassroom';
 import { useLeaveClassroom } from '@/hooks/useLeaveClassroom';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function ClassroomsScreen() {
   const [search, setSearch] = useState('');
@@ -16,15 +17,28 @@ export default function ClassroomsScreen() {
   const router = useRouter();
   const joinMutation = useJoinClassroom();
   const leaveMutation = useLeaveClassroom();
+  const { user } = useAuth();
 
   return (
     <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
-        <Text style={styles.title}>Turmas</Text>
+        <View style={styles.headerContent}>
+          <Text style={styles.title}>Turmas</Text>
 
-        <Text style={styles.subtitle}>
-          Visualize suas turmas e encontre novas turmas para participar.
-        </Text>
+          <Text style={styles.subtitle}>
+            Visualize suas turmas e encontre novas turmas para participar.
+          </Text>
+        </View>
+
+        {user?.role === 'PROFESSOR' ? (
+          <Pressable
+            accessibilityRole="button"
+            style={({ pressed }) => [styles.createButton, pressed && styles.createButtonPressed]}
+            onPress={() => router.push('/classrooms/new')}
+          >
+            <Text style={styles.createButtonText}>Criar turma</Text>
+          </Pressable>
+        ) : null}
       </View>
 
       <TextInput
@@ -88,6 +102,10 @@ const styles = StyleSheet.create({
     gap: AUTH_THEME.spacing.sm,
   },
 
+  headerContent: {
+    gap: AUTH_THEME.spacing.sm,
+  },
+
   title: {
     fontSize: AUTH_THEME.typography.title,
     fontWeight: '800',
@@ -115,5 +133,23 @@ const styles = StyleSheet.create({
     fontSize: AUTH_THEME.typography.sectionTitle,
     fontWeight: '700',
     marginTop: AUTH_THEME.spacing.lg,
+  },
+
+  createButton: {
+    alignSelf: 'flex-start',
+    backgroundColor: AUTH_THEME.colors.primary,
+    borderRadius: AUTH_THEME.radius.md,
+    paddingHorizontal: AUTH_THEME.spacing.lg,
+    paddingVertical: AUTH_THEME.spacing.sm,
+  },
+
+  createButtonPressed: {
+    backgroundColor: AUTH_THEME.colors.primaryDark,
+  },
+
+  createButtonText: {
+    color: AUTH_THEME.colors.white,
+    fontSize: AUTH_THEME.typography.label,
+    fontWeight: '700',
   },
 });
