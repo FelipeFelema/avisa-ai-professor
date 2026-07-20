@@ -17,6 +17,67 @@ import { HTTP_STATUS } from '@/constants/http-status';
 import { useAuth } from '@/hooks/useAuth';
 import { registerSchema, type RegisterFormData } from '@/validations/register.schema';
 
+type RegisterField = 'name' | 'email' | 'password' | 'teacherCode';
+
+function getAxiosErrorMessage(error: unknown) {
+  if (!isAxiosError(error)) {
+    return null;
+  }
+
+  const responseData = error.response?.data as
+    { message?: string | string[]; error?: string } | undefined;
+
+  if (!responseData) {
+    return null;
+  }
+
+  if (Array.isArray(responseData.message)) {
+    return responseData.message[0] ?? null;
+  }
+
+  if (typeof responseData.message === 'string') {
+    return responseData.message;
+  }
+
+  if (typeof responseData.error === 'string') {
+    return responseData.error;
+  }
+
+  return null;
+}
+
+function getRegisterFieldFromMessage(message: string): RegisterField | null {
+  const normalizedMessage = message.toLocaleLowerCase('pt-BR');
+
+  if (normalizedMessage.includes('código de convite')) {
+    return 'teacherCode';
+  }
+
+  if (normalizedMessage.includes('nome')) {
+    return 'name';
+  }
+
+  if (normalizedMessage.includes('e-mail') || normalizedMessage.includes('email')) {
+    return 'email';
+  }
+
+  if (normalizedMessage.includes('senha')) {
+    return 'password';
+  }
+
+  return null;
+}
+
+function getFriendlyFieldMessage(field: RegisterField, message: string): string {
+  const normalizedMessage = message.toLocaleLowerCase('pt-BR');
+
+  if (field === 'name' && normalizedMessage.includes('apenas letras')) {
+    return 'No nome, use apenas letras, espaços, hífen ou apóstrofo. Números não são permitidos.';
+  }
+
+  return message;
+}
+
 export default function RegisterScreen() {
   const router = useRouter();
 
@@ -46,16 +107,15 @@ export default function RegisterScreen() {
   const registerMutation = useMutation({
     mutationFn: register,
     onError: (error) => {
-      const message =
-        isAxiosError(error) && typeof error.response?.data?.message === 'string'
-          ? error.response.data.message
-          : null;
+      const message = getAxiosErrorMessage(error);
 
       if (message) {
-        if (message.toLowerCase().includes('código de convite')) {
-          setError('teacherCode', {
+        const field = getRegisterFieldFromMessage(message);
+
+        if (field) {
+          setError(field, {
             type: 'manual',
-            message,
+            message: getFriendlyFieldMessage(field, message),
           });
           return;
         }
@@ -80,7 +140,7 @@ export default function RegisterScreen() {
     },
   });
 
-  const onSubmit = async (data: RegisterFormData) => {
+  const onSubmit = (data: RegisterFormData) => {
     setRegisterError('');
 
     if (role === null) {
@@ -97,10 +157,14 @@ export default function RegisterScreen() {
       return;
     }
 
-    await registerMutation.mutateAsync({
-      ...data,
+    const payload: RegisterFormData = {
+      name: data.name.trim(),
+      email: data.email.trim(),
+      password: data.password,
       teacherCode: role === 'teacher' ? data.teacherCode?.trim() || undefined : undefined,
-    });
+    };
+
+    registerMutation.mutate(payload);
   };
 
   const handleSelectRole = (selectedRole: AuthRoleValue) => {
@@ -142,6 +206,7 @@ export default function RegisterScreen() {
                   autoCapitalize="words"
                   autoComplete="name"
                   textContentType="name"
+                  helperText="Use apenas letras; hífen e apóstrofo também são aceitos."
                   error={errors.name?.message}
                 />
               )}

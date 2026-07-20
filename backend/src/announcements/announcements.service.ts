@@ -33,6 +33,7 @@ export class AnnouncementsService {
       },
       select: {
         id: true,
+        classroomId: true,
         title: true,
         content: true,
         createdAt: true,
@@ -67,6 +68,7 @@ export class AnnouncementsService {
       },
       select: {
         id: true,
+        classroomId: true,
         title: true,
         content: true,
         createdAt: true,
@@ -92,6 +94,7 @@ export class AnnouncementsService {
       },
       select: {
         id: true,
+        classroomId: true,
         title: true,
         content: true,
         createdAt: true,
