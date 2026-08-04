@@ -4,6 +4,7 @@ import { AuthContext } from '@/contexts/AuthContext';
 import type { AuthContextData, AuthUser, LoginRequest, RegisterRequest } from '@/types/auth';
 import * as authService from '@/services/auth';
 import { saveTokens, clearTokens, getTokens } from '@/storage';
+import { queryClient } from '@/config';
 
 type AuthProviderProps = PropsWithChildren;
 
@@ -53,6 +54,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const logout = useCallback(async () => {
     // Remove the persisted authentication session.
     await clearTokens();
+
+    // Clear any cached data from the React Query cache.
+    queryClient.clear();
 
     // Clear the authenticated user from the application state.
     setUser(null);
