@@ -15,6 +15,7 @@ import {
 } from '@/components/auth';
 import { HTTP_STATUS } from '@/constants/http-status';
 import { useAuth } from '@/hooks/useAuth';
+import type { RegisterRequest } from '@/types/auth';
 import { registerSchema, type RegisterFormData } from '@/validations/register.schema';
 
 type RegisterField = 'name' | 'email' | 'password' | 'teacherCode';
@@ -98,6 +99,7 @@ export default function RegisterScreen() {
       name: '',
       email: '',
       password: '',
+      confirmPassword: '',
       teacherCode: '',
     },
   });
@@ -157,7 +159,7 @@ export default function RegisterScreen() {
       return;
     }
 
-    const payload: RegisterFormData = {
+    const payload: RegisterRequest = {
       name: data.name.trim(),
       email: data.email.trim(),
       password: data.password,
@@ -245,6 +247,24 @@ export default function RegisterScreen() {
                   textContentType="newPassword"
                   helperText="Use pelo menos 6 caracteres."
                   error={errors.password?.message}
+                />
+              )}
+            />
+
+            <Controller
+              control={control}
+              name="confirmPassword"
+              render={({ field: { onChange, value } }) => (
+                <AuthField
+                  label="Confirmar senha"
+                  placeholder="Confirme sua senha"
+                  secureTextEntry
+                  value={value}
+                  onChangeText={onChange}
+                  autoCapitalize="none"
+                  autoComplete="password-new"
+                  textContentType="newPassword"
+                  error={errors.confirmPassword?.message}
                 />
               )}
             />
