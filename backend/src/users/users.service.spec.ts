@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { InviteCodeService } from 'src/invites-code/invite-code.service';
+import { PrismaService } from '../prisma/prisma.service';
+import { InviteCodeService } from '../invites-code/invite-code.service';
 import * as bcrypt from 'bcrypt';
 import {
   BadRequestException,

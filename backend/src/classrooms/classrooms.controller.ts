@@ -8,13 +8,13 @@ import {
   Get,
   Query,
 } from '@nestjs/common';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
 import { Role } from '@prisma/client';
-import { AuthUser } from 'src/common/types/auth-user.type';
+import { AuthUser } from '../common/types/auth-user.type';
 import { CreateClassroomDto } from './dto/create-classroom.dto';
 import { ClassroomsService } from './classrooms.service';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { Roles } from 'src/auth/decorator/roles.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { Roles } from '../auth/decorator/roles.decorator';
 
 @Controller({
   path: 'classrooms',
