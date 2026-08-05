@@ -3,8 +3,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { ClassroomWithUsers } from 'src/common/types/classroom-with-users.type';
+import { PrismaService } from '../prisma/prisma.service';
+import { ClassroomWithUsers } from '../common/types/classroom-with-users.type';
 import { ClassroomSummaryDto } from './dto/classroom-summary.dto';
 @Injectable()
 export class ClassroomsService {

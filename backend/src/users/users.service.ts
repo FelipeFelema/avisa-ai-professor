@@ -3,11 +3,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Prisma, Role, User } from '@prisma/client';
-import { InviteCodeService } from 'src/invites-code/invite-code.service';
+import { InviteCodeService } from '../invites-code/invite-code.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 const PASSWORD_SALT_ROUNDS = 10;

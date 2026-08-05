@@ -7,7 +7,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../src/prisma/prisma.service';
 import { Role } from '@prisma/client';
 
 type AuthResponse = {
