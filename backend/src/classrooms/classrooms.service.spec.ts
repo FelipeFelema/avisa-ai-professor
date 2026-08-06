@@ -1,11 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ClassroomsService } from './classrooms.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
+import { CLASSROOMS_LIMITS } from '../common/constants/classroom.constants';
 
 const mockPrisma = {
   classroom: {
     create: jest.fn(),
+    count: jest.fn(),
     findUnique: jest.fn(),
     findFirst: jest.fn(),
     findUniqueOrThrow: jest.fn(),
@@ -32,6 +38,8 @@ describe('ClassroomsService', () => {
     service = module.get<ClassroomsService>(ClassroomsService);
 
     jest.clearAllMocks();
+
+    mockPrisma.classroom.count.mockResolvedValue(0);
   });
 
   describe('create', () => {
@@ -69,6 +77,17 @@ describe('ClassroomsService', () => {
 
       await expect(service.create('user-id', '1° ano a')).rejects.toThrow(
         BadRequestException,
+      );
+    });
+
+    it('should throw ConflictException when classroom limit is reached', async () => {
+      mockPrisma.classroom.findFirst.mockResolvedValue(null);
+      mockPrisma.classroom.count.mockResolvedValue(
+        CLASSROOMS_LIMITS.MAX_CLASSROOMS,
+      );
+
+      await expect(service.create('user-id', '1° ano a')).rejects.toThrow(
+        ConflictException,
       );
     });
   });
