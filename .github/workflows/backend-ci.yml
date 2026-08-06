@@ -1,15 +1,15 @@
 name: Backend CI
 
 on:
+  workflow_dispatch:
+
   push:
     branches:
-      - main
-      - develop
+      - "**"
 
   pull_request:
     branches:
-      - main
-      - develop
+      - "**"
 
 jobs:
   backend-ci:
