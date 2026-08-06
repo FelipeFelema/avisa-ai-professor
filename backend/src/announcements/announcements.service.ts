@@ -7,11 +7,10 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAnnouncementDto } from './dto/create-announcement.dto';
 import { UpdateAnnouncementDto } from './dto/update-announcement.dto';
+import { CLASSROOMS_LIMITS } from '../common/constants/classroom.constants';
 
 @Injectable()
 export class AnnouncementsService {
-  private readonly maxActiveAnnouncementsPerClassroom = 10;
-
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(userId: string) {
@@ -155,9 +154,12 @@ export class AnnouncementsService {
       },
     });
 
-    if (activeAnnouncementsCount >= this.maxActiveAnnouncementsPerClassroom) {
+    if (
+      activeAnnouncementsCount >=
+      CLASSROOMS_LIMITS.MAX_ACTIVE_ANNOUNCEMENTS_PER_CLASSROOM
+    ) {
       throw new BadRequestException(
-        'A turma já possui o limite de 10 comunicados ativos',
+        `A turma já possui o limite de ${CLASSROOMS_LIMITS.MAX_ACTIVE_ANNOUNCEMENTS_PER_CLASSROOM} comunicados ativos`,
       );
     }
 

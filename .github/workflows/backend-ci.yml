@@ -1,15 +1,15 @@
 name: Backend CI
 
 on:
+  workflow_dispatch:
+
   push:
     branches:
-    - main
-    - develop
+      - "**"
 
   pull_request:
     branches:
-    - main
-    - develop
+      - "**"
 
 jobs:
   backend-ci:
@@ -24,7 +24,7 @@ jobs:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: avisa_ai
         ports:
-        - 5432:5432
+          - 5432:5432
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -39,38 +39,38 @@ jobs:
     defaults:
       run:
         working-directory: ./backend
-    
+
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '22'
-        cache: npm
-        cache-dependency-path: backend/package-lock.json
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Generate Prisma client
-      run: npx prisma generate
+      - name: Generate Prisma client
+        run: npx prisma generate
 
-    - name: Apply database migrations
-      run: npx prisma migrate deploy
+      - name: Apply database migrations
+        run: npx prisma migrate deploy
 
-    - name: Check code formatting
-      run: npm run format:check
+      - name: Check code formatting
+        run: npm run format:check
 
-    - name: Run lint
-      run: npm run lint
+      - name: Run lint
+        run: npm run lint
 
-    - name: Run tests with coverage
-      run: npm run test:cov
+      - name: Run tests with coverage
+        run: npm run test:cov
 
-    - name: Run integration tests
-      run: npm run test:integration
-    
-    - name: Build project
-      run: npm run build
+      - name: Run integration tests
+        run: npm run test:integration
+
+      - name: Build project
+        run: npm run build
