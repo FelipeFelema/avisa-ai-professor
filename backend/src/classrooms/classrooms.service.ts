@@ -2,10 +2,12 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ClassroomWithUsers } from '../common/types/classroom-with-users.type';
 import { ClassroomSummaryDto } from './dto/classroom-summary.dto';
+import { CLASSROOMS_LIMITS } from '../common/constants/classroom.constants';
 @Injectable()
 export class ClassroomsService {
   constructor(private readonly prisma: PrismaService) {}
@@ -18,6 +20,7 @@ export class ClassroomsService {
     }
 
     await this.ensureUniqueClassroomName(normalizedName);
+    await this.ensureClassroomLimit();
 
     return this.prisma.classroom.create({
       data: {
@@ -256,6 +259,16 @@ export class ClassroomsService {
 
     if (existingClassroom) {
       throw new BadRequestException('Já existe uma turma com esse nome');
+    }
+  }
+
+  private async ensureClassroomLimit(): Promise<void> {
+    const classroomCount = await this.prisma.classroom.count();
+
+    if (classroomCount >= CLASSROOMS_LIMITS.MAX_CLASSROOMS) {
+      throw new ConflictException(
+        `O limite máximo de ${CLASSROOMS_LIMITS.MAX_CLASSROOMS} turmas foi atingido`,
+      );
     }
   }
 }
