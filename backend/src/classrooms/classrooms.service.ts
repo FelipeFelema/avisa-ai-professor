@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ClassroomWithUsers } from '../common/types/classroom-with-users.type';
@@ -25,6 +26,7 @@ export class ClassroomsService {
     return this.prisma.classroom.create({
       data: {
         name: normalizedName,
+        ownerId: userId,
         userClassrooms: {
           create: { userId },
         },
@@ -241,6 +243,28 @@ export class ClassroomsService {
       teacher: classroom.userClassrooms[0]?.user ?? null,
       lastAnnouncement: classroom.announcements[0] ?? null,
     }));
+  }
+
+  async delete(userId: string, classroomId: string): Promise<void> {
+    const classroom = await this.prisma.classroom.findUnique({
+      where: {
+        id: classroomId,
+      },
+    });
+
+    if (!classroom) {
+      throw new NotFoundException('Turma não encontrada');
+    }
+
+    if (classroom.ownerId !== userId) {
+      throw new ForbiddenException(
+        'Apenas o proprietário da turma pode excluí-la',
+      );
+    }
+
+    await this.prisma.classroom.delete({
+      where: { id: classroom.id },
+    });
   }
 
   private normalizeClassroomName(name: string): string {

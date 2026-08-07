@@ -7,6 +7,7 @@ import {
   Param,
   Get,
   Query,
+  Delete,
 } from '@nestjs/common';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Role } from '@prisma/client';
@@ -55,5 +56,12 @@ export class ClassroomsController {
     @Query('search') search?: string,
   ) {
     return this.classroomsService.findAvailableClassrooms(req.user.id, search);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.PROFESSOR)
+  @Delete(':id')
+  delete(@Param('id') id: string, @Request() req: { user: AuthUser }) {
+    return this.classroomsService.delete(req.user.id, id);
   }
 }

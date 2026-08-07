@@ -20,6 +20,8 @@ model User {
   announcements    Announcement[]
 
   userClassrooms UserClassroom[]
+
+  ownedClassrooms Classroom[] @relation("ClassroomOwner")
 }
 
 model Announcement {
@@ -32,7 +34,7 @@ model Announcement {
   author           User     @relation(fields: [authorId], references: [id])
 
   classroomId      String
-  classroom        Classroom @relation(fields: [classroomId], references: [id])
+  classroom        Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
 
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
@@ -41,6 +43,7 @@ model Announcement {
 model Classroom {
   id               String   @id @default(uuid())
   name             String
+  ownerId          String
 
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
@@ -48,6 +51,8 @@ model Classroom {
   announcements    Announcement[]
 
   userClassrooms UserClassroom[]
+
+  owner          User @relation("ClassroomOwner", fields: [ownerId], references: [id])
 }
 
 model UserClassroom {
@@ -55,7 +60,7 @@ model UserClassroom {
   classroomId      String
 
   user             User     @relation(fields: [userId], references: [id])
-  classroom        Classroom @relation(fields: [classroomId], references: [id])
+  classroom        Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
 
   @@id([userId, classroomId])
 }

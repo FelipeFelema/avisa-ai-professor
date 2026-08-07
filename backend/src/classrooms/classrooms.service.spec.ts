@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
 import { CLASSROOMS_LIMITS } from '../common/constants/classroom.constants';
@@ -16,6 +17,7 @@ const mockPrisma = {
     findFirst: jest.fn(),
     findUniqueOrThrow: jest.fn(),
     findMany: jest.fn(),
+    delete: jest.fn(),
   },
   userClassroom: {
     findUnique: jest.fn(),
@@ -62,6 +64,7 @@ describe('ClassroomsService', () => {
         expect.objectContaining({
           data: {
             name: '1° ANO A',
+            ownerId: userId,
             userClassrooms: {
               create: { userId },
             },
@@ -255,6 +258,67 @@ describe('ClassroomsService', () => {
           lastAnnouncement: null,
         },
       ]);
+    });
+  });
+
+  describe('delete', () => {
+    it('should delete classroom when user is the owner', async () => {
+      const userId = 'user-id';
+      const classroomId = 'classroom-id';
+
+      mockPrisma.classroom.findUnique.mockResolvedValue({
+        id: classroomId,
+        ownerId: userId,
+      });
+
+      mockPrisma.classroom.delete.mockResolvedValue({
+        id: classroomId,
+      });
+
+      await service.delete(userId, classroomId);
+
+      expect(mockPrisma.classroom.findUnique).toHaveBeenCalledWith({
+        where: {
+          id: classroomId,
+        },
+      });
+
+      expect(mockPrisma.classroom.delete).toHaveBeenCalledWith({
+        where: {
+          id: classroomId,
+        },
+      });
+
+      expect(mockPrisma.classroom.delete).toHaveBeenCalledTimes(1);
+    });
+
+    it('should throw ForbiddenException when user is not the classroom owner', async () => {
+      const userId = 'user-id';
+      const classroomId = 'classroom-id';
+
+      mockPrisma.classroom.findUnique.mockResolvedValue({
+        id: classroomId,
+        ownerId: 'another-user-id',
+      });
+
+      await expect(service.delete(userId, classroomId)).rejects.toThrow(
+        ForbiddenException,
+      );
+
+      expect(mockPrisma.classroom.delete).not.toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException when classroom does not exist', async () => {
+      const userId = 'user-id';
+      const classroomId = 'classroom-id';
+
+      mockPrisma.classroom.findUnique.mockResolvedValue(null);
+
+      await expect(service.delete(userId, classroomId)).rejects.toThrow(
+        NotFoundException,
+      );
+
+      expect(mockPrisma.classroom.delete).not.toHaveBeenCalled();
     });
   });
 });
