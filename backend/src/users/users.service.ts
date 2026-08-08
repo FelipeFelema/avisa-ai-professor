@@ -124,18 +124,30 @@ export class UsersService {
   }
 
   async updateProfile(userId: string, updateData: UpdateUserDto) {
-    const { password, ...profileData } = updateData;
+    try {
+      const { password, email, ...profileData } = updateData;
 
-    const data: Prisma.UserUpdateInput = { ...profileData };
+      const data: Prisma.UserUpdateInput = { ...profileData };
 
-    if (password) {
-      data.password = await bcrypt.hash(password, PASSWORD_SALT_ROUNDS);
+      if (email) {
+        data.email = email.trim().toLowerCase();
+      }
+
+      if (password) {
+        data.password = await bcrypt.hash(password, PASSWORD_SALT_ROUNDS);
+      }
+
+      return await this.prisma.user.update({
+        where: { id: userId },
+        data,
+        select: this.userSelect,
+      });
+    } catch (error) {
+      if (isPrismaError(error) && error.code === 'P2002') {
+        throw new ConflictException('Esse email já existe');
+      }
+
+      throw error;
     }
-
-    return await this.prisma.user.update({
-      where: { id: userId },
-      data,
-      select: this.userSelect,
-    });
   }
 }

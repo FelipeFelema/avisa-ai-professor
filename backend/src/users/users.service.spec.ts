@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { InviteCodeService } from '../invites-code/invite-code.service';
+import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import {
   BadRequestException,
@@ -322,6 +323,208 @@ describe('UsersService', () => {
           refreshTokenId: null,
         },
       });
+    });
+  });
+
+  describe('updateProfile', () => {
+    it('should update profile data successfully', async () => {
+      const userId = 'user-id';
+
+      const updateData = {
+        name: 'Updated User',
+      };
+
+      mockPrisma.user.update.mockResolvedValue({
+        id: userId,
+        name: 'Updated User',
+        email: 'test@example.com',
+        role: 'PARENT',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      const result = await service.updateProfile(userId, updateData);
+
+      expect(mockPrisma.user.update).toHaveBeenCalledTimes(1);
+      expect(mockPrisma.user.update).toHaveBeenCalledWith({
+        where: { id: userId },
+        data: {
+          name: 'Updated User',
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          id: userId,
+          name: 'Updated User',
+          email: 'test@example.com',
+          role: 'PARENT',
+        }),
+      );
+    });
+
+    it('should normalize email when updating profile', async () => {
+      const userId = 'user-id';
+
+      const updateData = {
+        email: '  UPDATED@EXAMPLE.COM  ',
+      };
+
+      mockPrisma.user.update.mockResolvedValue({
+        id: userId,
+        name: 'Test User',
+        email: 'updated@example.com',
+        role: 'PARENT',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      const result = await service.updateProfile(userId, updateData);
+
+      expect(mockPrisma.user.update).toHaveBeenCalledTimes(1);
+      expect(mockPrisma.user.update).toHaveBeenCalledWith({
+        where: { id: userId },
+        data: {
+          email: 'updated@example.com',
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          id: userId,
+          email: 'updated@example.com',
+        }),
+      );
+    });
+
+    it('should hash password when updating profile', async () => {
+      const userId = 'user-id';
+
+      const updateData = {
+        password: 'new-password',
+      };
+
+      (bcrypt.hash as jest.Mock).mockResolvedValue('hashedNewPassword');
+
+      mockPrisma.user.update.mockResolvedValue({
+        id: userId,
+        name: 'Test User',
+        email: 'test@example.com',
+        role: 'PARENT',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      await service.updateProfile(userId, updateData);
+
+      expect(bcrypt.hash).toHaveBeenCalledTimes(1);
+      expect(bcrypt.hash).toHaveBeenCalledWith('new-password', 10);
+
+      expect(mockPrisma.user.update).toHaveBeenCalledTimes(1);
+      expect(mockPrisma.user.update).toHaveBeenCalledWith({
+        where: { id: userId },
+        data: {
+          password: 'hashedNewPassword',
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+    });
+
+    it('should update email and password together', async () => {
+      const userId = 'user-id';
+
+      const updateData = {
+        email: '  UPDATED@EXAMPLE.COM  ',
+        password: 'new-password',
+      };
+
+      (bcrypt.hash as jest.Mock).mockResolvedValue('hashedNewPassword');
+
+      mockPrisma.user.update.mockResolvedValue({
+        id: userId,
+        name: 'Test User',
+        email: 'updated@example.com',
+        role: 'PARENT',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      const result = await service.updateProfile(userId, updateData);
+
+      expect(bcrypt.hash).toHaveBeenCalledTimes(1);
+      expect(bcrypt.hash).toHaveBeenCalledWith('new-password', 10);
+
+      expect(mockPrisma.user.update).toHaveBeenCalledTimes(1);
+      expect(mockPrisma.user.update).toHaveBeenCalledWith({
+        where: { id: userId },
+        data: {
+          email: 'updated@example.com',
+          password: 'hashedNewPassword',
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          id: userId,
+          email: 'updated@example.com',
+          role: 'PARENT',
+        }),
+      );
+    });
+
+    it('should throw ConflictException when email already exists', async () => {
+      const userId = 'user-id';
+
+      const updateData = {
+        email: 'existing@example.com',
+      };
+
+      const prismaError = new Prisma.PrismaClientKnownRequestError(
+        'Unique constraint failed',
+        {
+          code: 'P2002',
+          clientVersion: '7.0.0',
+        },
+      );
+
+      mockPrisma.user.update.mockRejectedValue(prismaError);
+
+      await expect(service.updateProfile(userId, updateData)).rejects.toThrow(
+        new ConflictException('Esse email já existe'),
+      );
+
+      expect(mockPrisma.user.update).toHaveBeenCalledTimes(1);
     });
   });
 });
