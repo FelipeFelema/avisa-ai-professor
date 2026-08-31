@@ -9,6 +9,7 @@
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
+    "typecheck": "tsc --noEmit",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
@@ -20,7 +21,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "test:integration": "jest --config ./test/jest-integration.json"
+    "test:integration": "jest --config ./test/jest-integration.json",
+    "test:contract": "jest --config ./test/jest-integration.json --runInBand --runTestsByPath test/openapi.contract.spec.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -29,6 +31,7 @@
     "@nestjs/jwt": "^11.0.2",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/swagger": "^11.2.0",
     "@prisma/adapter-pg": "^7.6.0",
     "@prisma/client": "^7.6.0",
     "bcrypt": "^6.0.0",
