@@ -33,9 +33,18 @@ build/
 
 # vscode
 .vscode/
+.idea/
+
+# editor/temp files
+*.tmp
+*.swp
 
 # local Codex/session files
 .codex
 
 # coverage
 coverage/
+
+# Personal Spec Kit learning
+/.agents/skills/speckit-mentor/
+/specs/**/learning-guide.md
