@@ -74,7 +74,7 @@ export default function AnnouncementDetailsScreen() {
           <View style={styles.actions}>
             <Pressable
               style={styles.editButton}
-              onPress={() => router.push(`/classrooms/${announcement.id}/edit`)}
+              onPress={() => router.push(`/announcements/${announcement.id}/edit`)}
             >
               <Text style={styles.editButtonText}>Editar</Text>
             </Pressable>
