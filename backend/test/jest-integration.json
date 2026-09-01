@@ -5,5 +5,8 @@
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },
-  "testEnvironment": "node"
+  "testEnvironment": "node",
+  "setupFilesAfterEnv": ["<rootDir>/test/helpers/test-environment.ts"],
+  "testTimeout": 30000,
+  "testPathIgnorePatterns": ["/node_modules/"]
 }
