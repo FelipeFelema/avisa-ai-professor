@@ -70,20 +70,20 @@ description: "Tarefas de implementação para consolidação de experiência e q
 
 > Escrever e executar estes testes primeiro; eles devem falhar pela ausência do comportamento alvo.
 
-- [ ] T018 [P] [US1] Escrever testes unitários falhos para owner explícito, bloqueio de leave, receipt, retry e concorrência em backend/src/classrooms/classrooms.service.spec.ts e backend/src/classrooms/classrooms.controller.spec.ts
-- [ ] T019 [P] [US1] Escrever testes de integração/e2e falhos para `204/401/403/404`, rollback e cascatas PostgreSQL em backend/test/classrooms.integration.spec.ts e backend/test/classrooms.e2e-spec.ts
-- [ ] T020 [US1] Implementar owner projection, leave `409` e exclusão transacional receipt-backed em backend/src/classrooms/classrooms.service.ts, backend/src/classrooms/classrooms.controller.ts, backend/src/classrooms/dto/classroom-summary.dto.ts e backend/src/common/types/classroom-with-users.type.ts
+- [X] T018 [P] [US1] Escrever testes unitários falhos para owner explícito, bloqueio de leave, receipt, retry e concorrência em backend/src/classrooms/classrooms.service.spec.ts e backend/src/classrooms/classrooms.controller.spec.ts
+- [X] T019 [P] [US1] Escrever testes de integração/e2e falhos para `204/401/403/404`, rollback e cascatas PostgreSQL em backend/test/classrooms.integration.spec.ts e backend/test/classrooms.e2e-spec.ts
+- [X] T020 [US1] Implementar owner projection, leave `409` e exclusão transacional receipt-backed em backend/src/classrooms/classrooms.service.ts, backend/src/classrooms/classrooms.controller.ts, backend/src/classrooms/dto/classroom-summary.dto.ts e backend/src/common/types/classroom-with-users.type.ts
 
 ### Mobile Test-First Slice
 
-- [ ] T021 [P] [US1] Escrever testes mobile falhos do contrato DELETE, single-flight, invalidation e retry explícito receipt-backed em mobile/tests/services/classroom.service.spec.ts e mobile/tests/hooks/useDeleteClassroom.spec.tsx
-- [ ] T022 [US1] Adicionar `ownerId`, DELETE `204` e hook de exclusão com keys exatas e single-flight em mobile/src/types/classroom.ts, mobile/src/services/classes/classroom.service.ts e mobile/src/hooks/useDeleteClassroom.ts
-- [ ] T023 [US1] Escrever testes de rota falhos para visibilidade por `ownerId`, confirmação, navegação segura e not-found em mobile/tests/routes/classrooms-list.spec.tsx e mobile/tests/routes/classroom-details.spec.tsx
-- [ ] T024 [US1] Integrar ações owner/non-owner, diálogo destrutivo, estados de falha/not-found e route replacement em mobile/app/(app)/(tabs)/classrooms.tsx, mobile/app/(app)/classrooms/[id].tsx e mobile/src/components/home/ClassroomCard.tsx
+- [X] T021 [P] [US1] Escrever testes mobile falhos do contrato DELETE, single-flight, invalidation e retry explícito receipt-backed em mobile/tests/services/classroom.service.spec.ts e mobile/tests/hooks/useDeleteClassroom.spec.tsx
+- [X] T022 [US1] Adicionar `ownerId`, DELETE `204` e hook de exclusão com keys exatas e single-flight em mobile/src/types/classroom.ts, mobile/src/services/classes/classroom.service.ts e mobile/src/hooks/useDeleteClassroom.ts
+- [X] T023 [US1] Escrever testes de rota falhos para visibilidade por `ownerId`, confirmação, navegação segura e not-found em mobile/tests/routes/classrooms-list.spec.tsx e mobile/tests/routes/classroom-details.spec.tsx
+- [X] T024 [US1] Integrar ações owner/non-owner, diálogo destrutivo, estados de falha/not-found e route replacement em mobile/app/(app)/(tabs)/classrooms.tsx, mobile/app/(app)/classrooms/[id].tsx e mobile/src/components/home/ClassroomCard.tsx
 
 ### Independent Validation
 
-- [ ] T025 [US1] Executar o cenário independente automatizado da US1 e registrar autorização, cascata, retry e navegação em specs/001-app-quality-readiness/evidence/us1-classroom-deletion.md
+- [X] T025 [US1] Executar o cenário independente automatizado da US1 e registrar autorização, cascata, retry e navegação em specs/001-app-quality-readiness/evidence/us1-classroom-deletion.md
 
 **Checkpoint**: US1 funciona e é testável independentemente; este é o MVP sugerido após Setup e Foundational.
 
