@@ -12,8 +12,6 @@ model User {
   email            String   @unique
   password         String
   role             Role     @default(PARENT)
-  refreshTokenHash String?
-  refreshTokenId   String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   
@@ -22,6 +20,27 @@ model User {
   userClassrooms UserClassroom[]
 
   ownedClassrooms Classroom[] @relation("ClassroomOwner")
+  sessions         AuthSession[]
+}
+
+model AuthSession {
+  id               String    @id
+  userId           String
+  refreshTokenHash String
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model ClassroomDeletionReceipt {
+  classroomId String   @id
+  ownerId     String
+  deletedAt   DateTime @default(now())
 }
 
 model Announcement {
