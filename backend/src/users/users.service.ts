@@ -92,30 +92,6 @@ export class UsersService {
     }
   }
 
-  async updateRefreshToken(
-    userId: string,
-    refreshToken: string | null,
-    refreshTokenId?: string,
-  ): Promise<void> {
-    const data: Prisma.UserUpdateInput = {};
-
-    if (refreshToken) {
-      data.refreshTokenHash = await bcrypt.hash(
-        refreshToken,
-        PASSWORD_SALT_ROUNDS,
-      );
-      data.refreshTokenId = refreshTokenId ?? null;
-    } else {
-      data.refreshTokenHash = null;
-      data.refreshTokenId = null;
-    }
-
-    await this.prisma.user.update({
-      where: { id: userId },
-      data,
-    });
-  }
-
   async getProfile(userId: string) {
     return await this.prisma.user.findUnique({
       where: { id: userId },

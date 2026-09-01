@@ -287,45 +287,6 @@ describe('UsersService', () => {
     });
   });
 
-  describe('updateRefreshToken', () => {
-    it('should hash and store refresh token', async () => {
-      const userId = 'user-id';
-      const refreshToken = 'refresh-token';
-      const refreshTokenId = 'refresh-token-id';
-
-      (bcrypt.hash as jest.Mock).mockResolvedValue('hashedRefreshToken');
-
-      await service.updateRefreshToken(userId, refreshToken, refreshTokenId);
-
-      expect(bcrypt.hash).toHaveBeenCalledTimes(1);
-      expect(bcrypt.hash).toHaveBeenCalledWith(refreshToken, 10);
-      expect(mockPrisma.user.update).toHaveBeenCalledTimes(1);
-      expect(mockPrisma.user.update).toHaveBeenCalledWith({
-        where: { id: userId },
-        data: {
-          refreshTokenHash: 'hashedRefreshToken',
-          refreshTokenId: 'refresh-token-id',
-        },
-      });
-    });
-
-    it('should clear refresh token when null is provided', async () => {
-      const userId = 'user-id';
-
-      await service.updateRefreshToken(userId, null);
-
-      expect(bcrypt.hash).not.toHaveBeenCalled();
-      expect(mockPrisma.user.update).toHaveBeenCalledTimes(1);
-      expect(mockPrisma.user.update).toHaveBeenCalledWith({
-        where: { id: userId },
-        data: {
-          refreshTokenHash: null,
-          refreshTokenId: null,
-        },
-      });
-    });
-  });
-
   describe('updateProfile', () => {
     it('should update profile data successfully', async () => {
       const userId = 'user-id';
