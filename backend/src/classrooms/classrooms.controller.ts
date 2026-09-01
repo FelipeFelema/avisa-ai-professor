@@ -2,6 +2,8 @@ import {
   Request,
   Body,
   Controller,
+  HttpCode,
+  HttpStatus,
   Post,
   UseGuards,
   Param,
@@ -61,6 +63,7 @@ export class ClassroomsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.PROFESSOR)
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   delete(@Param('id') id: string, @Request() req: { user: AuthUser }) {
     return this.classroomsService.delete(req.user.id, id);
   }
