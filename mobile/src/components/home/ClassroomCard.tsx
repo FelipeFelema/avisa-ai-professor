@@ -24,12 +24,8 @@ export function ClassroomCard({
   onActionPress,
   onPress,
 }: ClassroomCardProps) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      style={({ pressed }) => [styles.card, pressed ? styles.cardPressed : null]}
-      onPress={onPress}
-    >
+  const cardContent = (
+    <>
       <Text style={styles.name}>{name}</Text>
 
       <Text style={styles.teacher}>Professor: {teacher}</Text>
@@ -39,9 +35,28 @@ export function ClassroomCard({
       <Text style={styles.label}>Último comunicado</Text>
 
       <Text style={styles.announcement}>{lastAnnouncement ?? 'Nenhum comunicado disponível.'}</Text>
+    </>
+  );
+
+  return (
+    <View style={styles.card}>
+      {onPress ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Abrir turma ${name}`}
+          style={({ pressed }) => [styles.cardContent, pressed && styles.cardPressed]}
+          onPress={onPress}
+        >
+          {cardContent}
+        </Pressable>
+      ) : (
+        <View style={styles.cardContent}>{cardContent}</View>
+      )}
 
       {actionLabel && onActionPress ? (
         <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`${actionLabel}: ${name}`}
           style={({ pressed }) => [
             styles.actionButton,
             actionVariant === 'danger' ? styles.dangerButton : styles.primaryButton,
@@ -52,7 +67,7 @@ export function ClassroomCard({
           <Text style={styles.actionButtonText}>{actionLabel}</Text>
         </Pressable>
       ) : null}
-    </Pressable>
+    </View>
   );
 }
 
@@ -73,6 +88,10 @@ const styles = StyleSheet.create({
       height: 6,
     },
     elevation: 2,
+  },
+
+  cardContent: {
+    gap: AUTH_THEME.spacing.sm,
   },
 
   cardPressed: {
@@ -109,10 +128,13 @@ const styles = StyleSheet.create({
 
   actionButton: {
     alignSelf: 'flex-end',
+    minHeight: 44,
+    minWidth: 44,
     marginTop: AUTH_THEME.spacing.md,
     paddingHorizontal: AUTH_THEME.spacing.lg,
     paddingVertical: AUTH_THEME.spacing.sm,
     borderRadius: AUTH_THEME.radius.md,
+    justifyContent: 'center',
   },
 
   actionButtonPressed: {
@@ -120,7 +142,7 @@ const styles = StyleSheet.create({
   },
 
   actionButtonText: {
-    color: '#FFFFFF',
+    color: AUTH_THEME.colors.white,
     fontWeight: '700',
     fontSize: AUTH_THEME.typography.label,
   },
@@ -130,6 +152,6 @@ const styles = StyleSheet.create({
   },
 
   dangerButton: {
-    backgroundColor: '#DC2626',
+    backgroundColor: AUTH_THEME.colors.error,
   },
 });
