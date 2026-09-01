@@ -28,3 +28,7 @@ export async function joinClassroom(classroomId: string): Promise<void> {
 export async function leaveClassroom(classroomId: string): Promise<void> {
   await api.post(`/classrooms/${classroomId}/leave`);
 }
+
+export async function deleteClassroom(classroomId: string): Promise<void> {
+  await api.delete(`/classrooms/${classroomId}`);
+}

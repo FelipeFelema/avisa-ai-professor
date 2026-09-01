@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
+import { classroomKeys } from '@/config';
 import { leaveClassroom } from '@/services/classes/classroom.service';
 
 export function useLeaveClassroom() {
@@ -10,11 +11,11 @@ export function useLeaveClassroom() {
 
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['my-classrooms'],
+        queryKey: classroomKeys.my(),
       });
 
       queryClient.invalidateQueries({
-        queryKey: ['available-classrooms'],
+        queryKey: classroomKeys.available(),
       });
     },
   });
