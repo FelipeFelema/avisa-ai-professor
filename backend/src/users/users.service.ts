@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -8,7 +9,12 @@ import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Prisma, Role, User } from '@prisma/client';
 import { InviteCodeService } from '../invites-code/invite-code.service';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import {
+  normalizeUserEmail,
+  normalizeUserName,
+  normalizeUserProfile,
+} from '../common/normalizers/user-normalizer';
 
 const PASSWORD_SALT_ROUNDS = 10;
 
@@ -46,7 +52,7 @@ export class UsersService {
 
   async findByEmail(email: string): Promise<User | null> {
     return await this.prisma.user.findUnique({
-      where: { email },
+      where: { email: normalizeUserEmail(email) },
     });
   }
 
@@ -54,7 +60,8 @@ export class UsersService {
     try {
       const { teacherCode, ...userData } = createUserDto;
 
-      const normalizedEmail = userData.email.trim().toLowerCase();
+      const normalizedName = normalizeUserName(userData.name);
+      const normalizedEmail = normalizeUserEmail(userData.email);
       const existingUser = await this.findByEmail(normalizedEmail);
 
       if (existingUser) {
@@ -75,6 +82,7 @@ export class UsersService {
       const user = await this.prisma.user.create({
         data: {
           ...userData,
+          name: normalizedName,
           email: normalizedEmail,
           password: hashedPassword,
           role,
@@ -99,24 +107,72 @@ export class UsersService {
     });
   }
 
-  async updateProfile(userId: string, updateData: UpdateUserDto) {
+  async updateProfile(
+    userId: string,
+    currentSessionId: string,
+    updateData: UpdateProfileDto,
+  ) {
+    const requestedFields = Object.keys(updateData as object);
+    const unsupportedField = requestedFields.find(
+      (field) => field !== 'name' && field !== 'email',
+    );
+
+    if (unsupportedField || requestedFields.length === 0) {
+      throw new BadRequestException(
+        'Atualize somente nome e/ou e-mail do seu perfil',
+      );
+    }
+
+    const currentUser = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: this.userSelect,
+    });
+
+    if (!currentUser) {
+      throw new NotFoundException('Usuário não encontrado');
+    }
+
+    const normalizedData = normalizeUserProfile(updateData);
+    const data: Prisma.UserUpdateInput = {};
+    const nameChanged =
+      normalizedData.name !== undefined &&
+      normalizedData.name !== normalizeUserName(currentUser.name);
+    const emailChanged =
+      normalizedData.email !== undefined &&
+      normalizedData.email !== normalizeUserEmail(currentUser.email);
+
+    if (nameChanged) {
+      data.name = normalizedData.name;
+    }
+
+    if (emailChanged) {
+      data.email = normalizedData.email;
+    }
+
+    if (!nameChanged && !emailChanged) {
+      return currentUser;
+    }
+
     try {
-      const { password, email, ...profileData } = updateData;
+      return await this.prisma.$transaction(async (tx) => {
+        const updatedUser = await tx.user.update({
+          where: { id: userId },
+          data,
+          select: this.userSelect,
+        });
 
-      const data: Prisma.UserUpdateInput = { ...profileData };
+        if (emailChanged) {
+          await tx.authSession.updateMany({
+            where: {
+              userId,
+              id: { not: currentSessionId },
+              revokedAt: null,
+            },
+            data: { revokedAt: new Date() },
+          });
+        }
 
-      if (email) {
-        data.email = email.trim().toLowerCase();
-      }
-
-      if (password) {
-        data.password = await bcrypt.hash(password, PASSWORD_SALT_ROUNDS);
-      }
-
-      return await this.prisma.user.update({
-        where: { id: userId },
-        data,
-        select: this.userSelect,
+        return updatedUser;
       });
     } catch (error) {
       if (isPrismaError(error) && error.code === 'P2002') {

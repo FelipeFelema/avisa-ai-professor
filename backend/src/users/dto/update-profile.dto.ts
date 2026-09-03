@@ -1,21 +1,27 @@
-import {
-  IsString,
-  IsNotEmpty,
-  IsEmail,
-  MinLength,
-  IsOptional,
-  MaxLength,
-  Matches,
-} from 'class-validator';
 import { Transform } from 'class-transformer';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Matches,
+  MaxLength,
+  MinLength,
+  ValidateIf,
+} from 'class-validator';
+
 import {
   transformUserEmail,
   transformUserName,
   USER_NAME_PATTERN,
 } from '../../common/normalizers/user-normalizer';
 
-export class CreateUserDto {
+export class UpdateProfileDto {
   @Transform(({ value }) => transformUserName(value as unknown))
+  @ValidateIf((object: unknown) => {
+    const profile = object as { name?: unknown; email?: unknown };
+    return profile.name !== undefined || profile.email === undefined;
+  })
   @IsString({ message: 'O nome deve ser uma string' })
   @IsNotEmpty({ message: 'O nome não pode estar vazio' })
   @MinLength(3, { message: 'O nome deve ter no mínimo 3 caracteres' })
@@ -23,21 +29,11 @@ export class CreateUserDto {
   @Matches(USER_NAME_PATTERN, {
     message: 'O nome deve conter apenas letras, espaços, hífen e apóstrofo',
   })
-  name!: string;
+  name?: string;
 
   @Transform(({ value }) => transformUserEmail(value as unknown))
-  @IsEmail({}, { message: 'E-mail inválido' })
-  @IsNotEmpty({ message: 'O e-mail não pode estar vazio' })
-  @MaxLength(255, { message: 'O e-mail deve ter no máximo 255 caracteres' })
-  email!: string;
-
-  @IsString({ message: 'A senha deve ser uma string' })
-  @IsNotEmpty({ message: 'A senha não pode estar vazia' })
-  @MinLength(6, { message: 'A senha deve ter no mínimo 6 caracteres' })
-  @MaxLength(72, { message: 'A senha deve ter no máximo 72 caracteres' })
-  password!: string;
-
-  @IsString({ message: 'O código do professor deve ser uma string' })
   @IsOptional()
-  teacherCode?: string;
+  @IsEmail({}, { message: 'E-mail inválido' })
+  @MaxLength(255, { message: 'O e-mail deve ter no máximo 255 caracteres' })
+  email?: string;
 }
