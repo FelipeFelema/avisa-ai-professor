@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Button } from '@/components/ui';
 import { useAuth } from '@/hooks/useAuth';
 import { AUTH_THEME } from '@/theme/auth';
 
@@ -82,6 +83,12 @@ export default function ProfileScreen() {
             </View>
           </View>
         </View>
+
+        <Button
+          label="Editar perfil"
+          variant="secondary"
+          onPress={() => router.push('/profile/edit')}
+        />
 
         <Pressable
           style={({ pressed }) => [
