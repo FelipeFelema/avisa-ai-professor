@@ -17,6 +17,8 @@ const defaultAuthContext: AuthContextData = {
   login: async () => undefined,
   register: async () => undefined,
   logout: async () => undefined,
+  applyProfileUpdate: () => undefined,
+  expireSession: async () => undefined,
 };
 
 export function renderWithProviders(

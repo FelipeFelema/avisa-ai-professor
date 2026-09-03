@@ -4,13 +4,37 @@ import { AuthContext } from '@/contexts/AuthContext';
 import type { AuthContextData, AuthUser, LoginRequest, RegisterRequest } from '@/types/auth';
 import * as authService from '@/services/auth';
 import { saveTokens, clearTokens, getTokens } from '@/storage';
-import { queryClient } from '@/config';
+import { announcementKeys, authKeys, classroomKeys, queryClient } from '@/config';
+import { setSessionExpiredHandler } from '@/lib';
 
 type AuthProviderProps = PropsWithChildren;
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const clearSessionState = useCallback(async (tokensAlreadyCleared = false) => {
+    if (!tokensAlreadyCleared) {
+      await clearTokens();
+    }
+
+    queryClient.clear();
+    setUser(null);
+  }, []);
+
+  const expireSession = useCallback(async () => clearSessionState(), [clearSessionState]);
+
+  const applyProfileUpdate = useCallback((profile: AuthUser) => {
+    setUser(profile);
+    queryClient.setQueryData(authKeys.profile(), profile);
+
+    void Promise.all([
+      queryClient.invalidateQueries({ queryKey: authKeys.profile() }),
+      queryClient.invalidateQueries({ queryKey: classroomKeys.my() }),
+      queryClient.invalidateQueries({ queryKey: classroomKeys.available() }),
+      queryClient.invalidateQueries({ queryKey: announcementKeys.all }),
+    ]);
+  }, []);
 
   const createSession = useCallback(
     async (tokens: { accessToken: string; refreshToken: string }) => {
@@ -22,6 +46,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     },
     [],
   );
+
+  useEffect(() => {
+    setSessionExpiredHandler(() => clearSessionState(true));
+
+    return () => {
+      setSessionExpiredHandler(undefined);
+    };
+  }, [clearSessionState]);
 
   const login = useCallback(
     async (data: LoginRequest): Promise<void> => {
@@ -52,15 +84,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   );
 
   const logout = useCallback(async () => {
-    // Remove the persisted authentication session.
-    await clearTokens();
-
-    // Clear any cached data from the React Query cache.
-    queryClient.clear();
-
-    // Clear the authenticated user from the application state.
-    setUser(null);
-  }, []);
+    await expireSession();
+  }, [expireSession]);
 
   useEffect(() => {
     let cancelled = false;
@@ -82,7 +107,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           setUser(profile);
         }
       } catch {
-        await clearTokens();
+        await expireSession();
 
         if (!cancelled) {
           setUser(null);
@@ -97,7 +122,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [expireSession]);
 
   const value = useMemo<AuthContextData>(
     () => ({
@@ -107,8 +132,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       login,
       register,
       logout,
+      applyProfileUpdate,
+      expireSession,
     }),
-    [user, isLoading, login, register, logout],
+    [user, isLoading, login, register, logout, applyProfileUpdate, expireSession],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
