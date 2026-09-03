@@ -99,23 +99,23 @@ description: "Tarefas de implementação para consolidação de experiência e q
 
 > Os testes backend e client podem ser escritos em paralelo contra o contrato já versionado.
 
-- [ ] T026 [P] [US2] Escrever testes unitários falhos de normalização, campos proibidos, no-op, `P2002` e revogação seletiva em backend/src/users/users.service.spec.ts e backend/src/users/users.controller.spec.ts
-- [ ] T027 [P] [US2] Escrever testes de integração/e2e falhos para atualização self-service equivalente por `PARENT`/`PROFESSOR`/`ADMIN`, duas sessões, access/refresh revogados, login normalizado e atomicidade em backend/test/users.integration.spec.ts e backend/test/profile.e2e-spec.ts
-- [ ] T028 [US2] Restringir e normalizar o contrato de perfil com DTO próprio e normalizador reutilizável em backend/src/users/dto/update-profile.dto.ts, backend/src/users/dto/create-user.dto.ts e backend/src/common/normalizers/user-normalizer.ts
-- [ ] T029 [US2] Implementar PATCH self-service por `sub/sid`, no-op sem write, conflito `409` e revogação transacional das demais sessões em backend/src/users/users.service.ts e backend/src/users/users.controller.ts
+- [X] T026 [P] [US2] Escrever testes unitários falhos de normalização, campos proibidos, no-op, `P2002` e revogação seletiva em backend/src/users/users.service.spec.ts e backend/src/users/users.controller.spec.ts
+- [X] T027 [P] [US2] Escrever testes de integração/e2e falhos para atualização self-service equivalente por `PARENT`/`PROFESSOR`/`ADMIN`, duas sessões, access/refresh revogados, login normalizado e atomicidade em backend/test/users.integration.spec.ts e backend/test/profile.e2e-spec.ts
+- [X] T028 [US2] Restringir e normalizar o contrato de perfil com DTO próprio e normalizador reutilizável em backend/src/users/dto/update-profile.dto.ts, backend/src/users/dto/create-user.dto.ts e backend/src/common/normalizers/user-normalizer.ts
+- [X] T029 [US2] Implementar PATCH self-service por `sub/sid`, no-op sem write, conflito `409` e revogação transacional das demais sessões em backend/src/users/users.service.ts e backend/src/users/users.controller.ts
 
 ### Mobile Test-First Slice
 
-- [ ] T030 [P] [US2] Escrever testes mobile falhos para schema, diff, contrato PATCH, no-op e erro `409` no campo em mobile/tests/validations/updateProfile.schema.spec.ts e mobile/tests/services/auth.service.spec.ts
-- [ ] T031 [US2] Adicionar tipos, schema Zod e service PATCH somente com campos alterados em mobile/src/types/auth.ts, mobile/src/validations/updateProfile.schema.ts e mobile/src/services/auth/auth.service.ts
-- [ ] T032 [US2] Escrever testes falhos de `applyProfileUpdate` e expiração `401` atômica sobre tokens, cache e contexto em mobile/tests/providers/AuthProvider.spec.tsx e mobile/tests/lib/api-session.spec.ts
-- [ ] T033 [US2] Implementar sincronização do perfil e expiração de sessão compartilhada pelo interceptor em mobile/src/providers/AuthProvider.tsx, mobile/src/contexts/AuthContext.tsx e mobile/src/lib/api.ts
-- [ ] T034 [US2] Escrever testes falhos do hook e das rotas de perfil/home para confirmação, preservação do formulário e atualização da identidade no perfil e na saudação da home em até dois segundos em mobile/tests/hooks/useUpdateProfile.spec.tsx, mobile/tests/routes/profile.spec.tsx, mobile/tests/routes/profile-edit.spec.tsx e mobile/tests/routes/home.spec.tsx
-- [ ] T035 [US2] Implementar mutation, formulário/diff/confirmação, acesso pela tela de perfil e sincronização dos displays diretos da identidade em mobile/src/hooks/useUpdateProfile.ts, mobile/app/(app)/profile/edit.tsx, mobile/app/(app)/(tabs)/profile.tsx, mobile/app/(app)/(tabs)/index.tsx e mobile/src/components/home/HomeHeader.tsx
+- [X] T030 [P] [US2] Escrever testes mobile falhos para schema, diff, contrato PATCH, no-op e erro `409` no campo em mobile/tests/validations/updateProfile.schema.spec.ts e mobile/tests/services/auth.service.spec.ts
+- [X] T031 [US2] Adicionar tipos, schema Zod e service PATCH somente com campos alterados em mobile/src/types/auth.ts, mobile/src/validations/updateProfile.schema.ts e mobile/src/services/auth/auth.service.ts
+- [X] T032 [US2] Escrever testes falhos de `applyProfileUpdate` e expiração `401` atômica sobre tokens, cache e contexto em mobile/tests/providers/AuthProvider.spec.tsx e mobile/tests/lib/api-session.spec.ts
+- [X] T033 [US2] Implementar sincronização do perfil e expiração de sessão compartilhada pelo interceptor em mobile/src/providers/AuthProvider.tsx, mobile/src/contexts/AuthContext.tsx e mobile/src/lib/api.ts
+- [X] T034 [US2] Escrever testes falhos do hook e das rotas de perfil/home para confirmação, preservação do formulário e atualização da identidade no perfil e na saudação da home em até dois segundos em mobile/tests/hooks/useUpdateProfile.spec.tsx, mobile/tests/routes/profile.spec.tsx, mobile/tests/routes/profile-edit.spec.tsx e mobile/tests/routes/home.spec.tsx
+- [X] T035 [US2] Implementar mutation, formulário/diff/confirmação, acesso pela tela de perfil e sincronização dos displays diretos da identidade em mobile/src/hooks/useUpdateProfile.ts, mobile/app/(app)/profile/edit.tsx, mobile/app/(app)/(tabs)/profile.tsx, mobile/app/(app)/(tabs)/index.tsx e mobile/src/components/home/HomeHeader.tsx
 
 ### Independent Validation
 
-- [ ] T036 [US2] Executar o cenário independente da US2 para `PARENT`/`PROFESSOR`/`ADMIN` com duas sessões e registrar normalização, conflitos, perfil/home sincronizados em até dois segundos e revogação em specs/001-app-quality-readiness/evidence/us2-profile-update.md
+- [X] T036 [US2] Executar o cenário independente da US2 para `PARENT`/`PROFESSOR`/`ADMIN` com duas sessões e registrar normalização, conflitos, perfil/home sincronizados em até dois segundos e revogação em specs/001-app-quality-readiness/evidence/us2-profile-update.md
 
 **Checkpoint**: US2 funciona independentemente de US1 e mantém a sessão atual sem deixar sessões remotas ativas após troca de e-mail.
 
