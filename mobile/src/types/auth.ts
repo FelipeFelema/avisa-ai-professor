@@ -2,8 +2,12 @@ export interface AuthUser {
   id: string;
   name: string;
   email: string;
-  role: string;
+  role: UserRole;
+  createdAt?: string;
+  updatedAt?: string;
 }
+
+export type UserRole = 'PARENT' | 'PROFESSOR' | 'ADMIN';
 
 export interface LoginRequest {
   email: string;
@@ -15,6 +19,11 @@ export interface LoginResponse {
   refreshToken: string;
 }
 
+export interface UpdateProfileRequest {
+  name?: string;
+  email?: string;
+}
+
 export interface AuthContextData {
   user: AuthUser | null;
   isAuthenticated: boolean;
@@ -23,6 +32,8 @@ export interface AuthContextData {
   login: (data: LoginRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
+  applyProfileUpdate: (user: AuthUser) => void;
+  expireSession: () => Promise<void>;
 }
 
 export interface RegisterRequest {
