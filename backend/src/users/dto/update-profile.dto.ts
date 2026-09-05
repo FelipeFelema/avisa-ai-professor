@@ -1,5 +1,10 @@
 import { Transform } from 'class-transformer';
 import {
+  ApiPropertyOptional,
+  ApiSchema,
+  ApiSchemaOptions,
+} from '@nestjs/swagger';
+import {
   IsEmail,
   IsNotEmpty,
   IsOptional,
@@ -16,7 +21,24 @@ import {
   USER_NAME_PATTERN,
 } from '../../common/normalizers/user-normalizer';
 
+type ClosedSchemaOptions = ApiSchemaOptions & {
+  additionalProperties: false;
+};
+
+function closedSchema(options: ClosedSchemaOptions): ClassDecorator {
+  return ApiSchema(options);
+}
+
+@closedSchema({
+  name: 'UpdateProfileRequest',
+  additionalProperties: false,
+})
 export class UpdateProfileDto {
+  @ApiPropertyOptional({
+    type: 'string',
+    minLength: 3,
+    maxLength: 100,
+  })
   @Transform(({ value }) => transformUserName(value as unknown))
   @ValidateIf((object: unknown) => {
     const profile = object as { name?: unknown; email?: unknown };
@@ -31,6 +53,11 @@ export class UpdateProfileDto {
   })
   name?: string;
 
+  @ApiPropertyOptional({
+    type: 'string',
+    format: 'email',
+    maxLength: 255,
+  })
   @Transform(({ value }) => transformUserEmail(value as unknown))
   @IsOptional()
   @IsEmail({}, { message: 'E-mail inválido' })
