@@ -129,16 +129,16 @@ description: "Tarefas de implementação para consolidação de experiência e q
 
 ### Tests for User Story 3
 
-- [ ] T037 [US3] Escrever testes falhos da matriz completa para leave e update/delete de comunicado, incluindo cancel, falha e double-tap em mobile/tests/routes/confirmation-matrix.spec.tsx, mobile/tests/hooks/useLeaveClassroom.spec.tsx, mobile/tests/hooks/useUpdateAnnouncement.spec.tsx e mobile/tests/hooks/useDeleteAnnouncement.spec.tsx
+- [X] T037 [US3] Escrever testes falhos da matriz completa para leave e update/delete de comunicado, incluindo cancel, falha e double-tap em mobile/tests/routes/confirmation-matrix.spec.tsx, mobile/tests/hooks/useLeaveClassroom.spec.tsx, mobile/tests/hooks/useUpdateAnnouncement.spec.tsx e mobile/tests/hooks/useDeleteAnnouncement.spec.tsx
 
 ### Implementation for User Story 3
 
-- [ ] T038 [US3] Consolidar services e hooks de comunicado com query keys, invalidação sem navegação embutida e mutations sem retry em mobile/src/services/announcements/announcement.service.ts, mobile/src/services/announcements/index.ts, mobile/src/hooks/useUpdateAnnouncement.ts e mobile/src/hooks/useDeleteAnnouncement.ts
-- [ ] T039 [P] [US3] Preservar o WIP e integrar diff, confirmação e contexto de falha no editor correto em mobile/app/(app)/announcements/[id]/edit.tsx
-- [ ] T040 [P] [US3] Substituir `Alert` por confirmação compartilhada, single-flight e feedback recuperável no detalhe em mobile/app/(app)/announcements/[id].tsx
-- [ ] T041 [P] [US3] Integrar confirmação de saída somente para non-owner sem confirmar join/criação em mobile/app/(app)/(tabs)/classrooms.tsx e mobile/app/(app)/classrooms/[id].tsx
-- [ ] T042 [US3] Remover a rota duplicada somente após consolidar e testar o editor correto em mobile/app/(app)/classrooms/[id]/edit.tsx
-- [ ] T043 [US3] Executar todas as linhas da matriz e registrar chamadas zero no cancel, single-flight e preservação de contexto em specs/001-app-quality-readiness/evidence/us3-confirmation-matrix.md
+- [X] T038 [US3] Consolidar services e hooks de comunicado com query keys, invalidação sem navegação embutida e mutations sem retry em mobile/src/services/announcements/announcement.service.ts, mobile/src/services/announcements/index.ts, mobile/src/hooks/useUpdateAnnouncement.ts e mobile/src/hooks/useDeleteAnnouncement.ts
+- [X] T039 [P] [US3] Preservar o WIP e integrar diff, confirmação e contexto de falha no editor correto em mobile/app/(app)/announcements/[id]/edit.tsx
+- [X] T040 [P] [US3] Substituir `Alert` por confirmação compartilhada, single-flight e feedback recuperável no detalhe em mobile/app/(app)/announcements/[id].tsx
+- [X] T041 [P] [US3] Integrar confirmação de saída somente para non-owner sem confirmar join/criação em mobile/app/(app)/(tabs)/classrooms.tsx e mobile/app/(app)/classrooms/[id].tsx
+- [X] T042 [US3] Remover a rota duplicada somente após consolidar e testar o editor correto em mobile/app/(app)/classrooms/[id]/edit.tsx
+- [X] T043 [US3] Executar todas as linhas da matriz e registrar chamadas zero no cancel, single-flight e preservação de contexto em specs/001-app-quality-readiness/evidence/us3-confirmation-matrix.md
 
 **Checkpoint**: Todas as mutations update/delete/leave no escopo usam o contrato de confirmação; create, join, navegação e logout continuam fora dele.
 
