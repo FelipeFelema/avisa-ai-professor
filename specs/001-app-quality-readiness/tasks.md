@@ -152,17 +152,17 @@ description: "Tarefas de implementação para consolidação de experiência e q
 
 ### Tests for User Story 4
 
-- [ ] T044 [P] [US4] Escrever testes falhos de bootstrap, health versionado, inventário OpenAPI, schemas/security/responses e negação em produção em backend/src/app.controller.spec.ts, backend/test/openapi.contract.spec.ts e backend/test/app.e2e-spec.ts
+- [X] T044 [P] [US4] Escrever testes falhos de bootstrap, health versionado, inventário OpenAPI, schemas/security/responses e negação em produção em backend/src/app.controller.spec.ts, backend/test/openapi.contract.spec.ts e backend/test/app.e2e-spec.ts
 
 ### Implementation for User Story 4
 
-- [ ] T045 [P] [US4] Extrair prefixo, versionamento, pipes e CORS para bootstrap compartilhado e substituir Hello World por health em backend/src/configure-app.ts, backend/src/main.ts, backend/src/app.controller.ts e backend/src/app.service.ts
-- [ ] T046 [P] [US4] Criar DTOs de resposta/erro documentáveis e helpers de decorators sem dados sensíveis em backend/src/common/dto/error-response.dto.ts, backend/src/common/dto/health-response.dto.ts, backend/src/common/dto/auth-response.dto.ts e backend/src/openapi/api-responses.decorator.ts
-- [ ] T047 [P] [US4] Documentar operações, inputs, respostas e autenticação de auth/users em backend/src/auth/auth.controller.ts, backend/src/auth/dto/login.dto.ts, backend/src/users/users.controller.ts, backend/src/users/dto/create-user.dto.ts e backend/src/users/dto/update-profile.dto.ts
-- [ ] T048 [P] [US4] Documentar operações, ownership, schemas e erros de classrooms em backend/src/classrooms/classrooms.controller.ts, backend/src/classrooms/dto/create-classroom.dto.ts e backend/src/classrooms/dto/classroom-summary.dto.ts
-- [ ] T049 [P] [US4] Documentar operações e regras de autoria/admin de announcements/invite-codes em backend/src/announcements/announcements.controller.ts, backend/src/announcements/dto/create-announcement.dto.ts, backend/src/announcements/dto/update-announcement.dto.ts, backend/src/invites-code/invite-code.controller.ts e backend/src/invites-code/dto/create-invite-code.dto.ts
-- [ ] T050 [US4] Configurar Swagger UI/JSON em development/test, kill switch e deny absoluto em production pelo bootstrap compartilhado em backend/src/openapi/configure-openapi.ts, backend/src/configure-app.ts e backend/.env.example
-- [ ] T051 [US4] Comparar o runtime com o contrato de design e registrar as 19 operações, exercício autenticado de GET/mutation concluído em até 15 minutos por desenvolvedor que não participou da implementação e negação de produção em specs/001-app-quality-readiness/evidence/us4-openapi.md
+- [X] T045 [P] [US4] Extrair prefixo, versionamento, pipes e CORS para bootstrap compartilhado e substituir Hello World por health em backend/src/configure-app.ts, backend/src/main.ts, backend/src/app.controller.ts e backend/src/app.service.ts
+- [X] T046 [P] [US4] Criar DTOs de resposta/erro documentáveis e helpers de decorators sem dados sensíveis em backend/src/common/dto/error-response.dto.ts, backend/src/common/dto/health-response.dto.ts, backend/src/common/dto/auth-response.dto.ts e backend/src/openapi/api-responses.decorator.ts
+- [X] T047 [P] [US4] Documentar operações, inputs, respostas e autenticação de auth/users em backend/src/auth/auth.controller.ts, backend/src/auth/dto/login.dto.ts, backend/src/users/users.controller.ts, backend/src/users/dto/create-user.dto.ts e backend/src/users/dto/update-profile.dto.ts
+- [X] T048 [P] [US4] Documentar operações, ownership, schemas e erros de classrooms em backend/src/classrooms/classrooms.controller.ts, backend/src/classrooms/dto/create-classroom.dto.ts e backend/src/classrooms/dto/classroom-summary.dto.ts
+- [X] T049 [P] [US4] Documentar operações e regras de autoria/admin de announcements/invite-codes em backend/src/announcements/announcements.controller.ts, backend/src/announcements/dto/create-announcement.dto.ts, backend/src/announcements/dto/update-announcement.dto.ts, backend/src/invites-code/invite-code.controller.ts e backend/src/invites-code/dto/create-invite-code.dto.ts
+- [X] T050 [US4] Configurar Swagger UI/JSON em development/test, kill switch e deny absoluto em production pelo bootstrap compartilhado em backend/src/openapi/configure-openapi.ts, backend/src/configure-app.ts e backend/.env.example
+- [X] T051 [US4] Comparar o runtime com o contrato de design e registrar as 19 operações, exercício autenticado de GET/mutation concluído em até 15 minutos por desenvolvedor que não participou da implementação e negação de produção em specs/001-app-quality-readiness/evidence/us4-openapi.md
 
 **Checkpoint**: A referência interativa é completa, exercitável fora de produção e inacessível em produção.
 
