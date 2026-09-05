@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -11,9 +11,21 @@ import {
 } from '@/validations/createAnnouncementSchema';
 import { ANNOUNCEMENT_DURATIONS } from '@/types/announcement';
 
+import { ConfirmationDialog, type ConfirmationSummaryRow, ScreenState } from '@/components/ui';
+import { getHttpErrorMessage } from '@/lib';
 import { AUTH_THEME } from '@/theme/auth';
 import { useAnnouncement } from '@/hooks/useAnnouncement';
-import { useUpdateAnnouncement } from '@/hooks/useUpdateAnnouncement';
+import {
+  useUpdateAnnouncement,
+  type UpdateAnnouncementMutation,
+} from '@/hooks/useUpdateAnnouncement';
+
+type AnnouncementUpdateData = UpdateAnnouncementMutation['data'];
+
+type PendingAnnouncementUpdate = {
+  data: AnnouncementUpdateData;
+  summary: ConfirmationSummaryRow[];
+};
 
 function getClosestAnnouncementDuration(createdAt: string, expiresAt: string) {
   const createdDate = new Date(createdAt).getTime();
@@ -32,11 +44,51 @@ function getClosestAnnouncementDuration(createdAt: string, expiresAt: string) {
   }, ANNOUNCEMENT_DURATIONS[0]);
 }
 
+function buildAnnouncementSummary(
+  current: {
+    title: string;
+    content: string;
+    durationInDays: number;
+  },
+  next: AnnouncementUpdateData,
+): ConfirmationSummaryRow[] {
+  const summary: ConfirmationSummaryRow[] = [];
+
+  if (current.title !== next.title) {
+    summary.push({ label: 'Título', value: `${current.title} → ${next.title}` });
+  }
+
+  if (current.content !== next.content) {
+    summary.push({ label: 'Conteúdo', value: `${current.content} → ${next.content}` });
+  }
+
+  if (current.durationInDays !== next.durationInDays) {
+    summary.push({
+      label: 'Duração',
+      value: `${current.durationInDays} dias → ${next.durationInDays} dias`,
+    });
+  }
+
+  return summary;
+}
+
 export default function EditAnnouncementScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
 
-  const { data: announcement, isLoading } = useAnnouncement(id);
+  const {
+    data: announcement,
+    error: announcementError,
+    isError: announcementIsError,
+    isLoading,
+    refetch: refetchAnnouncement,
+  } = useAnnouncement(id);
   const updateAnnouncement = useUpdateAnnouncement();
+  const [pendingUpdate, setPendingUpdate] = useState<PendingAnnouncementUpdate | null>(null);
+  const [confirmationError, setConfirmationError] = useState<string>();
+  const [feedback, setFeedback] = useState<string>();
+  const [isConfirming, setIsConfirming] = useState(false);
+  const requestInFlight = useRef(false);
 
   const {
     control,
@@ -67,17 +119,98 @@ export default function EditAnnouncementScreen() {
     });
   }, [announcement, reset]);
 
-  if (isLoading || !announcement) {
-    return null;
+  if (isLoading) {
+    return (
+      <ScreenState kind="loading" title="Carregando comunicado" message="Aguarde um momento." />
+    );
   }
 
-  const onSubmit = async (data: CreateAnnouncementFormData) => {
-    await updateAnnouncement.mutateAsync({
-      announcementId: announcement.id,
-      classroomId: announcement.classroomId,
+  if (announcementIsError) {
+    return (
+      <ScreenState
+        kind="error"
+        title="Não foi possível carregar o comunicado"
+        message={getHttpErrorMessage(announcementError)}
+        actionLabel="Tentar novamente"
+        onAction={() => {
+          void refetchAnnouncement();
+        }}
+      />
+    );
+  }
+
+  if (!announcement) {
+    return (
+      <ScreenState
+        kind="not-found"
+        title="Comunicado não encontrado"
+        message="Este comunicado não está mais disponível."
+        actionLabel="Voltar"
+        onAction={() => router.back()}
+      />
+    );
+  }
+
+  const currentDurationInDays = getClosestAnnouncementDuration(
+    announcement.createdAt,
+    announcement.expiresAt,
+  );
+
+  const onSubmit = (data: CreateAnnouncementFormData) => {
+    const summary = buildAnnouncementSummary(
+      {
+        title: announcement.title,
+        content: announcement.content,
+        durationInDays: currentDurationInDays,
+      },
       data,
-    });
+    );
+
+    if (summary.length === 0) {
+      setFeedback('Nenhuma alteração para salvar.');
+      return;
+    }
+
+    setFeedback(undefined);
+    setConfirmationError(undefined);
+    setPendingUpdate({ data, summary });
   };
+
+  const cancelConfirmation = () => {
+    if (isConfirming || requestInFlight.current) {
+      return;
+    }
+
+    setPendingUpdate(null);
+    setConfirmationError(undefined);
+  };
+
+  const confirmUpdate = async () => {
+    if (!pendingUpdate || isConfirming || updateAnnouncement.isPending || requestInFlight.current) {
+      return;
+    }
+
+    requestInFlight.current = true;
+    setIsConfirming(true);
+
+    try {
+      await updateAnnouncement.mutateAsync({
+        announcementId: announcement.id,
+        classroomId: announcement.classroomId,
+        data: pendingUpdate.data,
+      });
+      setPendingUpdate(null);
+      setConfirmationError(undefined);
+      router.back();
+    } catch (error) {
+      setConfirmationError(getHttpErrorMessage(error));
+    } finally {
+      requestInFlight.current = false;
+      setIsConfirming(false);
+    }
+  };
+
+  const pending = isConfirming || updateAnnouncement.isPending;
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -93,6 +226,7 @@ export default function EditAnnouncementScreen() {
             name="title"
             render={({ field: { value, onChange } }) => (
               <TextInput
+                accessibilityLabel="Título"
                 value={value}
                 onChangeText={onChange}
                 placeholder="Digite o título"
@@ -113,6 +247,7 @@ export default function EditAnnouncementScreen() {
             name="content"
             render={({ field: { value, onChange } }) => (
               <TextInput
+                accessibilityLabel="Conteúdo"
                 multiline
                 textAlignVertical="top"
                 scrollEnabled
@@ -140,6 +275,9 @@ export default function EditAnnouncementScreen() {
                 {ANNOUNCEMENT_DURATIONS.map((days) => (
                   <Pressable
                     key={days}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${days} ${days === 1 ? 'dia' : 'dias'}`}
+                    accessibilityState={{ selected: value === days }}
                     onPress={() => onChange(days)}
                     style={[styles.durationChip, value === days && styles.selectedDurationChip]}
                   >
@@ -156,15 +294,40 @@ export default function EditAnnouncementScreen() {
         </View>
 
         <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ disabled: pendingUpdate !== null || pending, busy: pending }}
           style={styles.submitButton}
           onPress={handleSubmit(onSubmit)}
-          disabled={updateAnnouncement.isPending}
+          disabled={pendingUpdate !== null || pending}
         >
           <Text style={styles.submitText}>
-            {updateAnnouncement.isPending ? 'Atualizando...' : 'Atualizar comunicado'}
+            {pending ? 'Atualizando...' : 'Atualizar comunicado'}
           </Text>
         </Pressable>
+
+        {feedback ? (
+          <Text accessibilityRole="alert" style={styles.feedback}>
+            {feedback}
+          </Text>
+        ) : null}
       </ScrollView>
+
+      {pendingUpdate ? (
+        <ConfirmationDialog
+          visible
+          title="Confirmar atualização"
+          targetLabel={announcement.title}
+          summary={pendingUpdate.summary}
+          variant="neutral"
+          confirmLabel="Atualizar comunicado"
+          onCancel={cancelConfirmation}
+          onConfirm={() => {
+            void confirmUpdate();
+          }}
+          pending={pending}
+          errorMessage={confirmationError}
+        />
+      ) : null}
     </SafeAreaView>
   );
 }
@@ -270,5 +433,10 @@ const styles = StyleSheet.create({
     color: '#DC2626',
     fontSize: AUTH_THEME.typography.caption,
     marginTop: AUTH_THEME.spacing.xs,
+  },
+
+  feedback: {
+    color: AUTH_THEME.colors.muted,
+    fontSize: AUTH_THEME.typography.caption,
   },
 });
