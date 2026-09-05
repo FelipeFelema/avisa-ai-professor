@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { announcementKeys } from '@/config';
-import * as announcementsService from '@/services/announcements/service';
+import * as announcementsService from '@/services/announcements';
 
 export function useClassroomAnnouncements(classroomId: string) {
   return useQuery({

@@ -1,29 +1,33 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'expo-router';
 
+import { announcementKeys, classroomKeys } from '@/config';
 import { deleteAnnouncement } from '@/services/announcements';
+
+export type DeleteAnnouncementMutation = {
+  announcementId: string;
+  classroomId: string;
+};
 
 export function useDeleteAnnouncement() {
   const queryClient = useQueryClient();
-  const router = useRouter();
 
   return useMutation({
-    mutationFn: deleteAnnouncement,
+    mutationFn: ({ announcementId }: DeleteAnnouncementMutation) =>
+      deleteAnnouncement(announcementId),
+    retry: false,
 
-    onSuccess: async (_, announcementId) => {
-      await queryClient.invalidateQueries({
-        queryKey: ['announcement', announcementId],
-      });
-
-      await queryClient.invalidateQueries({
-        predicate: (query) => query.queryKey[0] === 'classroom-announcements',
-      });
-
-      await queryClient.invalidateQueries({
-        queryKey: ['my-classrooms'],
-      });
-
-      router.back();
+    onSuccess: async (_, variables) => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: announcementKeys.detail(variables.announcementId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: announcementKeys.byClassroom(variables.classroomId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: classroomKeys.my(),
+        }),
+      ]);
     },
   });
 }
