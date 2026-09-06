@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { AUTH_THEME } from '@/theme/auth';
+import { theme } from '@/theme';
 
 type AnnouncementCardProps = {
   title: string;
@@ -20,8 +20,8 @@ function getExpirationBadge(expiresAt?: string): ExpirationBadge {
   if (!expiresAt) {
     return {
       label: 'Comunicado ativo',
-      backgroundColor: AUTH_THEME.colors.primarySoft,
-      textColor: AUTH_THEME.colors.primaryDark,
+      backgroundColor: theme.colors.primarySubtle,
+      textColor: theme.colors.primaryPressed,
     };
   }
 
@@ -38,31 +38,31 @@ function getExpirationBadge(expiresAt?: string): ExpirationBadge {
   if (differenceInDays <= 1) {
     return {
       label: differenceInDays <= 0 ? '🕒 Expira hoje' : '🕒 Expira amanhã',
-      backgroundColor: AUTH_THEME.colors.errorSoft,
-      textColor: AUTH_THEME.colors.error,
+      backgroundColor: theme.colors.dangerSubtle,
+      textColor: theme.colors.danger,
     };
   }
 
   if (differenceInDays <= 3) {
     return {
       label: `🕒 Expira em ${differenceInDays} dias`,
-      backgroundColor: '#FFF4E5',
-      textColor: '#B54708',
+      backgroundColor: theme.colors.surfaceMuted,
+      textColor: theme.colors.warning,
     };
   }
 
   if (differenceInDays <= 7) {
     return {
       label: `🕒 Expira em ${differenceInDays} dias`,
-      backgroundColor: '#FFF8DB',
-      textColor: '#B58900',
+      backgroundColor: theme.colors.surfaceMuted,
+      textColor: theme.colors.warning,
     };
   }
 
   return {
     label: `🕒 Expira em ${differenceInDays} dias`,
-    backgroundColor: AUTH_THEME.colors.primarySoft,
-    textColor: AUTH_THEME.colors.primaryDark,
+    backgroundColor: theme.colors.primarySubtle,
+    textColor: theme.colors.primaryPressed,
   };
 }
 
@@ -77,6 +77,11 @@ export function AnnouncementCard({
   return (
     <Pressable
       onPress={onPress}
+      accessibilityRole={onPress ? 'button' : undefined}
+      accessibilityLabel={onPress ? `Abrir comunicado ${title}` : undefined}
+      accessibilityHint={onPress ? 'Abre o comunicado completo.' : undefined}
+      accessible={Boolean(onPress)}
+      disabled={!onPress}
       style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
     >
       <View style={styles.header}>
@@ -116,14 +121,15 @@ export function AnnouncementCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: AUTH_THEME.colors.surface,
-    borderRadius: AUTH_THEME.radius.lg,
+    minHeight: theme.targets.android,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.lg,
     borderWidth: 1,
-    borderColor: AUTH_THEME.colors.border,
-    padding: AUTH_THEME.spacing.xl,
-    gap: AUTH_THEME.spacing.lg,
+    borderColor: theme.colors.border,
+    padding: theme.spacing.xl,
+    gap: theme.spacing.lg,
 
-    shadowColor: '#000',
+    shadowColor: theme.colors.text,
     shadowOpacity: 0.08,
     shadowRadius: 10,
     shadowOffset: {
@@ -138,23 +144,22 @@ const styles = StyleSheet.create({
   },
 
   header: {
-    gap: AUTH_THEME.spacing.xs,
+    gap: theme.spacing.xs,
   },
 
   title: {
-    color: AUTH_THEME.colors.text,
-    fontSize: 18,
-    fontWeight: '700',
+    ...theme.typography.sectionTitle,
+    color: theme.colors.text,
   },
 
   author: {
-    color: AUTH_THEME.colors.muted,
-    fontSize: AUTH_THEME.typography.caption,
+    color: theme.colors.textMuted,
+    ...theme.typography.caption,
   },
 
   content: {
-    color: AUTH_THEME.colors.text,
-    fontSize: AUTH_THEME.typography.body,
+    color: theme.colors.text,
+    ...theme.typography.body,
     lineHeight: 24,
   },
 
@@ -164,13 +169,13 @@ const styles = StyleSheet.create({
   },
 
   badge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: AUTH_THEME.radius.pill,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.radius.pill,
   },
 
   badgeText: {
-    fontSize: AUTH_THEME.typography.caption,
+    ...theme.typography.caption,
     fontWeight: '700',
   },
 });

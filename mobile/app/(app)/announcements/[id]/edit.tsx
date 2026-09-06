@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
@@ -11,7 +11,13 @@ import {
 } from '@/validations/createAnnouncementSchema';
 import { ANNOUNCEMENT_DURATIONS } from '@/types/announcement';
 
-import { ConfirmationDialog, type ConfirmationSummaryRow, ScreenState } from '@/components/ui';
+import {
+  Button,
+  ConfirmationDialog,
+  type ConfirmationSummaryRow,
+  ScreenState,
+} from '@/components/ui';
+import { AuthField } from '@/components/auth';
 import { getHttpErrorMessage } from '@/lib';
 import { AUTH_THEME } from '@/theme/auth';
 import { useAnnouncement } from '@/hooks/useAnnouncement';
@@ -215,54 +221,43 @@ export default function EditAnnouncementScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.title}>Editar comunicado</Text>
+        <Text accessibilityRole="header" style={styles.title}>
+          Editar comunicado
+        </Text>
         <Text style={styles.subtitle}>Atualize as informações do comunicado.</Text>
 
-        <View style={styles.field}>
-          <Text style={styles.label}>Título</Text>
+        <Controller
+          control={control}
+          name="title"
+          render={({ field: { value, onChange } }) => (
+            <AuthField
+              label="Título"
+              value={value}
+              onChangeText={onChange}
+              placeholder="Digite o título"
+              error={errors.title?.message}
+            />
+          )}
+        />
 
-          <Controller
-            control={control}
-            name="title"
-            render={({ field: { value, onChange } }) => (
-              <TextInput
-                accessibilityLabel="Título"
-                value={value}
-                onChangeText={onChange}
-                placeholder="Digite o título"
-                placeholderTextColor={AUTH_THEME.colors.muted}
-                style={styles.input}
-              />
-            )}
-          />
-
-          {errors.title && <Text style={styles.error}>{errors.title.message}</Text>}
-        </View>
-
-        <View style={styles.field}>
-          <Text style={styles.label}>Conteúdo</Text>
-
-          <Controller
-            control={control}
-            name="content"
-            render={({ field: { value, onChange } }) => (
-              <TextInput
-                accessibilityLabel="Conteúdo"
-                multiline
-                textAlignVertical="top"
-                scrollEnabled
-                maxLength={2000}
-                value={value}
-                onChangeText={onChange}
-                placeholder="Digite o comunicado..."
-                placeholderTextColor={AUTH_THEME.colors.muted}
-                style={styles.textArea}
-              />
-            )}
-          />
-
-          {errors.content && <Text style={styles.error}>{errors.content.message}</Text>}
-        </View>
+        <Controller
+          control={control}
+          name="content"
+          render={({ field: { value, onChange } }) => (
+            <AuthField
+              label="Conteúdo"
+              multiline
+              textAlignVertical="top"
+              scrollEnabled
+              maxLength={2000}
+              value={value}
+              onChangeText={onChange}
+              placeholder="Digite o comunicado..."
+              inputStyle={styles.textArea}
+              error={errors.content?.message}
+            />
+          )}
+        />
 
         <View style={styles.field}>
           <Text style={styles.label}>Duração</Text>
@@ -293,17 +288,14 @@ export default function EditAnnouncementScreen() {
           />
         </View>
 
-        <Pressable
-          accessibilityRole="button"
-          accessibilityState={{ disabled: pendingUpdate !== null || pending, busy: pending }}
+        <Button
+          label="Atualizar comunicado"
+          loading={pending}
+          loadingLabel="Atualizando..."
           style={styles.submitButton}
           onPress={handleSubmit(onSubmit)}
-          disabled={pendingUpdate !== null || pending}
-        >
-          <Text style={styles.submitText}>
-            {pending ? 'Atualizando...' : 'Atualizar comunicado'}
-          </Text>
-        </Pressable>
+          disabled={pendingUpdate !== null}
+        />
 
         {feedback ? (
           <Text accessibilityRole="alert" style={styles.feedback}>
@@ -367,23 +359,9 @@ const styles = StyleSheet.create({
     fontSize: AUTH_THEME.typography.body,
   },
 
-  input: {
-    backgroundColor: AUTH_THEME.colors.surface,
-    borderRadius: AUTH_THEME.radius.md,
-    borderWidth: 1,
-    borderColor: AUTH_THEME.colors.border,
-    padding: AUTH_THEME.spacing.md,
-    color: AUTH_THEME.colors.text,
-  },
-
   textArea: {
     minHeight: 180,
-    backgroundColor: AUTH_THEME.colors.surface,
-    borderRadius: AUTH_THEME.radius.md,
-    borderWidth: 1,
-    borderColor: AUTH_THEME.colors.border,
     padding: AUTH_THEME.spacing.md,
-    color: AUTH_THEME.colors.text,
   },
 
   durationContainer: {
@@ -393,6 +371,10 @@ const styles = StyleSheet.create({
   },
 
   durationChip: {
+    minHeight: 48,
+    minWidth: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingHorizontal: AUTH_THEME.spacing.lg,
     paddingVertical: AUTH_THEME.spacing.sm,
     borderRadius: AUTH_THEME.radius.pill,
@@ -407,17 +389,8 @@ const styles = StyleSheet.create({
   },
 
   submitButton: {
-    backgroundColor: AUTH_THEME.colors.primary,
-    borderRadius: AUTH_THEME.radius.md,
-    paddingVertical: AUTH_THEME.spacing.md,
-    alignItems: 'center',
+    minWidth: '100%',
     marginTop: AUTH_THEME.spacing.xl,
-  },
-
-  submitText: {
-    color: '#FFF',
-    fontWeight: '700',
-    fontSize: AUTH_THEME.typography.body,
   },
 
   selectedDurationChip: {
@@ -426,11 +399,11 @@ const styles = StyleSheet.create({
   },
 
   selectedDurationText: {
-    color: '#FFF',
+    color: AUTH_THEME.colors.white,
   },
 
   error: {
-    color: '#DC2626',
+    color: AUTH_THEME.colors.error,
     fontSize: AUTH_THEME.typography.caption,
     marginTop: AUTH_THEME.spacing.xs,
   },

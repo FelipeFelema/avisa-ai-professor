@@ -1,10 +1,10 @@
 import { useRef, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { isAxiosError } from 'axios';
 
-import { ConfirmationDialog, ScreenState } from '@/components/ui';
+import { Button, ConfirmationDialog, ScreenState } from '@/components/ui';
 import { useAnnouncement } from '@/hooks/useAnnouncement';
 import { useAuth } from '@/hooks/useAuth';
 import { useDeleteAnnouncement } from '@/hooks/useDeleteAnnouncement';
@@ -131,7 +131,9 @@ export default function AnnouncementDetailsScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.title}>{announcement.title}</Text>
+        <Text accessibilityRole="header" style={styles.title}>
+          {announcement.title}
+        </Text>
 
         <Text style={styles.author}>Professor • {announcement.author.name}</Text>
 
@@ -159,23 +161,20 @@ export default function AnnouncementDetailsScreen() {
 
         {isAuthor && (
           <View style={styles.actions}>
-            <Pressable
-              accessibilityRole="button"
+            <Button
+              label="Editar"
               accessibilityLabel="Editar comunicado"
-              style={styles.editButton}
+              style={styles.actionButton}
               onPress={() => router.push(`/announcements/${announcement.id}/edit`)}
-            >
-              <Text style={styles.editButtonText}>Editar</Text>
-            </Pressable>
+            />
 
-            <Pressable
-              accessibilityRole="button"
+            <Button
+              label="Excluir"
+              variant="destructive"
               accessibilityLabel="Excluir comunicado"
-              style={styles.deleteButton}
+              style={styles.actionButton}
               onPress={openDeleteConfirmation}
-            >
-              <Text style={styles.deleteButtonText}>Excluir</Text>
-            </Pressable>
+            />
           </View>
         )}
       </ScrollView>
@@ -253,29 +252,7 @@ const styles = StyleSheet.create({
     marginTop: AUTH_THEME.spacing.xl,
   },
 
-  editButton: {
+  actionButton: {
     flex: 1,
-    alignItems: 'center',
-    paddingVertical: AUTH_THEME.spacing.md,
-    borderRadius: AUTH_THEME.radius.md,
-    backgroundColor: AUTH_THEME.colors.primary,
-  },
-
-  deleteButton: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: AUTH_THEME.spacing.md,
-    borderRadius: AUTH_THEME.radius.md,
-    backgroundColor: '#DC2626',
-  },
-
-  editButtonText: {
-    color: '#FFF',
-    fontWeight: '700',
-  },
-
-  deleteButtonText: {
-    color: '#FFF',
-    fontWeight: '700',
   },
 });
