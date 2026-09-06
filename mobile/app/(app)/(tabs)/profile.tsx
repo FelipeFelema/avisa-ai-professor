@@ -1,16 +1,16 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Button } from '@/components/ui';
+import { Button, ScreenState } from '@/components/ui';
 import { useAuth } from '@/hooks/useAuth';
 import { AUTH_THEME } from '@/theme/auth';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user, logout, isLoading } = useAuth();
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   const handleLogout = async () => {
@@ -24,8 +24,20 @@ export default function ProfileScreen() {
     }
   };
 
+  if (isLoading) {
+    return <ScreenState kind="loading" title="Carregando perfil" message="Aguarde um momento." />;
+  }
+
   if (!user) {
-    return null;
+    return (
+      <ScreenState
+        kind="not-found"
+        title="Perfil não disponível"
+        message="Entre novamente para consultar seus dados."
+        actionLabel="Entrar"
+        onAction={() => router.replace('/login')}
+      />
+    );
   }
 
   return (
@@ -37,7 +49,9 @@ export default function ProfileScreen() {
           </View>
 
           <View style={styles.headerCopy}>
-            <Text style={styles.title}>Meu perfil</Text>
+            <Text accessibilityRole="header" style={styles.title}>
+              Meu perfil
+            </Text>
             <Text style={styles.subtitle}>
               Confira suas informações de conta e saia quando precisar.
             </Text>
@@ -90,24 +104,12 @@ export default function ProfileScreen() {
           onPress={() => router.push('/profile/edit')}
         />
 
-        <Pressable
-          style={({ pressed }) => [
-            styles.logoutButton,
-            pressed && styles.logoutButtonPressed,
-            isSigningOut && styles.logoutButtonDisabled,
-          ]}
+        <Button
+          label="Sair da conta"
+          variant="destructive"
+          loading={isSigningOut}
           onPress={handleLogout}
-          disabled={isSigningOut}
-        >
-          {isSigningOut ? (
-            <ActivityIndicator color={AUTH_THEME.colors.white} />
-          ) : (
-            <>
-              <Ionicons name="log-out-outline" size={18} color={AUTH_THEME.colors.white} />
-              <Text style={styles.logoutText}>Sair da conta</Text>
-            </>
-          )}
-        </Pressable>
+        />
       </ScrollView>
     </SafeAreaView>
   );
@@ -211,30 +213,5 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: AUTH_THEME.colors.border,
     marginVertical: AUTH_THEME.spacing.lg,
-  },
-
-  logoutButton: {
-    backgroundColor: AUTH_THEME.colors.error,
-    borderRadius: AUTH_THEME.radius.md,
-    paddingVertical: AUTH_THEME.spacing.md,
-    paddingHorizontal: AUTH_THEME.spacing.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    gap: AUTH_THEME.spacing.sm,
-  },
-
-  logoutButtonPressed: {
-    opacity: 0.9,
-  },
-
-  logoutButtonDisabled: {
-    opacity: 0.8,
-  },
-
-  logoutText: {
-    color: AUTH_THEME.colors.white,
-    fontSize: AUTH_THEME.typography.body,
-    fontWeight: '800',
   },
 });

@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { isAxiosError } from 'axios';
 
 import { AuthButton, AuthField } from '@/components/auth';
-import { ConfirmationDialog, type ConfirmationSummaryRow } from '@/components/ui';
+import { ConfirmationDialog, ScreenState, type ConfirmationSummaryRow } from '@/components/ui';
 import { getHttpErrorMessage } from '@/lib';
 import { useAuth } from '@/hooks/useAuth';
 import { useUpdateProfile } from '@/hooks/useUpdateProfile';
@@ -26,7 +26,7 @@ type PendingProfileUpdate = {
 
 export default function ProfileEditScreen() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const updateProfile = useUpdateProfile();
   const [pendingUpdate, setPendingUpdate] = useState<PendingProfileUpdate | null>(null);
   const [confirmationError, setConfirmationError] = useState<string>();
@@ -47,8 +47,20 @@ export default function ProfileEditScreen() {
     },
   });
 
+  if (isLoading) {
+    return <ScreenState kind="loading" title="Carregando perfil" message="Aguarde um momento." />;
+  }
+
   if (!user) {
-    return null;
+    return (
+      <ScreenState
+        kind="not-found"
+        title="Perfil não disponível"
+        message="Entre novamente para editar seus dados."
+        actionLabel="Entrar"
+        onAction={() => router.replace('/login')}
+      />
+    );
   }
 
   const onSubmit = (values: UpdateProfileFormData) => {
@@ -113,7 +125,9 @@ export default function ProfileEditScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.title}>Editar perfil</Text>
+        <Text accessibilityRole="header" style={styles.title}>
+          Editar perfil
+        </Text>
         <Text style={styles.subtitle}>
           Atualize somente seu nome e e-mail. O perfil de acesso permanece inalterado.
         </Text>
@@ -155,7 +169,11 @@ export default function ProfileEditScreen() {
 
         <AuthField label="Perfil" value={user.role} editable={false} />
 
-        {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+        {feedback ? (
+          <Text accessibilityRole="alert" style={styles.feedback}>
+            {feedback}
+          </Text>
+        ) : null}
 
         <AuthButton
           label="Salvar alterações"
