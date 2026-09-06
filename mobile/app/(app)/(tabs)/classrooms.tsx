@@ -1,9 +1,9 @@
 import { useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { ClassroomCard, EmptyClassroomState } from '@/components/home';
-import { ConfirmationDialog, ScreenState } from '@/components/ui';
+import { Button, ConfirmationDialog, FormField, ScreenState } from '@/components/ui';
 import { useAvailableClassrooms } from '@/hooks/useAvailableClassrooms';
 import { useAuth } from '@/hooks/useAuth';
 import { useJoinClassroom } from '@/hooks/useJoinClassroom';
@@ -11,7 +11,7 @@ import { useLeaveClassroom } from '@/hooks/useLeaveClassroom';
 import { useMyClassrooms } from '@/hooks/useMyClassrooms';
 import { useDeleteClassroom } from '@/hooks/useDeleteClassroom';
 import { getHttpErrorMessage, isUnauthorizedError } from '@/lib';
-import { AUTH_THEME } from '@/theme/auth';
+import { theme } from '@/theme';
 import type { ClassroomSummary } from '@/types/classroom';
 
 type ClassroomAction = {
@@ -24,8 +24,12 @@ export default function ClassroomsScreen() {
   const [action, setAction] = useState<ClassroomAction | null>(null);
   const [actionError, setActionError] = useState<string>();
   const actionInFlight = useRef(false);
-  const { data: availableClassrooms = [], isLoading: availableLoading } =
-    useAvailableClassrooms(search);
+  const {
+    data: availableClassrooms = [],
+    isLoading: availableLoading,
+    isError: availableError,
+    refetch: refetchAvailableClassrooms,
+  } = useAvailableClassrooms(search);
   const {
     data: classrooms,
     isLoading: classroomsLoading,
@@ -105,7 +109,9 @@ export default function ClassroomsScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <View style={styles.headerContent}>
-            <Text style={styles.title}>Turmas</Text>
+            <Text accessibilityRole="header" style={styles.title}>
+              Turmas
+            </Text>
 
             <Text style={styles.subtitle}>
               Visualize suas turmas e encontre novas turmas para participar.
@@ -113,19 +119,17 @@ export default function ClassroomsScreen() {
           </View>
 
           {user?.role === 'PROFESSOR' ? (
-            <Pressable
-              accessibilityRole="button"
+            <Button
+              label="Criar turma"
+              accessibilityLabel="Criar turma"
               style={styles.createButton}
               onPress={() => router.push('/classrooms/new')}
-            >
-              <Text style={styles.createButtonText}>Criar turma</Text>
-            </Pressable>
+            />
           ) : null}
         </View>
 
-        <TextInput
-          accessibilityLabel="Buscar turmas"
-          style={styles.searchInput}
+        <FormField
+          label="Buscar turmas"
           placeholder="Buscar turmas..."
           value={search}
           onChangeText={setSearch}
@@ -158,6 +162,16 @@ export default function ClassroomsScreen() {
 
         {availableLoading ? (
           <ScreenState kind="loading" title="Buscando turmas" />
+        ) : availableError ? (
+          <ScreenState
+            kind="error"
+            title="Não foi possível buscar turmas"
+            message="Verifique sua conexão e tente novamente."
+            actionLabel="Tentar novamente"
+            onAction={() => {
+              void refetchAvailableClassrooms();
+            }}
+          />
         ) : availableClassrooms.length > 0 ? (
           availableClassrooms.map((classroom) => (
             <ClassroomCard
@@ -173,7 +187,11 @@ export default function ClassroomsScreen() {
             />
           ))
         ) : (
-          <Text style={styles.emptyAvailable}>Nenhuma turma disponível.</Text>
+          <ScreenState
+            kind="empty"
+            title="Nenhuma turma disponível"
+            message="Quando houver novas turmas, elas aparecerão aqui."
+          />
         )}
       </ScrollView>
 
@@ -201,55 +219,28 @@ export default function ClassroomsScreen() {
 
 const styles = StyleSheet.create({
   content: {
-    padding: AUTH_THEME.spacing.xl,
-    gap: AUTH_THEME.spacing.lg,
-    backgroundColor: AUTH_THEME.colors.background,
+    padding: theme.spacing.xl,
+    gap: theme.spacing.lg,
+    backgroundColor: theme.colors.background,
     flexGrow: 1,
   },
-  header: { gap: AUTH_THEME.spacing.sm },
-  headerContent: { gap: AUTH_THEME.spacing.sm },
+  header: { gap: theme.spacing.sm },
+  headerContent: { gap: theme.spacing.sm },
   title: {
-    fontSize: AUTH_THEME.typography.title,
-    fontWeight: '800',
-    color: AUTH_THEME.colors.text,
+    ...theme.typography.title,
+    color: theme.colors.text,
   },
   subtitle: {
-    color: AUTH_THEME.colors.muted,
-    fontSize: AUTH_THEME.typography.body,
-    lineHeight: 22,
+    ...theme.typography.body,
+    color: theme.colors.textMuted,
   },
   createButton: {
     alignSelf: 'flex-start',
-    minHeight: 44,
-    justifyContent: 'center',
-    backgroundColor: AUTH_THEME.colors.primary,
-    borderRadius: AUTH_THEME.radius.md,
-    paddingHorizontal: AUTH_THEME.spacing.lg,
-    paddingVertical: AUTH_THEME.spacing.sm,
-  },
-  createButtonText: {
-    color: AUTH_THEME.colors.white,
-    fontSize: AUTH_THEME.typography.label,
-    fontWeight: '700',
-  },
-  searchInput: {
-    backgroundColor: AUTH_THEME.colors.surface,
-    borderRadius: AUTH_THEME.radius.md,
-    borderWidth: 1,
-    borderColor: AUTH_THEME.colors.border,
-    paddingHorizontal: AUTH_THEME.spacing.md,
-    paddingVertical: AUTH_THEME.spacing.sm,
-    color: AUTH_THEME.colors.text,
+    paddingHorizontal: 0,
   },
   sectionTitle: {
-    color: AUTH_THEME.colors.text,
-    fontSize: AUTH_THEME.typography.sectionTitle,
-    fontWeight: '700',
-    marginTop: AUTH_THEME.spacing.lg,
-  },
-  emptyAvailable: {
-    color: AUTH_THEME.colors.muted,
-    fontSize: AUTH_THEME.typography.body,
-    textAlign: 'center',
+    ...theme.typography.sectionTitle,
+    color: theme.colors.text,
+    marginTop: theme.spacing.lg,
   },
 });

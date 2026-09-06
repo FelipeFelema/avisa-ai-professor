@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { AUTH_THEME } from '@/theme/auth';
+import { Button } from '@/components/ui';
+import { theme } from '@/theme';
 
 type ClassroomCardProps = {
   name: string;
@@ -54,18 +55,13 @@ export function ClassroomCard({
       )}
 
       {actionLabel && onActionPress ? (
-        <Pressable
-          accessibilityRole="button"
+        <Button
+          label={actionLabel}
           accessibilityLabel={`${actionLabel}: ${name}`}
-          style={({ pressed }) => [
-            styles.actionButton,
-            actionVariant === 'danger' ? styles.dangerButton : styles.primaryButton,
-            pressed && styles.actionButtonPressed,
-          ]}
+          style={styles.actionButton}
+          variant={actionVariant === 'danger' ? 'destructive' : 'primary'}
           onPress={onActionPress}
-        >
-          <Text style={styles.actionButtonText}>{actionLabel}</Text>
-        </Pressable>
+        />
       ) : null}
     </View>
   );
@@ -73,14 +69,14 @@ export function ClassroomCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: AUTH_THEME.colors.surface,
-    borderRadius: AUTH_THEME.radius.lg,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.lg,
     borderWidth: 1,
-    borderColor: AUTH_THEME.colors.border,
-    padding: AUTH_THEME.spacing.lg,
-    gap: AUTH_THEME.spacing.sm,
+    borderColor: theme.colors.border,
+    padding: theme.spacing.lg,
+    gap: theme.spacing.sm,
 
-    shadowColor: '#000',
+    shadowColor: theme.colors.text,
     shadowOpacity: 0.06,
     shadowRadius: 12,
     shadowOffset: {
@@ -91,7 +87,9 @@ const styles = StyleSheet.create({
   },
 
   cardContent: {
-    gap: AUTH_THEME.spacing.sm,
+    minHeight: theme.targets.android,
+    minWidth: theme.targets.android,
+    gap: theme.spacing.sm,
   },
 
   cardPressed: {
@@ -99,59 +97,33 @@ const styles = StyleSheet.create({
   },
 
   name: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: AUTH_THEME.colors.text,
+    ...theme.typography.sectionTitle,
+    color: theme.colors.text,
   },
 
   teacher: {
-    fontSize: AUTH_THEME.typography.body,
-    color: AUTH_THEME.colors.muted,
+    ...theme.typography.body,
+    color: theme.colors.textMuted,
   },
 
   separator: {
     height: 1,
-    backgroundColor: AUTH_THEME.colors.border,
-    marginVertical: AUTH_THEME.spacing.xs,
+    backgroundColor: theme.colors.border,
+    marginVertical: theme.spacing.xs,
   },
 
   label: {
-    fontSize: AUTH_THEME.typography.label,
-    fontWeight: '700',
-    color: AUTH_THEME.colors.text,
+    ...theme.typography.label,
+    color: theme.colors.text,
   },
 
   announcement: {
-    color: AUTH_THEME.colors.muted,
-    lineHeight: 20,
+    ...theme.typography.body,
+    color: theme.colors.textMuted,
   },
 
   actionButton: {
     alignSelf: 'flex-end',
-    minHeight: 44,
-    minWidth: 44,
-    marginTop: AUTH_THEME.spacing.md,
-    paddingHorizontal: AUTH_THEME.spacing.lg,
-    paddingVertical: AUTH_THEME.spacing.sm,
-    borderRadius: AUTH_THEME.radius.md,
-    justifyContent: 'center',
-  },
-
-  actionButtonPressed: {
-    opacity: 0.9,
-  },
-
-  actionButtonText: {
-    color: AUTH_THEME.colors.white,
-    fontWeight: '700',
-    fontSize: AUTH_THEME.typography.label,
-  },
-
-  primaryButton: {
-    backgroundColor: AUTH_THEME.colors.primary,
-  },
-
-  dangerButton: {
-    backgroundColor: AUTH_THEME.colors.error,
+    marginTop: theme.spacing.md,
   },
 });

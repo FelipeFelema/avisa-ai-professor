@@ -1,18 +1,18 @@
 import { useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { isAxiosError } from 'axios';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AnnouncementCard } from '@/components/announcements';
-import { ConfirmationDialog, ScreenState } from '@/components/ui';
+import { Button, ConfirmationDialog, ScreenState } from '@/components/ui';
 import { useAuth } from '@/hooks/useAuth';
 import { useClassroomAnnouncements } from '@/hooks/useClassroomAnnouncements';
 import { useDeleteClassroom } from '@/hooks/useDeleteClassroom';
 import { useLeaveClassroom } from '@/hooks/useLeaveClassroom';
 import { useMyClassrooms } from '@/hooks/useMyClassrooms';
 import { getHttpErrorMessage } from '@/lib';
-import { AUTH_THEME } from '@/theme/auth';
+import { theme } from '@/theme';
 
 type ClassroomAction = 'delete' | 'leave';
 
@@ -151,32 +151,36 @@ export default function ClassroomDetailsScreen() {
         >
           <View style={styles.header}>
             <View style={styles.headerText}>
-              <Text style={styles.title}>Comunicados</Text>
+              <Text accessibilityRole="header" style={styles.title}>
+                Comunicados
+              </Text>
               <Text style={styles.classroomName}>{classroom.name}</Text>
             </View>
 
             {user?.role === 'PROFESSOR' ? (
-              <Pressable
-                accessibilityRole="button"
+              <Button
+                label="+ Novo"
+                accessibilityLabel="Criar comunicado"
                 style={styles.createButton}
                 onPress={() => router.push(`/classrooms/${classroom.id}/new-announcement`)}
-              >
-                <Text style={styles.createButtonText}>+ Novo</Text>
-              </Pressable>
+              />
             ) : null}
           </View>
 
-          <Pressable
-            accessibilityRole="button"
+          <Button
+            label={isOwner ? 'Excluir turma' : 'Sair'}
             accessibilityLabel={isOwner ? 'Excluir turma' : 'Sair da turma'}
-            style={[styles.actionButton, isOwner ? styles.deleteButton : styles.leaveButton]}
+            variant={isOwner ? 'destructive' : 'primary'}
+            style={styles.actionButton}
             onPress={() => openAction(isOwner ? 'delete' : 'leave')}
-          >
-            <Text style={styles.actionButtonText}>{isOwner ? 'Excluir turma' : 'Sair'}</Text>
-          </Pressable>
+          />
 
           {announcements?.length === 0 ? (
-            <Text style={styles.emptyText}>Ainda não existem comunicados para esta turma.</Text>
+            <ScreenState
+              kind="empty"
+              title="Nenhum comunicado"
+              message="Ainda não existem comunicados para esta turma."
+            />
           ) : (
             announcements?.map((announcement) => (
               <AnnouncementCard
@@ -217,66 +221,39 @@ export default function ClassroomDetailsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: AUTH_THEME.colors.background,
+    backgroundColor: theme.colors.background,
   },
   safeArea: {
     flex: 1,
-    backgroundColor: AUTH_THEME.colors.background,
+    backgroundColor: theme.colors.background,
   },
   content: {
     flexGrow: 1,
-    paddingHorizontal: AUTH_THEME.spacing.xl,
-    paddingTop: AUTH_THEME.spacing.xl,
-    paddingBottom: AUTH_THEME.spacing.xxxl,
-    gap: AUTH_THEME.spacing.lg,
+    paddingHorizontal: theme.spacing.xl,
+    paddingTop: theme.spacing.xl,
+    paddingBottom: theme.spacing.xxxl,
+    gap: theme.spacing.lg,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: AUTH_THEME.spacing.md,
+    marginBottom: theme.spacing.md,
   },
-  headerText: { gap: AUTH_THEME.spacing.xs },
+  headerText: { gap: theme.spacing.xs },
   title: {
-    color: AUTH_THEME.colors.text,
+    ...theme.typography.sectionTitle,
+    color: theme.colors.text,
     textAlign: 'center',
-    fontSize: AUTH_THEME.typography.sectionTitle,
-    fontWeight: '700',
   },
   classroomName: {
-    color: AUTH_THEME.colors.muted,
-    fontSize: AUTH_THEME.typography.body,
+    ...theme.typography.body,
+    color: theme.colors.textMuted,
   },
   createButton: {
-    minHeight: 44,
-    justifyContent: 'center',
-    backgroundColor: AUTH_THEME.colors.primary,
-    paddingHorizontal: AUTH_THEME.spacing.md,
-    paddingVertical: AUTH_THEME.spacing.xs,
-    borderRadius: AUTH_THEME.radius.md,
-  },
-  createButtonText: {
-    color: AUTH_THEME.colors.white,
-    fontWeight: '700',
-    fontSize: AUTH_THEME.typography.label,
+    paddingHorizontal: theme.spacing.xs,
   },
   actionButton: {
-    minHeight: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: AUTH_THEME.radius.md,
-  },
-  deleteButton: { backgroundColor: AUTH_THEME.colors.error },
-  leaveButton: { backgroundColor: AUTH_THEME.colors.primary },
-  actionButtonText: {
-    color: AUTH_THEME.colors.white,
-    fontWeight: '700',
-    fontSize: AUTH_THEME.typography.label,
-  },
-  emptyText: {
-    color: AUTH_THEME.colors.muted,
-    fontSize: AUTH_THEME.typography.body,
-    textAlign: 'center',
-    marginTop: AUTH_THEME.spacing.xl,
+    alignSelf: 'stretch',
   },
 });
