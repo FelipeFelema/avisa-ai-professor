@@ -176,14 +176,14 @@ description: "Tarefas de implementação para consolidação de experiência e q
 
 ### Tests for User Story 5
 
-- [ ] T052 [P] [US5] Escrever testes falhos de contraste, targets por plataforma, semântica e estados das rotas primárias em mobile/tests/theme/tokens.spec.ts, mobile/tests/accessibility/touch-targets.spec.tsx e mobile/tests/routes/primary-states.spec.tsx
+- [X] T052 [P] [US5] Escrever testes falhos de contraste, targets por plataforma, semântica e estados das rotas primárias em mobile/tests/theme/tokens.spec.ts, mobile/tests/accessibility/touch-targets.spec.tsx e mobile/tests/routes/primary-states.spec.tsx
 
 ### Implementation for User Story 5
 
-- [ ] T053 [US5] Registrar aprovação do product owner para a evolução verde/neutra antes do redesign amplo em specs/001-app-quality-readiness/evidence/visual-approval.md
-- [ ] T054 [P] [US5] Migrar autenticação para tokens/primitivas e estados acessíveis sem alterar regras de login/register em mobile/app/(auth)/login.tsx, mobile/app/(auth)/register.tsx, mobile/src/components/auth/AuthScreen.tsx, mobile/src/components/auth/AuthField.tsx, mobile/src/components/auth/AuthButton.tsx e mobile/src/components/auth/AuthRolePicker.tsx
-- [ ] T055 [P] [US5] Migrar listagem/detalhe/criação de turmas e cards para estados explícitos e ações irmãs sem `Pressable` aninhado em mobile/app/(app)/(tabs)/classrooms.tsx, mobile/app/(app)/classrooms/[id].tsx, mobile/app/(app)/classrooms/new.tsx, mobile/src/components/home/ClassroomCard.tsx e mobile/src/components/home/EmptyClassroomState.tsx
-- [ ] T056 [P] [US5] Migrar perfil e comunicado para tokens/primitivas, wrapping e estados loading/error/success/not-found em mobile/app/(app)/(tabs)/profile.tsx, mobile/app/(app)/profile/edit.tsx, mobile/app/(app)/announcements/[id].tsx, mobile/app/(app)/announcements/[id]/edit.tsx e mobile/src/components/announcements/AnnouncementCard.tsx
+- [X] T053 [US5] Registrar aprovação do product owner para a evolução verde/neutra antes do redesign amplo em specs/001-app-quality-readiness/evidence/visual-approval.md
+- [X] T054 [P] [US5] Migrar autenticação para tokens/primitivas e estados acessíveis sem alterar regras de login/register em mobile/app/(auth)/login.tsx, mobile/app/(auth)/register.tsx, mobile/src/components/auth/AuthScreen.tsx, mobile/src/components/auth/AuthField.tsx, mobile/src/components/auth/AuthButton.tsx e mobile/src/components/auth/AuthRolePicker.tsx
+- [X] T055 [P] [US5] Migrar listagem/detalhe/criação de turmas e cards para estados explícitos e ações irmãs sem `Pressable` aninhado em mobile/app/(app)/(tabs)/classrooms.tsx, mobile/app/(app)/classrooms/[id].tsx, mobile/app/(app)/classrooms/new.tsx, mobile/src/components/home/ClassroomCard.tsx e mobile/src/components/home/EmptyClassroomState.tsx
+- [X] T056 [P] [US5] Migrar perfil e comunicado para tokens/primitivas, wrapping e estados loading/error/success/not-found em mobile/app/(app)/(tabs)/profile.tsx, mobile/app/(app)/profile/edit.tsx, mobile/app/(app)/announcements/[id].tsx, mobile/app/(app)/announcements/[id]/edit.tsx e mobile/src/components/announcements/AnnouncementCard.tsx
 - [ ] T057 [US5] Executar auditoria cross-platform de contraste, targets, texto dinâmico e screen reader sem issue crítica em specs/001-app-quality-readiness/evidence/accessibility-audit.md
 - [ ] T058 [US5] Executar os cenários de usabilidade de exclusão, perfil e tarefas representativas e registrar SC-002/003/008 em specs/001-app-quality-readiness/evidence/usability-results.md
 
