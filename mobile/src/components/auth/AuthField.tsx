@@ -1,5 +1,7 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import {
+  BlurEvent,
+  FocusEvent,
   StyleProp,
   StyleSheet,
   Text,
@@ -9,7 +11,7 @@ import {
   View,
 } from 'react-native';
 
-import { AUTH_THEME } from '@/theme/auth';
+import { theme } from '@/theme';
 
 type AuthFieldProps = TextInputProps & {
   label: string;
@@ -26,53 +28,88 @@ export function AuthField({
   inputStyle,
   ...props
 }: AuthFieldProps) {
+  const [isFocused, setIsFocused] = useState(false);
+  const accessibilityHint = error ?? (typeof helperText === 'string' ? helperText : undefined);
+
+  const handleFocus = (event: FocusEvent) => {
+    setIsFocused(true);
+    props.onFocus?.(event);
+  };
+
+  const handleBlur = (event: BlurEvent) => {
+    setIsFocused(false);
+    props.onBlur?.(event);
+  };
+
   return (
     <View style={styles.field}>
-      <Text style={styles.label}>{label}</Text>
+      <Text nativeID={`${label}-label`} style={styles.label}>
+        {label}
+      </Text>
 
       <TextInput
-        placeholderTextColor={AUTH_THEME.colors.muted}
-        style={[styles.input, error ? styles.inputError : null, style, inputStyle]}
         {...props}
+        accessibilityLabel={props.accessibilityLabel ?? label}
+        accessibilityState={{ disabled: props.editable === false }}
+        accessibilityHint={accessibilityHint}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        placeholderTextColor={theme.colors.textMuted}
+        style={[
+          styles.input,
+          isFocused ? styles.inputFocused : null,
+          error ? styles.inputError : null,
+          style,
+          inputStyle,
+        ]}
       />
 
-      {helperText ? <Text style={styles.helper}>{helperText}</Text> : null}
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {helperText ? (
+        <Text nativeID={`${label}-helper`} style={styles.helper}>
+          {helperText}
+        </Text>
+      ) : null}
+      {error ? (
+        <Text nativeID={`${label}-error`} accessibilityRole="alert" style={styles.error}>
+          {error}
+        </Text>
+      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   field: {
-    gap: AUTH_THEME.spacing.xs,
+    gap: theme.spacing.xs,
   },
   label: {
-    color: AUTH_THEME.colors.text,
-    fontSize: AUTH_THEME.typography.label,
-    fontWeight: '700',
+    color: theme.colors.text,
+    ...theme.typography.label,
   },
   input: {
-    minHeight: 54,
+    minHeight: theme.targets.android,
     borderWidth: 1,
-    borderColor: AUTH_THEME.colors.border,
-    borderRadius: AUTH_THEME.radius.md,
-    backgroundColor: AUTH_THEME.colors.surfaceSoft,
-    paddingHorizontal: AUTH_THEME.spacing.md,
-    color: AUTH_THEME.colors.text,
-    fontSize: AUTH_THEME.typography.body,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radius.md,
+    backgroundColor: theme.colors.surfaceMuted,
+    paddingHorizontal: theme.spacing.md,
+    color: theme.colors.text,
+    ...theme.typography.body,
+  },
+  inputFocused: {
+    borderColor: theme.colors.primary,
+    borderWidth: 2,
   },
   inputError: {
-    borderColor: AUTH_THEME.colors.error,
-    backgroundColor: AUTH_THEME.colors.errorSoft,
+    borderColor: theme.colors.danger,
+    backgroundColor: theme.colors.dangerSubtle,
   },
   helper: {
-    color: AUTH_THEME.colors.muted,
-    fontSize: AUTH_THEME.typography.caption,
-    lineHeight: 18,
+    color: theme.colors.textMuted,
+    ...theme.typography.caption,
   },
   error: {
-    color: AUTH_THEME.colors.error,
-    fontSize: AUTH_THEME.typography.caption,
-    lineHeight: 18,
+    color: theme.colors.danger,
+    ...theme.typography.caption,
   },
 });

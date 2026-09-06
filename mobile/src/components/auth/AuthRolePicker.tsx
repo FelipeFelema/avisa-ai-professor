@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { AUTH_THEME } from '@/theme/auth';
+import { theme } from '@/theme';
 
 export type AuthRoleValue = 'responsible' | 'teacher';
 
@@ -13,13 +13,18 @@ export function AuthRolePicker({ value, onChange }: AuthRolePickerProps) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.label}>Tipo de conta</Text>
+        <Text accessibilityRole="header" style={styles.label}>
+          Tipo de conta
+        </Text>
         <Text style={styles.helper}>Você pode mudar isso depois se precisar.</Text>
       </View>
 
       <View style={styles.options}>
         <Pressable
+          accessibilityLabel="Responsável"
+          accessibilityHint="Acompanhar comunicados, avisos e rotinas da turma."
           accessibilityRole="button"
+          accessibilityState={{ selected: value === 'responsible' }}
           onPress={() => onChange('responsible')}
           style={({ pressed }) => [
             styles.card,
@@ -34,7 +39,10 @@ export function AuthRolePicker({ value, onChange }: AuthRolePickerProps) {
         </Pressable>
 
         <Pressable
+          accessibilityLabel="Professor"
+          accessibilityHint="Criar uma conta com código de convite da escola."
           accessibilityRole="button"
+          accessibilityState={{ selected: value === 'teacher' }}
           onPress={() => onChange('teacher')}
           style={({ pressed }) => [
             styles.card,
@@ -54,47 +62,46 @@ export function AuthRolePicker({ value, onChange }: AuthRolePickerProps) {
 
 const styles = StyleSheet.create({
   container: {
-    gap: AUTH_THEME.spacing.md,
+    gap: theme.spacing.md,
   },
   header: {
-    gap: AUTH_THEME.spacing.xs,
+    gap: theme.spacing.xs,
   },
   label: {
-    color: AUTH_THEME.colors.text,
-    fontSize: AUTH_THEME.typography.label,
-    fontWeight: '700',
+    color: theme.colors.text,
+    ...theme.typography.label,
   },
   helper: {
-    color: AUTH_THEME.colors.muted,
-    fontSize: AUTH_THEME.typography.caption,
-    lineHeight: 18,
+    color: theme.colors.textMuted,
+    ...theme.typography.caption,
   },
   options: {
-    gap: AUTH_THEME.spacing.md,
+    gap: theme.spacing.md,
   },
   card: {
+    minHeight: theme.targets.android,
+    minWidth: theme.targets.android,
     borderWidth: 1,
-    borderColor: AUTH_THEME.colors.border,
-    borderRadius: AUTH_THEME.radius.lg,
-    backgroundColor: AUTH_THEME.colors.surfaceSoft,
-    padding: AUTH_THEME.spacing.lg,
-    gap: AUTH_THEME.spacing.xs,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radius.lg,
+    backgroundColor: theme.colors.surfaceMuted,
+    padding: theme.spacing.lg,
+    gap: theme.spacing.xs,
   },
   cardSelected: {
-    borderColor: AUTH_THEME.colors.primaryBorder,
-    backgroundColor: AUTH_THEME.colors.primarySoft,
+    borderColor: theme.colors.borderStrong,
+    backgroundColor: theme.colors.primarySubtle,
   },
   cardPressed: {
     opacity: 0.9,
   },
   cardTitle: {
-    color: AUTH_THEME.colors.text,
-    fontSize: AUTH_THEME.typography.body,
+    color: theme.colors.text,
+    ...theme.typography.body,
     fontWeight: '700',
   },
   cardDescription: {
-    color: AUTH_THEME.colors.muted,
-    fontSize: AUTH_THEME.typography.caption,
-    lineHeight: 18,
+    color: theme.colors.textMuted,
+    ...theme.typography.caption,
   },
 });
