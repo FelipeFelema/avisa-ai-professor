@@ -1,5 +1,6 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { theme } from '@/theme';
+import { Button } from './Button';
 
 export type ScreenStateKind = 'loading' | 'empty' | 'error' | 'success' | 'not-found';
 
@@ -19,9 +20,7 @@ export function ScreenState({ kind, title, message, actionLabel, onAction }: Scr
       </Text>
       {message ? <Text style={styles.message}>{message}</Text> : null}
       {actionLabel && onAction ? (
-        <Pressable accessibilityRole="button" onPress={onAction} style={styles.action}>
-          <Text style={styles.actionText}>{actionLabel}</Text>
-        </Pressable>
+        <Button label={actionLabel} variant="ghost" onPress={onAction} style={styles.action} />
       ) : null}
       <Text accessibilityElementsHidden style={styles.kind}>
         {kind}
@@ -45,6 +44,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: theme.spacing.md,
   },
-  actionText: { ...theme.typography.body, color: theme.colors.primary, fontWeight: '700' },
   kind: { position: 'absolute', width: 1, height: 1, opacity: 0 },
 });

@@ -7,6 +7,7 @@ export type ButtonProps = Omit<PressableProps, 'accessibilityState'> & {
   label: string;
   variant?: ButtonVariant;
   loading?: boolean;
+  loadingLabel?: string;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -14,12 +15,13 @@ export function Button({
   label,
   variant = 'primary',
   loading = false,
+  loadingLabel,
   disabled,
   style,
   ...props
 }: ButtonProps) {
-  const isDisabled = disabled || loading;
-  const labelText = loading ? 'Aguarde...' : label;
+  const isDisabled = Boolean(disabled || loading);
+  const labelText = loading ? (loadingLabel ?? 'Aguarde...') : label;
 
   return (
     <Pressable
@@ -35,7 +37,14 @@ export function Button({
         style,
       ]}
     >
-      <Text style={[styles.text, variant === 'ghost' && styles.ghostText]}>{labelText}</Text>
+      <Text
+        style={[
+          styles.text,
+          (variant === 'secondary' || variant === 'ghost') && styles.secondaryText,
+        ]}
+      >
+        {labelText}
+      </Text>
     </Pressable>
   );
 }
@@ -65,5 +74,5 @@ const styles = StyleSheet.create({
     lineHeight: theme.typography.body.lineHeight,
     fontWeight: '700',
   },
-  ghostText: { color: theme.colors.primary },
+  secondaryText: { color: theme.colors.primary },
 });

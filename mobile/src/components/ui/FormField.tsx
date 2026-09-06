@@ -12,7 +12,8 @@ export function FormField({
   error,
   helperText,
   accessibilityLabel,
-  ...props
+  style,
+  ...inputProps
 }: FormFieldProps) {
   const describedBy = error ? `${label}-error` : helperText ? `${label}-helper` : undefined;
 
@@ -20,11 +21,11 @@ export function FormField({
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
-        {...props}
+        {...inputProps}
         accessibilityLabel={accessibilityLabel ?? label}
-        accessibilityState={{ disabled: props.editable === false }}
-        accessibilityHint={describedBy}
-        style={[styles.input, error && styles.inputError]}
+        accessibilityState={{ disabled: inputProps.editable === false }}
+        accessibilityHint={error ?? helperText ?? describedBy}
+        style={[styles.input, error && styles.inputError, style]}
       />
       {error ? (
         <Text nativeID={`${label}-error`} accessibilityRole="alert" style={styles.error}>
