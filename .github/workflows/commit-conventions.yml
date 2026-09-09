@@ -1,0 +1,53 @@
+name: Commit Conventions
+
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - develop
+      - main
+
+  pull_request:
+    branches:
+      - develop
+      - main
+
+jobs:
+  commit-conventions:
+    name: Validate commits
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install commit tooling
+        run: npm ci
+
+      - name: Validate commit range
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+          CURRENT_SHA: ${{ github.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            FROM_SHA="$BASE_SHA"
+            TO_SHA="$HEAD_SHA"
+            npm exec -- commitlint -- --from "$FROM_SHA" --to "$TO_SHA" --verbose
+          elif [ "$EVENT_NAME" = "push" ] && [ "$BEFORE_SHA" != "0000000000000000000000000000000000000000" ]; then
+            npm exec -- commitlint -- --from "$BEFORE_SHA" --to "$CURRENT_SHA" --verbose
+          else
+            npm exec -- commitlint -- --last 1 --verbose
+          fi
