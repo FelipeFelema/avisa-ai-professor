@@ -24,7 +24,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: avisa_ai
+          POSTGRES_DB: avisa_ai_test
         ports:
           - 5432:5432
         options: >-
@@ -34,7 +34,7 @@ jobs:
           --health-retries 5
 
     env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/avisa_ai
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/avisa_ai_test
       JWT_ACCESS_SECRET: test_access_secret
       JWT_REFRESH_SECRET: test_refresh_secret
 
@@ -56,11 +56,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Validate Prisma schema
+        run: npm run prisma:validate
+
       - name: Generate Prisma client
-        run: npx prisma generate
+        run: npm run prisma:generate
 
       - name: Apply database migrations
-        run: npx prisma migrate deploy
+        run: npm run prisma:migrate:deploy
 
       - name: Check code formatting
         run: npm run format:check
@@ -68,11 +71,29 @@ jobs:
       - name: Run lint
         run: npm run lint
 
+      - name: Typecheck backend
+        run: npm run typecheck
+
       - name: Run tests with coverage
         run: npm run test:cov
 
       - name: Run integration tests
         run: npm run test:integration
 
+      - name: Run OpenAPI contract tests
+        run: npm run test:contract
+
+      - name: Run end-to-end tests
+        run: npm run test:e2e
+
       - name: Build project
         run: npm run build
+
+      - name: Upload backend coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: backend/coverage
+          if-no-files-found: ignore
+          retention-days: 7
