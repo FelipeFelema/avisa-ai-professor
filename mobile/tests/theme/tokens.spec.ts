@@ -33,6 +33,9 @@ describe('visual foundation tokens', () => {
         background: expect.any(String),
         surface: expect.any(String),
         primary: expect.any(String),
+        tabBarActive: expect.any(String),
+        tabBarInactive: expect.any(String),
+        backdrop: expect.any(String),
         text: expect.any(String),
         textMuted: expect.any(String),
         border: expect.any(String),
@@ -54,6 +57,8 @@ describe('visual foundation tokens', () => {
       ['textMuted', 'background'],
       ['textMuted', 'surface'],
       ['onPrimary', 'primary'],
+      ['tabBarInactive', 'surface'],
+      ['danger', 'surface'],
       ['onInfo', 'info'],
       ['onSuccess', 'success'],
       ['onWarning', 'warning'],
@@ -72,11 +77,22 @@ describe('visual foundation tokens', () => {
       resolve(__dirname, '../../app/(app)/announcements/[id].tsx'),
       resolve(__dirname, '../../app/(auth)/login.tsx'),
       resolve(__dirname, '../../app/(auth)/register.tsx'),
+      resolve(__dirname, '../../app/(app)/(tabs)/_layout.tsx'),
+      resolve(__dirname, '../../src/components/ui/ConfirmationDialog.tsx'),
+      resolve(__dirname, '../../app/(app)/classrooms/[id]/new-announcement.tsx'),
     ];
 
     for (const screenPath of featureScreens) {
       const source = readFileSync(screenPath, 'utf8');
       expect(source).not.toMatch(/#(?:DC2626|FFF)\b/i);
+      expect(source).not.toMatch(/#(?:205B57|667085)\b/i);
+      expect(source).not.toMatch(/rgba\(0,0,0,0\.38\)/i);
     }
+  });
+
+  it('keeps the tab bar and confirmation backdrop roles in the semantic palette', () => {
+    expect(theme.colors.tabBarActive).toBe(theme.colors.primary);
+    expect(theme.colors.tabBarInactive).toBe('#667085');
+    expect(theme.colors.backdrop).toBe('rgba(0,0,0,0.38)');
   });
 });

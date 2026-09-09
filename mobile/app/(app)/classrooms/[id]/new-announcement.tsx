@@ -12,6 +12,7 @@ import {
 import { ANNOUNCEMENT_DURATIONS } from '@/types/announcement';
 
 import { AUTH_THEME } from '@/theme/auth';
+import { theme } from '@/theme';
 
 export default function NewAnnouncementScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -55,16 +56,22 @@ export default function NewAnnouncementScreen() {
             name="title"
             render={({ field: { value, onChange } }) => (
               <TextInput
+                accessibilityLabel="Título do comunicado"
+                accessibilityHint="Informe o título do comunicado."
                 value={value}
                 onChangeText={onChange}
                 placeholder="Digite o título"
-                placeholderTextColor={AUTH_THEME.colors.muted}
+                placeholderTextColor={theme.colors.textMuted}
                 style={styles.input}
               />
             )}
           />
 
-          {errors.title && <Text style={styles.error}>{errors.title.message}</Text>}
+          {errors.title && (
+            <Text accessibilityRole="alert" style={styles.error}>
+              {errors.title.message}
+            </Text>
+          )}
         </View>
 
         <View style={styles.field}>
@@ -75,6 +82,8 @@ export default function NewAnnouncementScreen() {
             name="content"
             render={({ field: { value, onChange } }) => (
               <TextInput
+                accessibilityLabel="Conteúdo do comunicado"
+                accessibilityHint="Informe o conteúdo do comunicado."
                 multiline
                 textAlignVertical="top"
                 scrollEnabled
@@ -82,13 +91,17 @@ export default function NewAnnouncementScreen() {
                 value={value}
                 onChangeText={onChange}
                 placeholder="Digite o comunicado..."
-                placeholderTextColor={AUTH_THEME.colors.muted}
+                placeholderTextColor={theme.colors.textMuted}
                 style={styles.textArea}
               />
             )}
           />
 
-          {errors.content && <Text style={styles.error}>{errors.content.message}</Text>}
+          {errors.content && (
+            <Text accessibilityRole="alert" style={styles.error}>
+              {errors.content.message}
+            </Text>
+          )}
         </View>
 
         <View style={styles.field}>
@@ -102,6 +115,13 @@ export default function NewAnnouncementScreen() {
                 {ANNOUNCEMENT_DURATIONS.map((days) => (
                   <Pressable
                     key={days}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${days} ${days === 1 ? 'dia' : 'dias'}`}
+                    accessibilityState={{
+                      disabled: createAnnouncement.isPending,
+                      selected: value === days,
+                    }}
+                    disabled={createAnnouncement.isPending}
                     onPress={() => onChange(days)}
                     style={[styles.durationChip, value === days && styles.selectedDurationChip]}
                   >
@@ -118,6 +138,12 @@ export default function NewAnnouncementScreen() {
         </View>
 
         <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Publicar comunicado"
+          accessibilityState={{
+            disabled: createAnnouncement.isPending,
+            busy: createAnnouncement.isPending,
+          }}
           style={styles.submitButton}
           onPress={handleSubmit(onSubmit)}
           disabled={createAnnouncement.isPending}
@@ -192,6 +218,8 @@ const styles = StyleSheet.create({
   },
 
   durationChip: {
+    minHeight: theme.targets.android,
+    minWidth: theme.targets.android,
     paddingHorizontal: AUTH_THEME.spacing.lg,
     paddingVertical: AUTH_THEME.spacing.sm,
     borderRadius: AUTH_THEME.radius.pill,
@@ -206,6 +234,8 @@ const styles = StyleSheet.create({
   },
 
   submitButton: {
+    minHeight: theme.targets.android,
+    minWidth: theme.targets.android,
     backgroundColor: AUTH_THEME.colors.primary,
     borderRadius: AUTH_THEME.radius.md,
     paddingVertical: AUTH_THEME.spacing.md,
@@ -214,7 +244,7 @@ const styles = StyleSheet.create({
   },
 
   submitText: {
-    color: '#FFF',
+    color: theme.colors.onPrimary,
     fontWeight: '700',
     fontSize: AUTH_THEME.typography.body,
   },
@@ -225,11 +255,11 @@ const styles = StyleSheet.create({
   },
 
   selectedDurationText: {
-    color: '#FFF',
+    color: theme.colors.onPrimary,
   },
 
   error: {
-    color: '#DC2626',
+    color: theme.colors.danger,
     fontSize: AUTH_THEME.typography.caption,
     marginTop: AUTH_THEME.spacing.xs,
   },
