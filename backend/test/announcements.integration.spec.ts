@@ -133,9 +133,21 @@ describe('Announcements Integration Tests', () => {
         .expect(201);
 
       expect(announcementRes.body).toHaveProperty('id');
-      expect((announcementRes.body as Record<string, unknown>).title).toBe(
-        'Test Announcement',
+      expect(announcementRes.body).toEqual(
+        expect.objectContaining({
+          classroomId,
+          title: 'Test Announcement',
+          content: 'Test Content',
+          expiresAt: expect.any(String) as unknown as string,
+          author: expect.objectContaining({
+            id: expect.any(String) as unknown as string,
+            name: 'Prof User',
+          }) as unknown as Record<string, unknown>,
+          createdAt: expect.any(String) as unknown as string,
+          updatedAt: expect.any(String) as unknown as string,
+        }),
       );
+      expect(announcementRes.body).not.toHaveProperty('authorId');
     });
 
     it('should not allow student to create announcement', async () => {
@@ -273,6 +285,11 @@ describe('Announcements Integration Tests', () => {
       expect(
         (listRes.body as Array<{ author: { name: string } }>)[0]?.author.name,
       ).toBe('Prof User');
+      const firstAnnouncement = (
+        listRes.body as Array<Record<string, unknown>>
+      )[0];
+      expect(firstAnnouncement).toHaveProperty('updatedAt');
+      expect(firstAnnouncement).not.toHaveProperty('authorId');
     });
 
     it('should list announcements for a parent after joining classroom', async () => {

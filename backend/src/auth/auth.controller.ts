@@ -39,6 +39,7 @@ export class AuthController {
 
   @UseGuards(RateLimitGuard)
   @Post('login')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     operationId: 'auth.login',
     summary: 'Entrar com e-mail e senha',
@@ -50,7 +51,14 @@ export class AuthController {
   @ApiUnauthorizedResponse()
   @ApiTooManyRequestsResponse()
   async login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto.email, loginDto.password);
+    const tokens = await this.authService.login(
+      loginDto.email,
+      loginDto.password,
+    );
+    return {
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+    };
   }
 
   @UseGuards(RateLimitGuard)
@@ -73,6 +81,7 @@ export class AuthController {
 
   @UseGuards(RateLimitGuard, AuthGuard('jwt-refresh'))
   @Post('refresh')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     operationId: 'auth.refresh',
     summary: 'Renovar tokens JWT',
@@ -84,7 +93,13 @@ export class AuthController {
   @ApiValidationErrorResponse()
   @ApiUnauthorizedResponse()
   @ApiTooManyRequestsResponse()
-  refresh(@Body() refreshTokenDto: RefreshTokenDto) {
-    return this.authService.refreshToken(refreshTokenDto.refreshToken);
+  async refresh(@Body() refreshTokenDto: RefreshTokenDto) {
+    const tokens = await this.authService.refreshToken(
+      refreshTokenDto.refreshToken,
+    );
+    return {
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+    };
   }
 }

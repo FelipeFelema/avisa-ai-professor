@@ -67,7 +67,10 @@ export class CreateAnnouncementDto {
   durationInDays!: number;
 }
 
-@ApiSchema({ name: 'AnnouncementAuthor' })
+@closedSchema({
+  name: 'AnnouncementAuthor',
+  additionalProperties: false,
+})
 export class AnnouncementAuthorDto {
   @ApiProperty({ type: 'string', format: 'uuid' })
   id!: string;
@@ -76,7 +79,10 @@ export class AnnouncementAuthorDto {
   name!: string;
 }
 
-@ApiSchema({ name: 'Announcement' })
+@closedSchema({
+  name: 'Announcement',
+  additionalProperties: false,
+})
 export class AnnouncementDto {
   @ApiProperty({ type: 'string', format: 'uuid' })
   id!: string;

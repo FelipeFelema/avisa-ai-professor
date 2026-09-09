@@ -44,6 +44,7 @@ export class AuthService {
       email: user.email,
       role: user.role,
       createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
       access_token: tokens.access_token,
       refresh_token: tokens.refresh_token,
     };

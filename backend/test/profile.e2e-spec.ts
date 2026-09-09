@@ -62,7 +62,7 @@ describe('Profile self-service (e2e)', () => {
       .post('/api/v1/auth/login')
       .set('X-Forwarded-For', 'profile-e2e-login-device-b')
       .send({ email: ` ${first.email.toUpperCase()} `, password })
-      .expect(201);
+      .expect(200);
     const second = secondResponse.body as AuthResponse;
     const newEmail = makeEmail('device-a-updated').toUpperCase();
 
@@ -89,7 +89,7 @@ describe('Profile self-service (e2e)', () => {
       .post('/api/v1/auth/refresh')
       .set('X-Forwarded-For', 'profile-e2e-refresh-device-a')
       .send({ refreshToken: first.refresh_token })
-      .expect(201);
+      .expect(200);
 
     await request(app.getHttpServer())
       .get('/api/v1/users/profile')
@@ -105,7 +105,7 @@ describe('Profile self-service (e2e)', () => {
       .post('/api/v1/auth/login')
       .set('X-Forwarded-For', 'profile-e2e-login-new-email')
       .send({ email: ` ${newEmail} `, password })
-      .expect(201);
+      .expect(200);
   });
 
   it('rejects password, role, id and unknown fields through the production-like validation boundary', async () => {

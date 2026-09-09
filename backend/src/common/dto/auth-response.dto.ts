@@ -31,6 +31,8 @@ export enum UserRole {
 @closedSchema({
   name: 'AuthTokensResponse',
   additionalProperties: false,
+  description:
+    'O sid identifica a sessão JWT e é carregado como claim nos tokens para permitir revogação seletiva.',
 })
 export class AuthTokensResponseDto {
   @ApiProperty({ type: 'string' })

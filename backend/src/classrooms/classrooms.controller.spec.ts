@@ -44,11 +44,57 @@ describe('ClassroomsController', () => {
     );
   });
 
+  it.each(['create', 'join', 'leave'])(
+    'maps %s responses to the documented members shape',
+    async (operation) => {
+      const classroom = {
+        id: 'classroom-id',
+        name: '1Â° ANO A',
+        ownerId: 'owner-id',
+        createdAt: new Date('2026-09-09T10:00:00.000Z'),
+        updatedAt: new Date('2026-09-09T10:00:00.000Z'),
+        userClassrooms: [{ user: { id: 'owner-id', name: 'Professor Test' } }],
+      };
+      classroomsService[operation].mockResolvedValue(classroom);
+
+      const result =
+        operation === 'create'
+          ? await controller.create(
+              { user: { id: 'owner-id' } } as never,
+              { name: classroom.name } as never,
+            )
+          : operation === 'join'
+            ? await controller.join('classroom-id', {
+                user: { id: 'parent-id' },
+              } as never)
+            : await controller.leave('classroom-id', {
+                user: { id: 'parent-id' },
+              } as never);
+
+      expect(result).toEqual({
+        id: classroom.id,
+        name: classroom.name,
+        ownerId: classroom.ownerId,
+        members: classroom.userClassrooms.map(({ user }) => user),
+        createdAt: classroom.createdAt,
+        updatedAt: classroom.updatedAt,
+      });
+      expect(result).not.toHaveProperty('userClassrooms');
+    },
+  );
+
   it('should expose the classroom DELETE endpoint as an empty 204 response', () => {
     // Decorator metadata is stored on the handler function by Nest.
     // eslint-disable-next-line @typescript-eslint/unbound-method
     const deleteHandler = ClassroomsController.prototype.delete;
 
     expect(Reflect.getMetadata(HTTP_CODE_METADATA, deleteHandler)).toBe(204);
+  });
+
+  it('exposes the classroom leave endpoint as a 200 response', () => {
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    const leaveHandler = ClassroomsController.prototype.leave;
+
+    expect(Reflect.getMetadata(HTTP_CODE_METADATA, leaveHandler)).toBe(200);
   });
 });

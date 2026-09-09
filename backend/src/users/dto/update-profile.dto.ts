@@ -23,21 +23,26 @@ import {
 
 type ClosedSchemaOptions = ApiSchemaOptions & {
   additionalProperties: false;
+  minProperties?: number;
 };
 
 function closedSchema(options: ClosedSchemaOptions): ClassDecorator {
   return ApiSchema(options);
 }
 
+const USER_NAME_API_PATTERN = "^[A-Za-zÀ-ÿ\\s'-]+$";
+
 @closedSchema({
   name: 'UpdateProfileRequest',
   additionalProperties: false,
+  minProperties: 1,
 })
 export class UpdateProfileDto {
   @ApiPropertyOptional({
     type: 'string',
     minLength: 3,
     maxLength: 100,
+    pattern: USER_NAME_API_PATTERN,
   })
   @Transform(({ value }) => transformUserName(value as unknown))
   @ValidateIf((object: unknown) => {

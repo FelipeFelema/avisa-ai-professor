@@ -301,7 +301,7 @@ describe('Users Integration Tests', () => {
         .post('/api/v1/auth/login')
         .set('X-Forwarded-For', `profile-session-b-${testPrefix}`)
         .send({ email: first.email, password: testPassword })
-        .expect(201);
+        .expect(200);
       const second = secondLogin.body as AuthResponse;
       const firstSid = tokenSid(first.auth.access_token);
       const secondSid = tokenSid(second.access_token);
@@ -321,7 +321,7 @@ describe('Users Integration Tests', () => {
         .post('/api/v1/auth/refresh')
         .set('X-Forwarded-For', `profile-session-a-refresh-${testPrefix}`)
         .send({ refreshToken: first.auth.refresh_token })
-        .expect(201);
+        .expect(200);
 
       await request(app.getHttpServer())
         .get('/api/v1/users/profile')
@@ -342,7 +342,7 @@ describe('Users Integration Tests', () => {
         .post('/api/v1/auth/login')
         .set('X-Forwarded-For', `profile-new-login-${testPrefix}`)
         .send({ email: ` ${newEmail} `, password: testPassword })
-        .expect(201);
+        .expect(200);
 
       const sessions = await prisma.authSession.findMany({
         where: { userId: first.auth.id },

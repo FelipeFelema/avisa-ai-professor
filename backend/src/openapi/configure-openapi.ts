@@ -43,6 +43,10 @@ export function configureOpenApi(app: INestApplication): void {
 
 export function isOpenApiEnabled(): boolean {
   const configured = process.env.API_DOCS_ENABLED?.toLowerCase();
+  const environment = process.env.NODE_ENV?.toLowerCase();
 
-  return process.env.NODE_ENV !== 'production' && configured !== 'false';
+  return (
+    (environment === 'development' || environment === 'test') &&
+    configured !== 'false'
+  );
 }

@@ -33,7 +33,10 @@ export class CreateInviteCodeDto {
   expiresInDays!: number;
 }
 
-@ApiSchema({ name: 'InviteCodeResponse' })
+@closedSchema({
+  name: 'InviteCodeResponse',
+  additionalProperties: false,
+})
 export class InviteCodeResponseDto {
   @ApiProperty({ type: 'string', format: 'uuid' })
   id!: string;

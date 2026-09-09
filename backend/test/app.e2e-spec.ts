@@ -67,6 +67,56 @@ describe('AppController (e2e)', () => {
     }
   });
 
+  it('denies the OpenAPI reference when NODE_ENV is missing', async () => {
+    const previousNodeEnv = process.env.NODE_ENV;
+    const previousDocsFlag = process.env.API_DOCS_ENABLED;
+
+    await app.close();
+    delete process.env.NODE_ENV;
+    process.env.API_DOCS_ENABLED = 'true';
+
+    try {
+      app = (await createTestApp()) as INestApplication<App>;
+
+      await request(app.getHttpServer()).get('/api/v1/docs').expect(404);
+      await request(app.getHttpServer())
+        .get('/api/v1/docs/openapi.json')
+        .expect(404);
+    } finally {
+      await app.close();
+      if (previousNodeEnv === undefined) delete process.env.NODE_ENV;
+      else process.env.NODE_ENV = previousNodeEnv;
+      if (previousDocsFlag === undefined) delete process.env.API_DOCS_ENABLED;
+      else process.env.API_DOCS_ENABLED = previousDocsFlag;
+      app = (await createTestApp()) as INestApplication<App>;
+    }
+  });
+
+  it('denies the OpenAPI reference for an unknown NODE_ENV', async () => {
+    const previousNodeEnv = process.env.NODE_ENV;
+    const previousDocsFlag = process.env.API_DOCS_ENABLED;
+
+    await app.close();
+    process.env.NODE_ENV = 'staging';
+    process.env.API_DOCS_ENABLED = 'true';
+
+    try {
+      app = (await createTestApp()) as INestApplication<App>;
+
+      await request(app.getHttpServer()).get('/api/v1/docs').expect(404);
+      await request(app.getHttpServer())
+        .get('/api/v1/docs/openapi.json')
+        .expect(404);
+    } finally {
+      await app.close();
+      if (previousNodeEnv === undefined) delete process.env.NODE_ENV;
+      else process.env.NODE_ENV = previousNodeEnv;
+      if (previousDocsFlag === undefined) delete process.env.API_DOCS_ENABLED;
+      else process.env.API_DOCS_ENABLED = previousDocsFlag;
+      app = (await createTestApp()) as INestApplication<App>;
+    }
+  });
+
   it('respects the documentation kill switch outside production', async () => {
     const previousNodeEnv = process.env.NODE_ENV;
     const previousDocsFlag = process.env.API_DOCS_ENABLED;

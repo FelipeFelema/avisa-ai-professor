@@ -46,6 +46,24 @@ import {
 } from '../openapi/api-responses.decorator';
 import { ErrorResponseDto } from '../common/dto/error-response.dto';
 
+function toClassroomWithMembers(classroom: {
+  id: string;
+  name: string;
+  ownerId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  userClassrooms: Array<{ user: { id: string; name: string } }>;
+}): ClassroomWithMembersDto {
+  return {
+    id: classroom.id,
+    name: classroom.name,
+    ownerId: classroom.ownerId,
+    members: classroom.userClassrooms.map(({ user }) => user),
+    createdAt: classroom.createdAt,
+    updatedAt: classroom.updatedAt,
+  };
+}
+
 @ApiTags('classrooms')
 @ApiBearerAuth('bearerAuth')
 @ApiExtraModels(
@@ -78,7 +96,9 @@ export class ClassroomsController {
   @ApiForbiddenResponse()
   @ApiConflictResponse()
   create(@Request() req: { user: AuthUser }, @Body() dto: CreateClassroomDto) {
-    return this.classroomsService.create(req.user.id, dto.name);
+    return this.classroomsService
+      .create(req.user.id, dto.name)
+      .then(toClassroomWithMembers);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -98,11 +118,14 @@ export class ClassroomsController {
   @ApiUnauthorizedResponse()
   @ApiNotFoundResponse()
   join(@Param('id') id: string, @Request() req: { user: AuthUser }) {
-    return this.classroomsService.join(req.user.id, id);
+    return this.classroomsService
+      .join(req.user.id, id)
+      .then(toClassroomWithMembers);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/leave')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     operationId: 'classrooms.leave',
     summary: 'Sair de uma turma',
@@ -121,7 +144,9 @@ export class ClassroomsController {
   @ApiNotFoundResponse()
   @ApiConflictResponse()
   leave(@Param('id') id: string, @Request() req: { user: AuthUser }) {
-    return this.classroomsService.leave(req.user.id, id);
+    return this.classroomsService
+      .leave(req.user.id, id)
+      .then(toClassroomWithMembers);
   }
 
   @UseGuards(JwtAuthGuard)

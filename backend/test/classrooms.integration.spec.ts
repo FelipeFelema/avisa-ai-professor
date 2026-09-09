@@ -96,6 +96,7 @@ describe('Classrooms Integration Tests', () => {
 
     const response = await request(app.getHttpServer())
       .post('/api/v1/auth/register')
+      .set('X-Forwarded-For', `classrooms-${testPrefix}-${label}`)
       .send({
         name: 'Professor Integration Test',
         email: makeEmail(label),
@@ -112,6 +113,7 @@ describe('Classrooms Integration Tests', () => {
   const createParentToken = async (label: string) => {
     const response = await request(app.getHttpServer())
       .post('/api/v1/auth/register')
+      .set('X-Forwarded-For', `classrooms-parent-${testPrefix}-${label}`)
       .send({
         name: 'Parent Integration Test',
         email: makeEmail(label),
@@ -153,6 +155,11 @@ describe('Classrooms Integration Tests', () => {
       }),
     );
 
+    const httpServer = app.getHttpAdapter().getInstance() as {
+      set: (key: string, value: unknown) => void;
+    };
+    httpServer.set('trust proxy', true);
+
     prisma = app.get(PrismaService);
 
     await app.init();
@@ -182,21 +189,28 @@ describe('Classrooms Integration Tests', () => {
     const body = response.body as {
       id: string;
       name: string;
-      userClassrooms: Array<{
-        user: {
-          name: string;
-        };
-      }>;
+      ownerId: string;
+      members: Array<{ id: string; name: string }>;
+      createdAt: string;
+      updatedAt: string;
     };
 
     expect(body).toHaveProperty('id');
     expect(body).toHaveProperty('name', classroomName);
-    expect(body).toHaveProperty('userClassrooms');
-    expect(
-      body.userClassrooms.some(
-        (membership) => membership.user.name === 'Professor Integration Test',
-      ),
-    ).toBe(true);
+    expect(body).toEqual(
+      expect.objectContaining({
+        ownerId: expect.any(String) as unknown as string,
+        members: [
+          expect.objectContaining({
+            id: expect.any(String) as unknown as string,
+            name: 'Professor Integration Test',
+          }),
+        ],
+        createdAt: expect.any(String) as unknown as string,
+        updatedAt: expect.any(String) as unknown as string,
+      }),
+    );
+    expect(body).not.toHaveProperty('userClassrooms');
   });
 
   it('should not create classroom without authentication', async () => {
@@ -206,6 +220,40 @@ describe('Classrooms Integration Tests', () => {
         name: makeClassroomName('without-auth'),
       })
       .expect(401);
+  });
+
+  it('should return contract-shaped members for join and leave', async () => {
+    const ownerToken = await createProfessorToken('join-leave-owner');
+    const parentToken = await createParentToken('join-leave-parent');
+    const classroomId = await createClassroom(ownerToken, 'join-leave');
+
+    const joined = await request(app.getHttpServer())
+      .post(`/api/v1/classrooms/${classroomId}/join`)
+      .set('Authorization', `Bearer ${parentToken}`)
+      .expect(201);
+    expect(joined.body).toEqual(
+      expect.objectContaining({
+        members: expect.arrayContaining([
+          expect.objectContaining({ name: 'Parent Integration Test' }),
+        ]) as unknown as Array<Record<string, unknown>>,
+        createdAt: expect.any(String) as unknown as string,
+        updatedAt: expect.any(String) as unknown as string,
+      }),
+    );
+    expect(joined.body).not.toHaveProperty('userClassrooms');
+
+    const left = await request(app.getHttpServer())
+      .post(`/api/v1/classrooms/${classroomId}/leave`)
+      .set('Authorization', `Bearer ${parentToken}`)
+      .expect(200);
+    expect(left.body).toEqual(
+      expect.objectContaining({
+        members: [
+          expect.objectContaining({ name: 'Professor Integration Test' }),
+        ],
+      }),
+    );
+    expect(left.body).not.toHaveProperty('userClassrooms');
   });
 
   describe('DELETE /api/v1/classrooms/:id', () => {
