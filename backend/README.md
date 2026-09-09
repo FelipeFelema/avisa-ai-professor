@@ -17,7 +17,8 @@ API REST do Avisa Aí Professor. A aplicação centraliza autenticação, regras
 ## Funcionalidades
 
 - Cadastro, login e renovação de tokens de acesso.
-- Tokens de atualização armazenados como hash.
+- Sessões por dispositivo com refresh tokens armazenados somente como hash.
+- Atualização self-service de nome/e-mail com revogação seletiva das demais sessões.
 - Perfis `PARENT`, `PROFESSOR` e `ADMIN`.
 - Códigos de convite para o cadastro de perfis privilegiados.
 - Criação de turmas por professores e participação de usuários em turmas.
@@ -28,13 +29,15 @@ API REST do Avisa Aí Professor. A aplicação centraliza autenticação, regras
 
 Todas as rotas têm o prefixo `/api/v1`.
 
-| Recurso               | Rotas                                                                                              | Acesso                              |
-| --------------------- | -------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| Autenticação          | `POST /auth/register`, `POST /auth/login`, `POST /auth/refresh`                                    | Público                             |
-| Turmas                | `GET /classrooms`, `GET /classrooms/my`, `POST /classrooms/:id/join`, `POST /classrooms/:id/leave` | Autenticado                         |
-| Criação de turma      | `POST /classrooms`                                                                                 | Professor                           |
-| Comunicados           | `GET /announcements`, `GET /announcements/:id`, `GET /announcements/classrooms/:classroomId`       | Autenticado e participante da turma |
-| Gestão de comunicados | `POST /announcements`, `PATCH /announcements/:id`, `DELETE /announcements/:id`                     | Professor autor do comunicado       |
+| Recurso               | Rotas                                                                                                                     | Acesso                              |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| Autenticação          | `POST /auth/register`, `POST /auth/login`, `POST /auth/refresh`                                                           | Público                             |
+| Perfil                | `GET /users/profile`, `PATCH /users/profile`                                                                              | Autenticado                         |
+| Turmas                | `GET /classrooms`, `GET /classrooms/my`, `GET /classrooms/:id`, `POST /classrooms/:id/join`, `POST /classrooms/:id/leave` | Autenticado                         |
+| Criação de turma      | `POST /classrooms`                                                                                                        | Professor                           |
+| Exclusão de turma     | `DELETE /classrooms/:id`                                                                                                  | Professor owner                     |
+| Comunicados           | `GET /announcements`, `GET /announcements/:id`, `GET /announcements/classrooms/:classroomId`                              | Autenticado e participante da turma |
+| Gestão de comunicados | `POST /announcements`, `PATCH /announcements/:id`, `DELETE /announcements/:id`                                            | Professor autor do comunicado       |
 
 ## Pré-requisitos
 
@@ -52,15 +55,21 @@ cp .env.example .env
 
 Variáveis necessárias:
 
-| Variável             | Descrição                                                               |
-| -------------------- | ----------------------------------------------------------------------- |
-| `DATABASE_URL`       | URL de conexão do PostgreSQL.                                           |
-| `JWT_ACCESS_SECRET`  | Secret usado para assinar access tokens.                                |
-| `JWT_REFRESH_SECRET` | Secret usado para assinar refresh tokens.                               |
-| `PORT`               | Porta HTTP da API. O padrão é `3000`.                                   |
-| `CORS_ORIGIN`        | Origens permitidas, separadas por vírgula. Opcional em desenvolvimento. |
+| Variável             | Classificação | Descrição                                                         |
+| -------------------- | ------------- | ----------------------------------------------------------------- |
+| `DATABASE_URL`       | Secreta       | URL de conexão do PostgreSQL; pode conter credenciais.            |
+| `JWT_ACCESS_SECRET`  | Secreta       | Secret forte e exclusivo para assinar access tokens.              |
+| `JWT_REFRESH_SECRET` | Secreta       | Secret forte e diferente para assinar refresh tokens.             |
+| `PORT`               | Não secreta   | Porta HTTP da API. O padrão é `3000`.                             |
+| `CORS_ORIGIN`        | Não secreta   | Lista explícita de origens permitidas, separadas por vírgula.     |
+| `NODE_ENV`           | Não secreta   | Ambiente de execução (`development`, `test` ou `production`).     |
+| `API_DOCS_ENABLED`   | Não secreta   | Kill switch da documentação fora de produção; `false` a desativa. |
 
-Nunca use secrets de exemplo em ambientes compartilhados ou de produção.
+Mantenha os três valores secretos somente no gerenciador de secrets do ambiente e no `.env` local ignorado pelo Git. Não os registre em logs, exemplos, imagens ou variáveis `EXPO_PUBLIC_*`. Os valores de `.env.example` são placeholders locais e devem ser substituídos; produção exige secrets fortes, distintos e rotacionáveis.
+
+O CORS deve listar apenas as origens cliente necessárias em ambientes compartilhados. A autorização permanece no backend por JWT, papel, autoria e ownership; ocultar uma ação no aplicativo não concede nem revoga permissão.
+
+Em qualquer deploy, defina explicitamente `NODE_ENV=production`, restrinja o acesso ao PostgreSQL e termine TLS em um proxy/plataforma confiável para servir a API somente por HTTPS. O usuário, a senha e a porta publicados no `docker-compose.yml` são conveniências exclusivas do desenvolvimento local.
 
 ## Banco de dados
 
@@ -73,10 +82,12 @@ docker compose up -d
 Instale as dependências, gere o client Prisma e aplique as migrations:
 
 ```bash
-npm install
+npm ci
 npx prisma generate
 npx prisma migrate dev
 ```
+
+Em deploy, use migrations versionadas com `npx prisma migrate deploy`. Testes de integração/e2e devem receber um `DATABASE_URL` descartável cujo nome contenha `test`; o helper recusa bancos de desenvolvimento/produção para operações destrutivas.
 
 ## Execução
 
@@ -86,6 +97,13 @@ npm run start:dev
 
 A API estará disponível em `http://localhost:3000/api/v1`.
 
+Em `development` e `test`, a referência OpenAPI fica em:
+
+- Swagger UI: `http://localhost:3000/api/v1/docs`
+- JSON: `http://localhost:3000/api/v1/docs/openapi.json`
+
+`API_DOCS_ENABLED=false` desativa as duas rotas fora de produção. Em `production`, ambas permanecem indisponíveis mesmo se a flag estiver definida como `true`. Use somente contas e tokens descartáveis ao experimentar operações protegidas.
+
 ## Scripts
 
 | Comando                    | Descrição                                |
@@ -94,8 +112,10 @@ A API estará disponível em `http://localhost:3000/api/v1`.
 | `npm run build`            | Gera a build de produção.                |
 | `npm run lint`             | Executa o ESLint.                        |
 | `npm run format:check`     | Verifica a formatação com Prettier.      |
-| `npm test`                 | Executa os testes unitários.             |
+| `npm run typecheck`        | Verifica os tipos sem emitir build.      |
+| `npm run test:cov`         | Executa testes unitários com cobertura.  |
 | `npm run test:integration` | Executa os testes de integração.         |
+| `npm run test:contract`    | Valida o contrato OpenAPI executável.    |
 | `npm run test:e2e`         | Executa os testes end-to-end.            |
 
 ## Estrutura
@@ -112,4 +132,8 @@ src/
 
 ## Documentação relacionada
 
-Consulte o [README principal](../README.md) para executar todos os componentes do projeto e o [README do mobile](../mobile/README.md) para o cliente Expo.
+- [README principal](../README.md)
+- [README do mobile](../mobile/README.md)
+- [Guia integral de validação](../specs/001-app-quality-readiness/quickstart.md)
+- [Contrato dos quality gates](../specs/001-app-quality-readiness/contracts/quality-gates.md)
+- [Evidências de readiness](../specs/001-app-quality-readiness/evidence/)

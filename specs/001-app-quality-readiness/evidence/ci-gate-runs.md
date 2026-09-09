@@ -87,7 +87,18 @@ foi removido antes da conferência final do worktree.
 - A execução local não prova que o runner hospedado terá os mesmos acessos à API
   Expo nem que os workflows foram aceitos pelo GitHub; o `npm ci` local também
   reportou as vulnerabilidades acima sem falhar o gate.
-- O detalhamento de `npm audit --omit=dev` ficou `NOT MEASURED` porque o endpoint
-  de advisories retornou erro nesta sessão; nenhum `audit fix` foi executado.
+- O detalhamento de `npm audit --omit=dev` acima é histórico da execução T067;
+  T071 atualizou esse resultado com consulta externa autorizada, overrides
+  compatíveis e triagem em `final-readiness.md`. Nenhum `audit fix` foi executado.
 - T063 (rulesets/required checks) e T064 (auditoria dos ambientes alvo) têm
   evidências separadas e permanecem bloqueantes até a confirmação externa.
+
+## Addendum T071/T075 — dependências e gates finais (2026-09-09)
+
+Após `npm ci` em ambos os componentes, os audits autorizados retornaram 8
+entradas de produção no backend (8 high) e 18 no mobile (5 high, 13 moderate).
+Os overrides de `fast-uri`, `qs`, `baseline-browser-mapping`, `browserslist` e
+`@expo/xcpretty/js-yaml` foram registrados nos respectivos `package.json` e
+lockfiles. A matriz completa de regressão passou; advisories residuais foram
+aceitos temporariamente com escopo, mitigação, owner e prazo em
+`evidence/final-readiness.md`.

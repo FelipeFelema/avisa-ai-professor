@@ -20,7 +20,7 @@ O backend existente é a base: ownership, deleção e cascatas de turma e o PATC
 
 **Testing**: Jest 30, `ts-jest` e Supertest no backend (unitário, contrato, integração e e2e), incluindo matriz de `PARENT`/`PROFESSOR`/`ADMIN`, duas sessões simultâneas e DELETE inicial/repetido/concorrente; Jest Expo e React Native Testing Library no mobile (schema, hook, componente e integração das rotas de perfil/home); verificações automatizadas de contraste/tamanho mínimo, exercício OpenAPI cronometrado com novo desenvolvedor, falhas deliberadas em cada categoria de gate e auditorias manuais de acessibilidade/usabilidade onde automação não comprova o uso real ou o tempo de tarefa
 
-**Target Platform**: API NestJS em runtime Node/Linux e Docker; aplicativo Expo para Android, iOS e web
+**Target Platform**: API NestJS em runtime Node/Linux e Docker; lançamento inicial do aplicativo Expo para Android. iOS e web permanecem alvos de compatibilidade/empacotamento, sem aceite manual nesta iteração.
 
 **Project Type**: Monorepo de API REST + aplicativo mobile, com tooling de qualidade no repositório
 
@@ -190,3 +190,14 @@ Depois dos commits, uma ação administrativa separada MUST ativar os três chec
 - **WIP mobile concorrente**: preservar mudanças não commitadas do editor de comunicado e consolidar apenas arquivos tocados deliberadamente.
 - **Enforcement externo**: workflow verde não bloqueia merge sozinho; required checks em `main`/`develop` dependem de ruleset/branch protection com permissão administrativa, e a feature permanece incompleta até a configuração e a prova bloqueante existirem.
 - **Critérios humanos**: contraste/touch target podem ser auditados, mas SC-002/003/006/007/008, incluindo o exercício OpenAPI cronometrado com novo desenvolvedor, e aprovação da direção visual exigem evidência manual do product owner/testes de uso.
+
+## Phase 10 scope rebaseline
+
+Em 2026-09-09, o responsável pelo produto autorizou uma entrega inicial focada
+em Android, com um único desenvolvedor responsável pela validação. Portanto,
+T073 usa os gates automatizados, a auditoria disponível e o walkthrough Android;
+iOS fica como follow-up explícito. T074 registra os testes automatizados e o
+walkthrough individual como evidência funcional, mas mantém SC-002, SC-003 e
+SC-008 como `NOT MEASURED` porque não há amostra independente. Essa decisão
+reduz o escopo de lançamento sem reescrever os critérios originais nem declarar
+conformidade cross-platform ou estatística que não foi observada.

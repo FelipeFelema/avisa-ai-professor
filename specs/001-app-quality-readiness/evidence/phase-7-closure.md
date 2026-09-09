@@ -49,3 +49,35 @@ como não medidos, e podem ser revisitados em uma entrega com esses recursos.
 
 A Phase 7 está encerrada operacionalmente, mas a decisão final de readiness da
 feature deve preservar esses riscos residuais e os gates das phases posteriores.
+
+## Addendum da Phase 10 — T073 (2026-09-09)
+
+O recheck após T072 confirmou os resultados automatizados de tokens, estados,
+semântica representativa e alvos das primitivas: 4 suítes/12 testes focados
+passaram, além de typecheck, lint e Prettier nos arquivos rastreados. O scan das
+telas e componentes não encontrou literais de cor locais; a nova paleta de tab
+bar e backdrop está em tokens semânticos.
+
+Este recheck também encontrou um ponto aberto no fluxo de criação de comunicado:
+`TextInput`s sem rótulo explícito, chips sem role/label/estado/target e publicação
+sem semântica de busy. O defeito foi corrigido na própria Phase 10: a tela agora
+expõe labels/hints, seleção, disabled/busy, alerts de validação e targets de
+48×48, protegidos por uma nova regressão com 1 suíte/3 testes. Assim, nenhum
+issue crítico estático conhecido permanece nesse fluxo.
+
+Não foi possível completar a parte cross-platform de T073: no host,
+`adb=NOT_FOUND`, `emulator=NOT_FOUND` e `xcrun=NOT_FOUND`; não existe evidência
+nova de dispositivo/simulador real, VoiceOver/TalkBack, fonte ampliada,
+contraste renderizado ou medição física. O walkthrough Android de 2026-09-06 e
+o empacotamento Expo não substituem essa prova. Assim, o status desta tarefa é
+`BLOCKED` exclusivamente pela evidência real cross-platform ainda ausente,
+SC-007 permanece parcial/`NOT MEASURED` para essa dimensão e o fechamento
+histórico `CLOSED WITH LIMITATIONS` da Phase 7 é preservado.
+
+## Addendum de escopo — T073 (2026-09-09)
+
+O lançamento inicial foi rebaselined para Android-only. A implementação e os
+gates automatizados disponíveis foram revalidados; a auditoria iOS não será
+inventada nem tratada como requisito de lançamento desta iteração. T073 fica
+concluída no escopo Android inicial, enquanto a cobertura iOS e a conclusão
+cross-platform de SC-007 permanecem `NOT MEASURED` para follow-up futuro.

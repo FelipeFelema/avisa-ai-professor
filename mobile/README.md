@@ -51,10 +51,16 @@ Em um dispositivo físico, `localhost` aponta para o próprio aparelho. Use o IP
 EXPO_PUBLIC_API_URL=http://SEU_IP_LOCAL:3000/api/v1
 ```
 
+`EXPO_PUBLIC_API_URL` é configuração pública por definição: o Expo incorpora toda variável `EXPO_PUBLIC_*` ao bundle e o usuário pode inspecioná-la. Ela deve conter somente uma URL sem credenciais. Nunca coloque nesse prefixo secrets JWT, `DATABASE_URL`, senhas, invite codes ou tokens de usuário. Access e refresh tokens são recebidos em runtime e persistidos apenas com Expo Secure Store.
+
+O arquivo `mobile/.env` é local e ignorado pelo Git. Mesmo assim, trate qualquer valor `EXPO_PUBLIC_*` como publicável e use o gerenciador de secrets do backend para toda configuração confidencial.
+
+Builds distribuídos devem usar uma URL `https://`; os endereços `http://localhost` e `http://SEU_IP_LOCAL` são apenas para desenvolvimento em rede controlada. Bearer tokens nunca devem trafegar por HTTP em ambientes compartilhados.
+
 ## Execução
 
 ```bash
-npm install
+npm ci
 npm start
 ```
 
@@ -91,8 +97,21 @@ src/
 npm run typecheck
 npm run lint
 npm run format:check
+npm run doctor
+npm run test:ci
+npm run export:ci
 ```
+
+Os testes Jest/RNTL cobrem os comportamentos automatizáveis; acessibilidade real, usabilidade e aprovação visual mantêm evidências manuais separadas.
 
 ## API
 
-O aplicativo depende da API descrita em [../backend/README.md](../backend/README.md).
+O aplicativo depende da API descrita no [README do backend](../backend/README.md).
+
+Documentação operacional relacionada:
+
+- [README principal](../README.md)
+- [Guia integral de validação](../specs/001-app-quality-readiness/quickstart.md)
+- [Contrato de interações mobile](../specs/001-app-quality-readiness/contracts/mobile-interactions.md)
+- [Contrato dos quality gates](../specs/001-app-quality-readiness/contracts/quality-gates.md)
+- [Evidências de readiness](../specs/001-app-quality-readiness/evidence/)

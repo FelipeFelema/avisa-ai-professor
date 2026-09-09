@@ -215,9 +215,9 @@ description: "Tarefas de implementação para consolidação de experiência e q
 
 **Purpose**: Fechar documentação, quickstart e decisão de readiness sem confundir artefatos planejados com comportamento implementado.
 
-- [ ] T066 Atualizar documentação operacional e links para docs/evidências sem expor segredos em README.md, backend/README.md e mobile/README.md
-- [ ] T067 Executar integralmente o guia de validação em banco descartável e registrar comandos/resultados em specs/001-app-quality-readiness/evidence/quickstart-validation.md
-- [ ] T068 Executar `git diff --check`, scan de segredos/placeholders/cores literais, revisar todas as evidências e registrar aprovação ou bloqueios restantes em specs/001-app-quality-readiness/evidence/final-readiness.md
+- [X] T066 Atualizar documentação operacional e links para docs/evidências sem expor segredos em README.md, backend/README.md e mobile/README.md
+- [X] T067 Executar integralmente o guia de validação em banco descartável e registrar comandos/resultados em specs/001-app-quality-readiness/evidence/quickstart-validation.md
+- [X] T068 Executar `git diff --check`, scan de segredos/placeholders/cores literais, revisar todas as evidências e registrar aprovação ou bloqueios restantes em specs/001-app-quality-readiness/evidence/final-readiness.md
 
 ---
 
@@ -426,3 +426,20 @@ Esta onda só é liberada após os testes T052, a aprovação T053 e a estabiliz
 - O perfil não é persistido no Secure Store; somente tokens permanecem ali.
 - EAS/Maestro continua fora do gate obrigatório desta feature; Jest Expo/RNTL é o gate comportamental mobile aprovado.
 - A feature permanece incompleta sem T063, mesmo que todos os arquivos e workflows locais estejam verdes.
+
+## Phase 10: Convergence
+
+> **Rebaseline de escopo (2026-09-09):** por decisão explícita do responsável pelo
+> produto, o lançamento inicial será Android-only. iOS fica fora desta iteração e
+> pode ser auditado quando houver dispositivo/ambiente; a validação de uso fica
+> limitada aos gates automatizados e ao walkthrough do único desenvolvedor.
+> SC-002, SC-003, SC-007 e SC-008 continuam `NOT MEASURED` quando exigem amostra,
+> medição física ou iOS; nenhum resultado ausente é convertido em `PASS`.
+
+- [X] T069 Alinhar os status HTTP, constraints de schema e payloads reais de auth, profile, classrooms, announcements e invite-codes com `contracts/openapi.json`, incluindo `sid`, `minProperties`, patterns, schemas fechados e campos/relacionamentos documentados, e ampliar `backend/test/openapi.contract.spec.ts` para detectar essas divergências per FR-019, SC-006 e plan: OpenAPI completeness (partial)
+- [X] T070 Restringir `isOpenApiEnabled()` por allowlist explícita a `development` e `test`, preservando o kill switch, e adicionar regressões para `NODE_ENV` ausente, desconhecido e production em `backend/src/openapi/configure-openapi.ts`, `backend/test/openapi.contract.spec.ts` e `backend/test/app.e2e-spec.ts` per FR-020 e plan: non-production docs (contradicts)
+- [X] T071 Triar os advisories de produção registrados para backend e mobile, aplicar overrides de patch compatíveis quando disponíveis, documentar aceite temporário dos advisories residuais com alcance, mitigação, owner e prazo, e reexecutar a matriz completa de regressão em package.json, lockfiles e `specs/001-app-quality-readiness/evidence/final-readiness.md` per FR-021, Constitution III e plan: dependency health gate (completed with residual risk)
+- [X] T072 Representar tab bar, backdrop de confirmação e estados da criação de comunicado com tokens semânticos, migrar os seis literais remanescentes e repetir testes de contraste/estado e export em `mobile/src/theme/tokens.ts`, `mobile/app/(app)/(tabs)/_layout.tsx`, `mobile/src/components/ui/ConfirmationDialog.tsx` e `mobile/app/(app)/classrooms/[id]/new-announcement.tsx` per FR-014, FR-015 e Constitution V (partial)
+- [X] T073 Concluir a auditoria disponível dos fluxos primários no Android, cobrindo os checks automatizados/estáticos de contraste, touch targets, texto dinâmico/wrapping e screen reader, corrigir issues críticas conhecidas e registrar iOS como fora do lançamento inicial em `specs/001-app-quality-readiness/evidence/accessibility-audit.md` e `specs/001-app-quality-readiness/evidence/phase-7-closure.md` per FR-017 e SC-007 (Android-only; iOS deferred)
+- [X] T074 Executar e registrar os checks automatizados e o walkthrough funcional do único desenvolvedor no Android, declarar honestamente a ausência de amostra independente/thresholds estatísticos e atualizar `specs/001-app-quality-readiness/evidence/usability-results.md` per SC-002, SC-003 e SC-008 (Android-only; NOT MEASURED)
+- [X] T075 Reexecutar os gates afetados e a validação de readiness após T069-T074, reconciliar as evidências e registrar a decisão de lançamento inicial Android-only com riscos e bloqueios residuais, sem converter resultados `NOT MEASURED` em `PASS`, em `specs/001-app-quality-readiness/evidence/quickstart-validation.md` e `specs/001-app-quality-readiness/evidence/final-readiness.md` per FR-021–FR-024, SC-009–SC-010 e Constitution III (completed with limitations)

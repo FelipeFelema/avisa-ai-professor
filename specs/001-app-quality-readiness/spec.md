@@ -217,6 +217,17 @@ As a maintainer, I receive automated and actionable validation for every propose
 - Existing automated workflows are a foundation. Completion includes missing critical behavior tests and verification that required checks are enforced by the repository hosting settings. Changing organization-wide policy is outside repository scope, but lack of permission to enable required checks blocks this feature's completion.
 - No new user roles, classroom transfer-of-ownership flow, account deletion flow, or broad password-management redesign is included in this feature.
 
+## Phase 10 delivery-scope decision (2026-09-09)
+
+The product owner explicitly rebaselined the first release to Android only. iOS
+manual accessibility validation and independent participant usability sessions
+are deferred until the project has the required device, environment, time, or
+participants. The automated suites and the maintainer's Android walkthrough are
+the available acceptance evidence for this iteration. The original iOS,
+population-threshold, and cross-platform success criteria remain visible and are
+reported as `NOT MEASURED`; this scope decision does not convert missing evidence
+into a pass.
+
 ## Dependencies
 
 - Existing role-based authentication and session handling must continue to identify the current user reliably.
