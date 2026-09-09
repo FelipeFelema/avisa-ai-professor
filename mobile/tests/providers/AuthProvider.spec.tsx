@@ -1,11 +1,12 @@
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
-import { Text, Pressable } from 'react-native';
+import { Pressable, Text } from 'react-native';
 
-import { AuthProvider } from '@/providers/AuthProvider';
+import * as apiLib from '@/lib';
 import { useAuth } from '@/hooks/useAuth';
-import { queryClient } from '@/config';
+import { AuthProvider } from '@/providers/AuthProvider';
 import * as authService from '@/services/auth';
 import * as storage from '@/storage';
+import { queryClient } from '@/config';
 import type { AuthUser } from '@/types/auth';
 
 jest.mock('@/services/auth', () => ({
@@ -20,17 +21,42 @@ jest.mock('@/storage', () => ({
   saveTokens: jest.fn(),
 }));
 
+jest.mock('@/lib', () => {
+  const actual = jest.requireActual('@/lib');
+
+  return {
+    ...actual,
+    setSessionExpiredHandler: jest.fn(),
+  };
+});
+
 function AuthProbe({ updatedUser }: { updatedUser: AuthUser }) {
-  const { user, applyProfileUpdate, expireSession } = useAuth();
+  const { user, isLoading, applyProfileUpdate, expireSession, login, register } = useAuth();
 
   return (
     <>
-      <Text>{user?.name ?? 'sem usuário'}</Text>
+      <Text>{user?.name ?? 'NO_USER'}</Text>
+      <Text>{isLoading ? 'LOADING' : 'READY'}</Text>
       <Pressable onPress={() => applyProfileUpdate(updatedUser)}>
         <Text>Aplicar perfil</Text>
       </Pressable>
       <Pressable onPress={() => void expireSession()}>
-        <Text>Expirar sessão</Text>
+        <Text>Expirar sessao</Text>
+      </Pressable>
+      <Pressable onPress={() => void login({ email: 'login@example.com', password: 'secret' })}>
+        <Text>Entrar</Text>
+      </Pressable>
+      <Pressable
+        onPress={() =>
+          void register({
+            name: 'Novo Usuario',
+            email: 'register@example.com',
+            password: 'secret',
+            teacherCode: 'TEACHER-1',
+          })
+        }
+      >
+        <Text>Cadastrar</Text>
       </Pressable>
     </>
   );
@@ -60,6 +86,119 @@ describe('AuthProvider profile/session boundaries', () => {
 
   afterEach(() => {
     queryClient.clear();
+    jest.restoreAllMocks();
+  });
+
+  it('logs in, saves the returned tokens and restores the profile', async () => {
+    const tokens = { accessToken: 'login-access', refreshToken: 'login-refresh' };
+    jest.mocked(storage.getTokens).mockResolvedValue(null);
+    jest.mocked(authService.login).mockResolvedValue(tokens);
+    jest.mocked(authService.getProfile).mockResolvedValue(currentUser);
+
+    const { getByText } = await render(
+      <AuthProvider>
+        <AuthProbe updatedUser={updatedUser} />
+      </AuthProvider>,
+    );
+
+    await waitFor(() => expect(getByText('READY')).toBeTruthy());
+    await act(async () => {
+      fireEvent.press(getByText('Entrar'));
+    });
+
+    await waitFor(() => expect(getByText(currentUser.name)).toBeTruthy());
+    expect(authService.login).toHaveBeenCalledWith({
+      email: 'login@example.com',
+      password: 'secret',
+    });
+    expect(storage.saveTokens).toHaveBeenCalledWith(tokens);
+    expect(authService.getProfile).toHaveBeenCalledTimes(1);
+  });
+
+  it('registers, saves the returned tokens and loads the new profile', async () => {
+    const tokens = { accessToken: 'register-access', refreshToken: 'register-refresh' };
+    jest.mocked(storage.getTokens).mockResolvedValue(null);
+    jest.mocked(authService.register).mockResolvedValue(tokens);
+    jest.mocked(authService.getProfile).mockResolvedValue(updatedUser);
+
+    const { getByText } = await render(
+      <AuthProvider>
+        <AuthProbe updatedUser={updatedUser} />
+      </AuthProvider>,
+    );
+
+    await waitFor(() => expect(getByText('READY')).toBeTruthy());
+    await act(async () => {
+      fireEvent.press(getByText('Cadastrar'));
+    });
+
+    await waitFor(() => expect(getByText(updatedUser.name)).toBeTruthy());
+    expect(authService.register).toHaveBeenCalledWith({
+      name: 'Novo Usuario',
+      email: 'register@example.com',
+      password: 'secret',
+      teacherCode: 'TEACHER-1',
+    });
+    expect(storage.saveTokens).toHaveBeenCalledWith(tokens);
+    expect(authService.getProfile).toHaveBeenCalledTimes(1);
+  });
+
+  it('finishes restoration without a user when no tokens are persisted', async () => {
+    jest.mocked(storage.getTokens).mockResolvedValue(null);
+
+    const { getByText } = await render(
+      <AuthProvider>
+        <AuthProbe updatedUser={updatedUser} />
+      </AuthProvider>,
+    );
+
+    await waitFor(() => expect(getByText('READY')).toBeTruthy());
+    expect(getByText('NO_USER')).toBeTruthy();
+    expect(authService.getProfile).not.toHaveBeenCalled();
+  });
+
+  it('clears the session when profile restoration fails', async () => {
+    const clear = jest.spyOn(queryClient, 'clear');
+    jest.mocked(authService.getProfile).mockRejectedValue(new Error('profile unavailable'));
+
+    const { getByText } = await render(
+      <AuthProvider>
+        <AuthProbe updatedUser={updatedUser} />
+      </AuthProvider>,
+    );
+
+    await waitFor(() => expect(getByText('READY')).toBeTruthy());
+    expect(getByText('NO_USER')).toBeTruthy();
+    expect(storage.clearTokens).toHaveBeenCalledTimes(1);
+    expect(clear).toHaveBeenCalledTimes(1);
+  });
+
+  it('registers the session-expired handler, handles it atomically and cleans it up', async () => {
+    const clear = jest.spyOn(queryClient, 'clear');
+    const setHandler = jest.mocked(apiLib.setSessionExpiredHandler);
+
+    const { getByText, unmount } = await render(
+      <AuthProvider>
+        <AuthProbe updatedUser={updatedUser} />
+      </AuthProvider>,
+    );
+
+    await waitFor(() => expect(getByText(currentUser.name)).toBeTruthy());
+    const registeredHandler = [...setHandler.mock.calls]
+      .reverse()
+      .find(([handler]) => typeof handler === 'function')?.[0];
+
+    expect(registeredHandler).toEqual(expect.any(Function));
+    await act(async () => {
+      await (registeredHandler as () => Promise<void>)();
+    });
+
+    await waitFor(() => expect(getByText('NO_USER')).toBeTruthy());
+    expect(storage.clearTokens).not.toHaveBeenCalled();
+    expect(clear).toHaveBeenCalledTimes(1);
+
+    await unmount();
+    expect(setHandler).toHaveBeenLastCalledWith(undefined);
   });
 
   it('applies the returned profile immediately and invalidates identity-bearing caches', async () => {
@@ -80,9 +219,6 @@ describe('AuthProvider profile/session boundaries', () => {
     await waitFor(() => expect(getByText(updatedUser.name)).toBeTruthy());
     expect(setQueryData).toHaveBeenCalledWith(['auth', 'profile'], updatedUser);
     expect(invalidateQueries).toHaveBeenCalled();
-
-    setQueryData.mockRestore();
-    invalidateQueries.mockRestore();
   });
 
   it('clears tokens, cache and context together when the session expires', async () => {
@@ -95,13 +231,11 @@ describe('AuthProvider profile/session boundaries', () => {
 
     await waitFor(() => expect(getByText(currentUser.name)).toBeTruthy());
     await act(async () => {
-      fireEvent.press(getByText('Expirar sessão'));
+      fireEvent.press(getByText('Expirar sessao'));
     });
 
-    await waitFor(() => expect(getByText('sem usuário')).toBeTruthy());
+    await waitFor(() => expect(getByText('NO_USER')).toBeTruthy());
     expect(storage.clearTokens).toHaveBeenCalledTimes(1);
     expect(clear).toHaveBeenCalledTimes(1);
-
-    clear.mockRestore();
   });
 });
