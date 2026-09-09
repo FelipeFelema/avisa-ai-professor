@@ -199,10 +199,10 @@ description: "Tarefas de implementação para consolidação de experiência e q
 
 ### Implementation and Validation for User Story 6
 
-- [ ] T059 [P] [US6] Completar scripts backend e workflow estável com Prisma validate/generate/migrate, format, lint, typecheck, unit+coverage, integração, contrato, e2e e build em backend/package.json, backend/package-lock.json e .github/workflows/backend-ci.yml
-- [ ] T060 [P] [US6] Completar scripts mobile, thresholds dos módulos críticos e workflow estável com doctor fixado, Jest/RNTL e export all em mobile/package.json, mobile/package-lock.json, mobile/jest.config.js e .github/workflows/mobile-ci.yml
-- [ ] T061 [P] [US6] Criar workflow com histórico completo e nome estável para validar todos os commits da PR em .github/workflows/commit-conventions.yml
-- [ ] T062 [US6] Executar gates verdes e a matriz de falhas deliberadas de formatação, correção estática, build/export, comportamento/boundary/contrato, saúde de ambiente/dependências e convenção de commit definida em specs/001-app-quality-readiness/contracts/quality-gates.md, anexando logs acionáveis em specs/001-app-quality-readiness/evidence/ci-gate-runs.md
+- [X] T059 [P] [US6] Completar scripts backend e workflow estável com Prisma validate/generate/migrate, format, lint, typecheck, unit+coverage, integração, contrato, e2e e build em backend/package.json, backend/package-lock.json e .github/workflows/backend-ci.yml
+- [X] T060 [P] [US6] Completar scripts mobile, thresholds dos módulos críticos e workflow estável com doctor fixado, Jest/RNTL e export all em mobile/package.json, mobile/package-lock.json, mobile/jest.config.js e .github/workflows/mobile-ci.yml
+- [X] T061 [P] [US6] Criar workflow com histórico completo e nome estável para validar todos os commits da PR em .github/workflows/commit-conventions.yml
+- [X] T062 [US6] Executar gates verdes e a matriz de falhas deliberadas de formatação, correção estática, build/export, comportamento/boundary/contrato, saúde de ambiente/dependências e convenção de commit definida em specs/001-app-quality-readiness/contracts/quality-gates.md, anexando logs acionáveis em specs/001-app-quality-readiness/evidence/ci-gate-runs.md
 - [ ] T063 [US6] Configurar rulesets de `develop` e `main` sem bypass indevido e comprovar PR falha bloqueada em specs/001-app-quality-readiness/evidence/github-required-checks.md
 - [ ] T064 [P] [US6] Auditar a migration histórica obrigatória de `ownerId` nos ambientes alvo e registrar backfill/recuperação quando necessário em specs/001-app-quality-readiness/evidence/owner-migration-audit.md
 - [ ] T065 [US6] Consolidar nomes dos três checks, enforcement, falhas detectadas e condição final da US6 em specs/001-app-quality-readiness/evidence/us6-delivery-gates.md
