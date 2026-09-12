@@ -1,52 +1,42 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
-import { CreateUserDto } from '../users/dto/create-user.dto';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
+import { AuthSessionService } from './auth-session.service';
+import { CreateUserDto } from '../users/dto/create-user.dto';
+import { UsersService } from '../users/users.service';
 import { JwtPayload } from '../common/types/jwt-payload.type';
 
 const ACCESS_TOKEN_TTL = '15m';
 const REFRESH_TOKEN_TTL = '7d';
+const REFRESH_SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+type TokenUser = { id: string; email: string; role: string };
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
-    private jwtService: JwtService,
-    private configService: ConfigService,
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+    private readonly authSessionService: AuthSessionService,
   ) {}
 
-  async validateUser(email: string, password: string) {
-    const user = await this.usersService.findByEmail(email);
+  async validateUser(email: string, password: string): Promise<TokenUser> {
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await this.usersService.findByEmail(normalizedEmail);
 
-    if (!user) {
-      throw new UnauthorizedException('Email ou senha inválidos');
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      throw new UnauthorizedException('E-mail ou senha inválidos');
     }
 
-    const passWordMatch = await bcrypt.compare(password, user.password);
-
-    if (!passWordMatch) {
-      throw new UnauthorizedException('Email ou senha invalidos');
-    }
-
-    return {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-    };
+    return { id: user.id, email: user.email, role: user.role };
   }
 
   async register(createUserDto: CreateUserDto) {
     const user = await this.usersService.createUser(createUserDto);
-    const { access_token, refresh_token, tokenId } = this.generateTokens(
-      user.id,
-      user.email,
-      user.role,
-    );
-
-    await this.usersService.updateRefreshToken(user.id, refresh_token, tokenId);
+    const tokens = await this.issueTokens(user);
 
     return {
       id: user.id,
@@ -54,70 +44,44 @@ export class AuthService {
       email: user.email,
       role: user.role,
       createdAt: user.createdAt,
-      access_token,
-      refresh_token,
+      updatedAt: user.updatedAt,
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
     };
   }
 
   async login(email: string, password: string) {
     const user = await this.validateUser(email, password);
+    return this.issueTokens(user);
+  }
 
-    const payload = this.createJwtPayload(user.id, user.email, user.role);
-
-    const accessToken = this.jwtService.sign(payload, {
+  async issueTokens(user: TokenUser, sessionId = crypto.randomUUID()) {
+    const payload = this.createJwtPayload(
+      user.id,
+      user.email,
+      user.role,
+      sessionId,
+    );
+    const access_token = this.jwtService.sign(payload, {
       secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
       expiresIn: ACCESS_TOKEN_TTL,
     });
-
-    const refreshTokenId = crypto.randomUUID();
-
-    const refreshToken = this.jwtService.sign(
-      {
-        ...payload,
-        tokenId: refreshTokenId,
-      },
-      {
-        secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
-        expiresIn: REFRESH_TOKEN_TTL,
-      },
-    );
-
-    await this.usersService.updateRefreshToken(
-      user.id,
-      refreshToken,
-      refreshTokenId,
-    );
-
-    return {
-      access_token: accessToken,
-      refresh_token: refreshToken,
-    };
-  }
-
-  generateTokens(userId: string, email: string, role: string) {
-    const tokenId = crypto.randomUUID();
-
-    const access_token = this.jwtService.sign(
-      this.createJwtPayload(userId, email, role),
-      {
-        secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
-        expiresIn: ACCESS_TOKEN_TTL,
-      },
-    );
-
     const refresh_token = this.jwtService.sign(
-      { ...this.createJwtPayload(userId, email, role), tokenId },
+      { ...payload, jti: crypto.randomUUID() },
       {
         secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
         expiresIn: REFRESH_TOKEN_TTL,
       },
     );
 
-    return {
-      access_token,
+    await this.authSessionService.create(
+      user.id,
+      sessionId,
       refresh_token,
-      tokenId,
-    };
+      new Date(Date.now() + REFRESH_SESSION_TTL_MS),
+    );
+
+    return { access_token, refresh_token, sid: sessionId };
   }
 
   async refreshToken(refreshToken: string) {
@@ -131,59 +95,55 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    const user = await this.usersService.findByIdInternal(payload.sub);
-
-    if (!user || !user.refreshTokenHash || !user.refreshTokenId) {
+    if (!payload.sid) {
       throw new UnauthorizedException();
     }
 
-    if (!payload.tokenId || payload.tokenId !== user.refreshTokenId) {
+    const session = await this.authSessionService.findActive(
+      payload.sub,
+      payload.sid,
+    );
+    if (
+      !session ||
+      !(await this.authSessionService.verifyRefreshToken(session, refreshToken))
+    ) {
       throw new UnauthorizedException();
     }
 
-    const isMatch = await bcrypt.compare(refreshToken, user.refreshTokenHash);
-
-    if (!isMatch) {
-      throw new UnauthorizedException();
-    }
-
-    const newPayload = this.createJwtPayload(user.id, user.email, user.role);
-
-    const newAccessToken = this.jwtService.sign(newPayload, {
+    const user = session.user;
+    const newPayload = this.createJwtPayload(
+      user.id,
+      user.email,
+      user.role,
+      session.id,
+    );
+    const access_token = this.jwtService.sign(newPayload, {
       secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
       expiresIn: ACCESS_TOKEN_TTL,
     });
-
-    const newRefreshTokenId = crypto.randomUUID();
-
     const newRefreshToken = this.jwtService.sign(
-      {
-        ...newPayload,
-        tokenId: newRefreshTokenId,
-      },
+      { ...newPayload, jti: crypto.randomUUID() },
       {
         secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
         expiresIn: REFRESH_TOKEN_TTL,
       },
     );
 
-    await this.usersService.updateRefreshToken(
-      user.id,
+    await this.authSessionService.rotate(
+      session.id,
       newRefreshToken,
-      newRefreshTokenId,
+      new Date(Date.now() + REFRESH_SESSION_TTL_MS),
     );
 
-    return {
-      access_token: newAccessToken,
-      refresh_token: newRefreshToken,
-    };
+    return { access_token, refresh_token: newRefreshToken, sid: session.id };
   }
 
-  private createJwtPayload(userId: string, email: string, role: string) {
-    return {
-      sub: userId,
-      email,
-      role,
-    };
+  private createJwtPayload(
+    userId: string,
+    email: string,
+    role: string,
+    sid: string,
+  ) {
+    return { sub: userId, email, role, sid };
   }
 }

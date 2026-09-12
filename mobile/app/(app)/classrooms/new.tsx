@@ -6,10 +6,10 @@ import { Controller, useForm } from 'react-hook-form';
 import { isAxiosError } from 'axios';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AuthButton, AuthField } from '@/components/auth';
+import { Button, FormField } from '@/components/ui';
 import { HTTP_STATUS } from '@/constants/http-status';
 import { useCreateClassroom } from '@/hooks/useCreateClassroom';
-import { AUTH_THEME } from '@/theme/auth';
+import { theme } from '@/theme';
 import {
   createClassroomSchema,
   type CreateClassroomFormData,
@@ -75,7 +75,9 @@ export default function NewClassroomScreen() {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.title}>Criar turma</Text>
+          <Text accessibilityRole="header" style={styles.title}>
+            Criar turma
+          </Text>
           <Text style={styles.subtitle}>
             Dê um nome à sua turma para começar a compartilhar comunicados.
           </Text>
@@ -85,7 +87,7 @@ export default function NewClassroomScreen() {
           control={control}
           name="name"
           render={({ field: { onChange, value } }) => (
-            <AuthField
+            <FormField
               label="Nome da turma"
               placeholder="Ex.: 1º Ano A"
               value={value}
@@ -98,12 +100,15 @@ export default function NewClassroomScreen() {
           )}
         />
 
-        {submitError ? <Text style={styles.error}>{submitError}</Text> : null}
+        {submitError ? (
+          <Text accessibilityRole="alert" style={styles.error}>
+            {submitError}
+          </Text>
+        ) : null}
 
-        <AuthButton
+        <Button
           label="Criar turma"
-          loadingLabel="Criando turma..."
-          isLoading={createClassroom.isPending}
+          loading={createClassroom.isPending}
           onPress={handleSubmit(onSubmit)}
         />
       </View>
@@ -114,29 +119,26 @@ export default function NewClassroomScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: AUTH_THEME.colors.background,
+    backgroundColor: theme.colors.background,
   },
   content: {
     flex: 1,
-    padding: AUTH_THEME.spacing.xl,
-    gap: AUTH_THEME.spacing.xl,
+    padding: theme.spacing.xl,
+    gap: theme.spacing.xl,
   },
   header: {
-    gap: AUTH_THEME.spacing.sm,
+    gap: theme.spacing.sm,
   },
   title: {
-    color: AUTH_THEME.colors.text,
-    fontSize: AUTH_THEME.typography.title,
-    fontWeight: '800',
+    ...theme.typography.title,
+    color: theme.colors.text,
   },
   subtitle: {
-    color: AUTH_THEME.colors.muted,
-    fontSize: AUTH_THEME.typography.body,
-    lineHeight: 22,
+    ...theme.typography.body,
+    color: theme.colors.textMuted,
   },
   error: {
-    color: AUTH_THEME.colors.error,
-    fontSize: AUTH_THEME.typography.caption,
-    lineHeight: 18,
+    ...theme.typography.caption,
+    color: theme.colors.danger,
   },
 });

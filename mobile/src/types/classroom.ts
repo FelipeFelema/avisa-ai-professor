@@ -1,6 +1,7 @@
 export interface ClassroomSummary {
   id: string;
   name: string;
+  ownerId: string;
 
   teacher: {
     id: string;

@@ -33,7 +33,7 @@ jobs:
           cache: npm
           cache-dependency-path: mobile/package-lock.json
 
-      - name: Install depencencies
+      - name: Install dependencies
         run: npm ci
 
       - name: TypeScript Check
@@ -46,4 +46,20 @@ jobs:
         run: npm run format:check
 
       - name: Expo Doctor
-        run: npx expo-doctor
+        run: npm run doctor
+
+      - name: Jest behavior and coverage
+        run: npm run test:ci
+
+      - name: Expo all-platform export
+        run: npm run export:ci
+
+      - name: Upload mobile quality artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-quality-artifacts
+          path: |
+            mobile/coverage
+            mobile/.expo-ci-export
+          if-no-files-found: ignore

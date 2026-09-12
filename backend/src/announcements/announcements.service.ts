@@ -36,6 +36,7 @@ export class AnnouncementsService {
         title: true,
         content: true,
         createdAt: true,
+        updatedAt: true,
         expiresAt: true,
         author: {
           select: {
@@ -71,6 +72,7 @@ export class AnnouncementsService {
         title: true,
         content: true,
         createdAt: true,
+        updatedAt: true,
         expiresAt: true,
         author: {
           select: {
@@ -97,6 +99,7 @@ export class AnnouncementsService {
         title: true,
         content: true,
         createdAt: true,
+        updatedAt: true,
         expiresAt: true,
         author: {
           select: {
@@ -171,6 +174,18 @@ export class AnnouncementsService {
         authorId: userId,
         classroomId: dto.classroomId,
       },
+      select: {
+        id: true,
+        classroomId: true,
+        title: true,
+        content: true,
+        expiresAt: true,
+        createdAt: true,
+        updatedAt: true,
+        author: {
+          select: { id: true, name: true },
+        },
+      },
     });
   }
 
@@ -204,6 +219,18 @@ export class AnnouncementsService {
         title: dto.title,
         content: dto.content,
         expiresAt,
+      },
+      select: {
+        id: true,
+        classroomId: true,
+        title: true,
+        content: true,
+        expiresAt: true,
+        createdAt: true,
+        updatedAt: true,
+        author: {
+          select: { id: true, name: true },
+        },
       },
     });
   }

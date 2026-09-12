@@ -44,7 +44,7 @@ docker compose up -d
 ```bash
 cd backend
 cp .env.example .env
-npm install
+npm ci
 npx prisma generate
 npx prisma migrate dev
 npm run start:dev
@@ -59,7 +59,7 @@ Em outro terminal:
 ```bash
 cd mobile
 cp .env.example .env
-npm install
+npm ci
 npm start
 ```
 
@@ -71,6 +71,15 @@ EXPO_PUBLIC_API_URL=http://SEU_IP_LOCAL:3000/api/v1
 
 Para emuladores ou web local, use `http://localhost:3000/api/v1` quando esse endereço alcançar a API.
 
+## Segurança da configuração
+
+- `backend/.env` e `mobile/.env` são arquivos locais ignorados pelo Git. Crie-os a partir dos respectivos `.env.example` e nunca os versione.
+- `DATABASE_URL`, `JWT_ACCESS_SECRET` e `JWT_REFRESH_SECRET` são segredos exclusivos do backend. Use valores fortes e diferentes por ambiente; nunca use o prefixo `EXPO_PUBLIC_` para eles.
+- No Expo, toda variável `EXPO_PUBLIC_*` é incorporada ao aplicativo e pode ser lida pelo usuário. Este projeto publica somente `EXPO_PUBLIC_API_URL`, que deve conter apenas o endereço da API, sem credenciais ou tokens.
+- Tokens de acesso e refresh pertencem ao Secure Store do dispositivo e não devem aparecer em código, commits, logs, screenshots ou exemplos.
+- A referência OpenAPI fica disponível fora de produção em `/api/v1/docs`; o backend a bloqueia incondicionalmente quando `NODE_ENV=production`.
+- Todo deploy deve definir `NODE_ENV=production`, manter a documentação desabilitada e publicar a API por HTTPS. O PostgreSQL e as credenciais do `docker-compose.yml` existem somente para desenvolvimento local e não devem ser expostos nem reutilizados em ambiente compartilhado.
+
 ## Qualidade
 
 ### Mobile
@@ -80,22 +89,36 @@ cd mobile
 npm run typecheck
 npm run lint
 npm run format:check
+npm run doctor
+npm run test:ci
+npm run export:ci
 ```
 
 ### Backend
 
 ```bash
 cd backend
+npm run prisma:validate
+npm run prisma:generate
 npm run lint
-npm test
+npm run format:check
+npm run typecheck
+npm run test:cov
 npm run test:integration
+npm run test:contract
 npm run test:e2e
+npm run build
 ```
+
+Os testes de integração, contrato e e2e devem usar exclusivamente um banco PostgreSQL descartável cujo nome contenha `test`; nunca aponte esses comandos para um banco com dados úteis.
 
 ## Documentação por componente
 
 - [Aplicativo mobile](mobile/README.md)
 - [API backend](backend/README.md)
+- [Guia integral de validação](specs/001-app-quality-readiness/quickstart.md)
+- [Contrato dos quality gates](specs/001-app-quality-readiness/contracts/quality-gates.md)
+- [Evidências de readiness](specs/001-app-quality-readiness/evidence/)
 
 ## Licença
 

@@ -1,11 +1,15 @@
+import { useRef, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Pressable, ScrollView, StyleSheet, Text, View, Alert } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { isAxiosError } from 'axios';
 
+import { Button, ConfirmationDialog, ScreenState } from '@/components/ui';
 import { useAnnouncement } from '@/hooks/useAnnouncement';
-import { AUTH_THEME } from '@/theme/auth';
 import { useAuth } from '@/hooks/useAuth';
 import { useDeleteAnnouncement } from '@/hooks/useDeleteAnnouncement';
+import { getHttpErrorMessage } from '@/lib';
+import { AUTH_THEME } from '@/theme/auth';
 
 export default function AnnouncementDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -13,38 +17,123 @@ export default function AnnouncementDetailsScreen() {
 
   const { user } = useAuth();
 
-  const { data: announcement, isLoading } = useAnnouncement(id);
+  const {
+    data: announcement,
+    error: announcementError,
+    isError: announcementIsError,
+    isLoading,
+    refetch: refetchAnnouncement,
+  } = useAnnouncement(id);
 
-  const { mutateAsync: deleteAnnouncement } = useDeleteAnnouncement();
+  const deleteMutation = useDeleteAnnouncement();
+  const [deleteConfirmationVisible, setDeleteConfirmationVisible] = useState(false);
+  const [confirmationError, setConfirmationError] = useState<string>();
+  const [isConfirming, setIsConfirming] = useState(false);
+  const requestInFlight = useRef(false);
 
   const isAuthor = user?.id === announcement?.author.id;
 
-  if (isLoading || !announcement) {
-    return null;
+  if (isLoading) {
+    return (
+      <ScreenState kind="loading" title="Carregando comunicado" message="Aguarde um momento." />
+    );
+  }
+
+  if (announcementIsError) {
+    const notFound = isAxiosError(announcementError) && announcementError.response?.status === 404;
+
+    return (
+      <ScreenState
+        kind={notFound ? 'not-found' : 'error'}
+        title={notFound ? 'Comunicado não encontrado' : 'Não foi possível carregar o comunicado'}
+        message={
+          notFound
+            ? 'Este comunicado não está mais disponível.'
+            : getHttpErrorMessage(announcementError)
+        }
+        actionLabel={notFound ? 'Voltar' : 'Tentar novamente'}
+        onAction={() => {
+          if (notFound) {
+            router.back();
+          } else {
+            void refetchAnnouncement();
+          }
+        }}
+      />
+    );
+  }
+
+  if (!announcement) {
+    return (
+      <ScreenState
+        kind="not-found"
+        title="Comunicado não encontrado"
+        message="Este comunicado não está mais disponível."
+        actionLabel="Voltar"
+        onAction={() => router.back()}
+      />
+    );
   }
 
   const announcementId = announcement.id;
 
-  async function handleDelete() {
-    Alert.alert('Excluir comunicado', 'Deseja realmente excluir este comunicado?', [
-      {
-        text: 'Cancelar',
-        style: 'cancel',
-      },
-      {
-        text: 'Excluir',
-        style: 'destructive',
-        onPress: async () => {
-          await deleteAnnouncement(announcementId);
-        },
-      },
-    ]);
+  function openDeleteConfirmation() {
+    setConfirmationError(undefined);
+    setDeleteConfirmationVisible(true);
   }
+
+  function cancelDeleteConfirmation() {
+    if (isConfirming || requestInFlight.current) {
+      return;
+    }
+
+    setDeleteConfirmationVisible(false);
+    setConfirmationError(undefined);
+  }
+
+  async function confirmDelete() {
+    if (
+      !deleteConfirmationVisible ||
+      isConfirming ||
+      deleteMutation.isPending ||
+      requestInFlight.current
+    ) {
+      return;
+    }
+
+    requestInFlight.current = true;
+    setIsConfirming(true);
+
+    if (!announcement) {
+      requestInFlight.current = false;
+      setIsConfirming(false);
+      return;
+    }
+
+    try {
+      await deleteMutation.mutateAsync({
+        announcementId,
+        classroomId: announcement.classroomId,
+      });
+      setDeleteConfirmationVisible(false);
+      setConfirmationError(undefined);
+      router.back();
+    } catch (error) {
+      setConfirmationError(getHttpErrorMessage(error));
+    } finally {
+      requestInFlight.current = false;
+      setIsConfirming(false);
+    }
+  }
+
+  const pending = isConfirming || deleteMutation.isPending;
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.title}>{announcement.title}</Text>
+        <Text accessibilityRole="header" style={styles.title}>
+          {announcement.title}
+        </Text>
 
         <Text style={styles.author}>Professor • {announcement.author.name}</Text>
 
@@ -72,19 +161,40 @@ export default function AnnouncementDetailsScreen() {
 
         {isAuthor && (
           <View style={styles.actions}>
-            <Pressable
-              style={styles.editButton}
-              onPress={() => router.push(`/classrooms/${announcement.id}/edit`)}
-            >
-              <Text style={styles.editButtonText}>Editar</Text>
-            </Pressable>
+            <Button
+              label="Editar"
+              accessibilityLabel="Editar comunicado"
+              style={styles.actionButton}
+              onPress={() => router.push(`/announcements/${announcement.id}/edit`)}
+            />
 
-            <Pressable style={styles.deleteButton} onPress={handleDelete}>
-              <Text style={styles.deleteButtonText}>Excluir</Text>
-            </Pressable>
+            <Button
+              label="Excluir"
+              variant="destructive"
+              accessibilityLabel="Excluir comunicado"
+              style={styles.actionButton}
+              onPress={openDeleteConfirmation}
+            />
           </View>
         )}
       </ScrollView>
+
+      {deleteConfirmationVisible ? (
+        <ConfirmationDialog
+          visible
+          title="Excluir comunicado"
+          targetLabel={announcement.title}
+          consequence="Esta ação é irreversível."
+          variant="destructive"
+          confirmLabel="Excluir comunicado"
+          onCancel={cancelDeleteConfirmation}
+          onConfirm={() => {
+            void confirmDelete();
+          }}
+          pending={pending}
+          errorMessage={confirmationError}
+        />
+      ) : null}
     </SafeAreaView>
   );
 }
@@ -142,29 +252,7 @@ const styles = StyleSheet.create({
     marginTop: AUTH_THEME.spacing.xl,
   },
 
-  editButton: {
+  actionButton: {
     flex: 1,
-    alignItems: 'center',
-    paddingVertical: AUTH_THEME.spacing.md,
-    borderRadius: AUTH_THEME.radius.md,
-    backgroundColor: AUTH_THEME.colors.primary,
-  },
-
-  deleteButton: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: AUTH_THEME.spacing.md,
-    borderRadius: AUTH_THEME.radius.md,
-    backgroundColor: '#DC2626',
-  },
-
-  editButtonText: {
-    color: '#FFF',
-    fontWeight: '700',
-  },
-
-  deleteButtonText: {
-    color: '#FFF',
-    fontWeight: '700',
   },
 });

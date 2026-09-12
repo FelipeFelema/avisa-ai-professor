@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ClassroomWithUsers } from '../common/types/classroom-with-users.type';
@@ -25,6 +26,7 @@ export class ClassroomsService {
     return this.prisma.classroom.create({
       data: {
         name: normalizedName,
+        ownerId: userId,
         userClassrooms: {
           create: { userId },
         },
@@ -98,6 +100,17 @@ export class ClassroomsService {
       throw new BadRequestException('Usuário não está na turma');
     }
 
+    const classroom = await this.prisma.classroom.findUnique({
+      where: { id: classroomId },
+      select: { ownerId: true },
+    });
+
+    if (classroom?.ownerId === userId) {
+      throw new ConflictException(
+        'O proprietário deve excluir a turma em vez de sair dela',
+      );
+    }
+
     await this.prisma.userClassroom.delete({
       where: {
         userId_classroomId: { userId, classroomId },
@@ -144,19 +157,11 @@ export class ClassroomsService {
         id: true,
         name: true,
 
-        userClassrooms: {
-          where: {
-            user: {
-              role: 'PROFESSOR',
-            },
-          },
+        ownerId: true,
+        owner: {
           select: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
+            id: true,
+            name: true,
           },
         },
 
@@ -182,7 +187,8 @@ export class ClassroomsService {
     return classrooms.map((classroom) => ({
       id: classroom.id,
       name: classroom.name,
-      teacher: classroom.userClassrooms[0]?.user ?? null,
+      ownerId: classroom.ownerId,
+      teacher: classroom.owner,
       lastAnnouncement: classroom.announcements[0] ?? null,
     }));
   }
@@ -200,19 +206,11 @@ export class ClassroomsService {
         id: true,
         name: true,
 
-        userClassrooms: {
-          where: {
-            user: {
-              role: 'PROFESSOR',
-            },
-          },
+        ownerId: true,
+        owner: {
           select: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
+            id: true,
+            name: true,
           },
         },
 
@@ -238,9 +236,70 @@ export class ClassroomsService {
     return classrooms.map((classroom) => ({
       id: classroom.id,
       name: classroom.name,
-      teacher: classroom.userClassrooms[0]?.user ?? null,
+      ownerId: classroom.ownerId,
+      teacher: classroom.owner,
       lastAnnouncement: classroom.announcements[0] ?? null,
     }));
+  }
+
+  async delete(userId: string, classroomId: string): Promise<void> {
+    try {
+      await this.prisma.$transaction(async (transaction) => {
+        const receipt = await transaction.classroomDeletionReceipt.findUnique({
+          where: { classroomId },
+        });
+
+        if (receipt) {
+          if (receipt.ownerId === userId) {
+            return;
+          }
+
+          throw new NotFoundException('Turma não encontrada');
+        }
+
+        const classroom = await transaction.classroom.findUnique({
+          where: { id: classroomId },
+        });
+
+        if (!classroom) {
+          throw new NotFoundException('Turma não encontrada');
+        }
+
+        if (classroom.ownerId !== userId) {
+          throw new ForbiddenException(
+            'Apenas o proprietário da turma pode excluí-la',
+          );
+        }
+
+        await transaction.classroomDeletionReceipt.create({
+          data: { classroomId, ownerId: userId },
+        });
+
+        await transaction.classroom.delete({
+          where: { id: classroomId },
+        });
+      });
+    } catch (error: unknown) {
+      if (this.isUniqueConstraintViolation(error)) {
+        const receipt = await this.prisma.classroomDeletionReceipt.findUnique({
+          where: { classroomId },
+        });
+
+        if (receipt?.ownerId === userId) {
+          return;
+        }
+      }
+
+      throw error;
+    }
+  }
+
+  private isUniqueConstraintViolation(error: unknown): boolean {
+    return (
+      typeof error === 'object' &&
+      error !== null &&
+      (error as { code?: unknown }).code === 'P2002'
+    );
   }
 
   private normalizeClassroomName(name: string): string {

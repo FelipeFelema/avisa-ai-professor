@@ -1,6 +1,6 @@
-import { Pressable, PressableProps, StyleSheet, Text, ViewStyle, StyleProp } from 'react-native';
+import { Pressable, PressableProps, StyleProp, StyleSheet, Text, ViewStyle } from 'react-native';
 
-import { AUTH_THEME } from '@/theme/auth';
+import { theme } from '@/theme';
 
 type AuthButtonProps = PressableProps & {
   label: string;
@@ -14,22 +14,28 @@ export function AuthButton({
   loadingLabel,
   isLoading = false,
   disabled,
+  accessibilityLabel,
+  accessibilityRole: _accessibilityRole,
+  accessibilityState: _accessibilityState,
   style,
   ...props
 }: AuthButtonProps) {
   const buttonLabel = isLoading && loadingLabel ? loadingLabel : label;
+  const isDisabled = Boolean(disabled || isLoading);
 
   return (
     <Pressable
+      {...props}
+      accessibilityLabel={accessibilityLabel ?? buttonLabel}
       accessibilityRole="button"
-      disabled={disabled || isLoading}
+      accessibilityState={{ disabled: isDisabled, busy: isLoading }}
+      disabled={isDisabled}
       style={({ pressed }) => [
         styles.button,
-        (disabled || isLoading) && styles.buttonDisabled,
-        pressed && !(disabled || isLoading) ? styles.buttonPressed : null,
+        isDisabled && styles.buttonDisabled,
+        pressed && !isDisabled ? styles.buttonPressed : null,
         style,
       ]}
-      {...props}
     >
       <Text style={styles.label}>{buttonLabel}</Text>
     </Pressable>
@@ -38,27 +44,28 @@ export function AuthButton({
 
 const styles = StyleSheet.create({
   button: {
-    minHeight: 54,
-    borderRadius: AUTH_THEME.radius.md,
-    backgroundColor: AUTH_THEME.colors.primary,
+    minHeight: theme.targets.android,
+    minWidth: theme.targets.android,
+    borderRadius: theme.radius.md,
+    backgroundColor: theme.colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: AUTH_THEME.spacing.lg,
-    shadowColor: AUTH_THEME.colors.primaryDark,
+    paddingHorizontal: theme.spacing.lg,
+    shadowColor: theme.colors.primaryPressed,
     shadowOpacity: 0.12,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 6 },
     elevation: 2,
   },
   buttonPressed: {
-    backgroundColor: AUTH_THEME.colors.primaryDark,
+    backgroundColor: theme.colors.primaryPressed,
   },
   buttonDisabled: {
     opacity: 0.65,
   },
   label: {
-    color: AUTH_THEME.colors.white,
-    fontSize: AUTH_THEME.typography.body,
+    color: theme.colors.onPrimary,
+    ...theme.typography.body,
     fontWeight: '700',
     letterSpacing: 0.2,
   },

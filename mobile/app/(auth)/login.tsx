@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,8 +7,10 @@ import { isAxiosError } from 'axios';
 import { useMutation } from '@tanstack/react-query';
 
 import { AuthButton, AuthField, AuthScreen } from '@/components/auth';
+import { Button } from '@/components/ui';
 import { HTTP_STATUS } from '@/constants/http-status';
 import { useAuth } from '@/hooks/useAuth';
+import { theme } from '@/theme';
 import { loginSchema, type LoginFormData } from '@/validations/login.schema';
 
 export default function LoginScreen() {
@@ -64,9 +66,12 @@ export default function LoginScreen() {
         <View style={styles.footer}>
           <Text style={styles.footerText}>Não possui uma conta?</Text>
 
-          <Pressable onPress={() => router.push('/register')} style={styles.footerLink}>
-            <Text style={styles.footerLinkText}>Criar conta</Text>
-          </Pressable>
+          <Button
+            label="Criar conta"
+            variant="ghost"
+            onPress={() => router.push('/register')}
+            style={styles.footerLink}
+          />
         </View>
       }
     >
@@ -107,7 +112,11 @@ export default function LoginScreen() {
           )}
         />
 
-        {loginError ? <Text style={styles.feedbackError}>{loginError}</Text> : null}
+        {loginError ? (
+          <Text accessibilityRole="alert" style={styles.feedbackError}>
+            {loginError}
+          </Text>
+        ) : null}
 
         <AuthButton
           label="Entrar"
@@ -116,9 +125,12 @@ export default function LoginScreen() {
           onPress={handleSubmit(onSubmit)}
         />
 
-        <Pressable onPress={() => router.push('/register')} style={styles.inlineLink}>
-          <Text style={styles.inlineLinkText}>Criar conta</Text>
-        </Pressable>
+        <Button
+          label="Criar conta"
+          variant="ghost"
+          onPress={() => router.push('/register')}
+          style={styles.inlineLink}
+        />
       </View>
     </AuthScreen>
   );
@@ -126,41 +138,32 @@ export default function LoginScreen() {
 
 const styles = StyleSheet.create({
   form: {
-    gap: 20,
+    gap: theme.spacing.lg,
   },
   footer: {
     alignItems: 'center',
-    gap: 12,
+    gap: theme.spacing.sm,
   },
   footerText: {
-    color: '#667085',
-    fontSize: 13,
+    color: theme.colors.textMuted,
+    ...theme.typography.caption,
   },
   footerLink: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 999,
+    minWidth: theme.targets.android,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.radius.pill,
     borderWidth: 1,
-    borderColor: '#BFD9D4',
-    backgroundColor: '#FFFFFF',
-  },
-  footerLinkText: {
-    color: '#205B57',
-    fontSize: 14,
-    fontWeight: '700',
+    borderColor: theme.colors.borderStrong,
+    backgroundColor: theme.colors.surface,
   },
   feedbackError: {
-    color: '#B42318',
-    fontSize: 13,
-    lineHeight: 18,
+    color: theme.colors.danger,
+    ...theme.typography.caption,
   },
   inlineLink: {
     alignSelf: 'center',
-    paddingVertical: 6,
-  },
-  inlineLinkText: {
-    color: '#205B57',
-    fontSize: 14,
-    fontWeight: '700',
+    minWidth: theme.targets.android,
+    paddingVertical: theme.spacing.xs,
   },
 });

@@ -5,6 +5,7 @@ import type {
   LoginResponse,
   RegisterRequest,
   RegisterResponse,
+  UpdateProfileRequest,
 } from '@/types/auth';
 
 interface AuthApiResponse {
@@ -23,6 +24,12 @@ export async function login(data: LoginRequest): Promise<LoginResponse> {
 
 export async function getProfile(): Promise<AuthUser> {
   const response = await api.get<AuthUser>('/users/profile');
+
+  return response.data;
+}
+
+export async function updateProfile(data: UpdateProfileRequest): Promise<AuthUser> {
+  const response = await api.patch<AuthUser>('/users/profile', data);
 
   return response.data;
 }

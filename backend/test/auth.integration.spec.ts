@@ -10,6 +10,12 @@ import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma/prisma.service';
 
+type AuthResponse = {
+  id: string;
+  access_token: string;
+  refresh_token: string;
+};
+
 describe('Auth Integration Tests', () => {
   let app: INestApplication<App>;
   let prisma: PrismaService;
@@ -56,6 +62,10 @@ describe('Auth Integration Tests', () => {
         transform: true,
       }),
     );
+    const httpServer = app.getHttpAdapter().getInstance() as {
+      set: (key: string, value: unknown) => void;
+    };
+    httpServer.set('trust proxy', true);
 
     prisma = app.get(PrismaService);
 
@@ -76,8 +86,14 @@ describe('Auth Integration Tests', () => {
 
     const body = response.body as Record<string, unknown>;
 
-    expect(body).toHaveProperty('access_token');
-    expect(body).toHaveProperty('refresh_token');
+    expect(body).toEqual(
+      expect.objectContaining({
+        access_token: expect.any(String) as unknown as string,
+        refresh_token: expect.any(String) as unknown as string,
+        updatedAt: expect.any(String) as unknown as string,
+      }),
+    );
+    expect(body).not.toHaveProperty('sid');
   });
 
   it('should login with registered user successfully', async () => {
@@ -91,12 +107,15 @@ describe('Auth Integration Tests', () => {
         email,
         password: testPassword,
       })
-      .expect(201);
+      .expect(200);
 
     const body = response.body as Record<string, unknown>;
 
-    expect(body).toHaveProperty('access_token');
-    expect(body).toHaveProperty('refresh_token');
+    expect(body).toEqual({
+      access_token: expect.any(String) as unknown as string,
+      refresh_token: expect.any(String) as unknown as string,
+    });
+    expect(body).not.toHaveProperty('sid');
   });
 
   it('should not register duplicate email', async () => {
@@ -137,5 +156,66 @@ describe('Auth Integration Tests', () => {
         password: '123',
       })
       .expect(400);
+  });
+
+  it('creates a session per login and rotates only the matching refresh token', async () => {
+    const email = makeEmail('session-rotation');
+    const registered = await request(app.getHttpServer())
+      .post('/api/v1/auth/register')
+      .set('X-Forwarded-For', 'session-rotation')
+      .send({ name: 'Integration Test User', email, password: testPassword })
+      .expect(201);
+    const firstRefresh = (registered.body as AuthResponse).refresh_token;
+    const userId = (registered.body as AuthResponse).id;
+
+    const firstSessionCount = await prisma.authSession.count({
+      where: { userId },
+    });
+    expect(firstSessionCount).toBe(1);
+
+    const rotated = await request(app.getHttpServer())
+      .post('/api/v1/auth/refresh')
+      .set('X-Forwarded-For', 'session-rotation')
+      .send({ refreshToken: firstRefresh })
+      .expect(200);
+    expect(rotated.body).toEqual({
+      access_token: expect.any(String) as unknown as string,
+      refresh_token: expect.any(String) as unknown as string,
+    });
+    expect(rotated.body).not.toHaveProperty('sid');
+    expect((rotated.body as AuthResponse).refresh_token).not.toBe(firstRefresh);
+    await request(app.getHttpServer())
+      .post('/api/v1/auth/refresh')
+      .set('X-Forwarded-For', 'session-rotation')
+      .send({ refreshToken: firstRefresh })
+      .expect(401);
+
+    await request(app.getHttpServer())
+      .post('/api/v1/auth/refresh')
+      .set('X-Forwarded-For', 'session-rotation')
+      .send({ refreshToken: (rotated.body as AuthResponse).refresh_token })
+      .expect(200);
+
+    expect(await prisma.authSession.count({ where: { userId } })).toBe(1);
+  });
+
+  it('keeps simultaneous login sessions independently addressable by sid', async () => {
+    const email = makeEmail('two-sessions');
+    const registered = await request(app.getHttpServer())
+      .post('/api/v1/auth/register')
+      .set('X-Forwarded-For', 'two-sessions')
+      .send({ name: 'Integration Test User', email, password: testPassword })
+      .expect(201);
+    await request(app.getHttpServer())
+      .post('/api/v1/auth/login')
+      .set('X-Forwarded-For', 'two-sessions-login')
+      .send({ email, password: testPassword })
+      .expect(200);
+
+    const userId = (registered.body as AuthResponse).id;
+    const sessions = await prisma.authSession.findMany({ where: { userId } });
+    expect(sessions).toHaveLength(2);
+    expect(new Set(sessions.map((session) => session.id)).size).toBe(2);
+    expect(sessions.every((session) => session.revokedAt === null)).toBe(true);
   });
 });

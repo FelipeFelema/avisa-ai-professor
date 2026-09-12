@@ -4,6 +4,19 @@ import { clearTokens, getTokens, saveTokens } from '@/storage';
 
 import { env } from '@/config';
 
+type SessionExpiredHandler = () => void | Promise<void>;
+
+let sessionExpiredHandler: SessionExpiredHandler | undefined;
+
+export function setSessionExpiredHandler(handler?: SessionExpiredHandler) {
+  sessionExpiredHandler = handler;
+}
+
+async function notifySessionExpired() {
+  await clearTokens();
+  await sessionExpiredHandler?.();
+}
+
 export const api = create({
   baseURL: env.apiUrl,
   timeout: 10000,
@@ -45,6 +58,7 @@ api.interceptors.response.use(
       const tokens = await getTokens();
 
       if (!tokens) {
+        await notifySessionExpired();
         return Promise.reject(error);
       }
 
@@ -66,7 +80,7 @@ api.interceptors.response.use(
 
       return api(originalRequest);
     } catch {
-      await clearTokens();
+      await notifySessionExpired();
 
       return Promise.reject(error);
     }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -13,8 +13,10 @@ import {
   AuthScreen,
   type AuthRoleValue,
 } from '@/components/auth';
+import { Button } from '@/components/ui';
 import { HTTP_STATUS } from '@/constants/http-status';
 import { useAuth } from '@/hooks/useAuth';
+import { theme } from '@/theme';
 import type { RegisterRequest } from '@/types/auth';
 import { registerSchema, type RegisterFormData } from '@/validations/register.schema';
 
@@ -185,9 +187,12 @@ export default function RegisterScreen() {
         <View style={styles.footer}>
           <Text style={styles.footerText}>Já possui uma conta?</Text>
 
-          <Pressable onPress={() => router.replace('/login')} style={styles.footerLink}>
-            <Text style={styles.footerLinkText}>Entrar</Text>
-          </Pressable>
+          <Button
+            label="Entrar"
+            variant="ghost"
+            onPress={() => router.replace('/login')}
+            style={styles.footerLink}
+          />
         </View>
       }
     >
@@ -288,7 +293,11 @@ export default function RegisterScreen() {
               />
             )}
 
-            {registerError ? <Text style={styles.feedbackError}>{registerError}</Text> : null}
+            {registerError ? (
+              <Text accessibilityRole="alert" style={styles.feedbackError}>
+                {registerError}
+              </Text>
+            ) : null}
 
             <AuthButton
               label="Cadastrar"
@@ -305,35 +314,30 @@ export default function RegisterScreen() {
 
 const styles = StyleSheet.create({
   content: {
-    gap: 20,
+    gap: theme.spacing.lg,
   },
   form: {
-    gap: 20,
+    gap: theme.spacing.lg,
   },
   footer: {
     alignItems: 'center',
-    gap: 12,
+    gap: theme.spacing.sm,
   },
   footerText: {
-    color: '#667085',
-    fontSize: 13,
+    color: theme.colors.textMuted,
+    ...theme.typography.caption,
   },
   footerLink: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 999,
+    minWidth: theme.targets.android,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.radius.pill,
     borderWidth: 1,
-    borderColor: '#BFD9D4',
-    backgroundColor: '#FFFFFF',
-  },
-  footerLinkText: {
-    color: '#205B57',
-    fontSize: 14,
-    fontWeight: '700',
+    borderColor: theme.colors.borderStrong,
+    backgroundColor: theme.colors.surface,
   },
   feedbackError: {
-    color: '#B42318',
-    fontSize: 13,
-    lineHeight: 18,
+    color: theme.colors.danger,
+    ...theme.typography.caption,
   },
 });

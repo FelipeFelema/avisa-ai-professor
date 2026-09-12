@@ -1,10 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 
-import * as announcementsService from '@/services/announcements/service';
+import { announcementKeys } from '@/config';
+import * as announcementsService from '@/services/announcements';
 
 export function useClassroomAnnouncements(classroomId: string) {
   return useQuery({
-    queryKey: ['classroom-announcements', classroomId],
+    queryKey: announcementKeys.byClassroom(classroomId),
     queryFn: () => announcementsService.findByClassroom(classroomId),
     enabled: !!classroomId,
   });

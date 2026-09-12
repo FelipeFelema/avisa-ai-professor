@@ -1,0 +1,131 @@
+name: Commit Conventions
+
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - develop
+      - main
+
+  pull_request:
+    branches:
+      - develop
+      - main
+
+jobs:
+  commit-conventions:
+    name: Validate commits
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: read
+
+    steps:
+      - name: Checkout repository history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install commit tooling
+        run: npm ci
+
+      - name: Validate commit range
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+          CURRENT_SHA: ${{ github.sha }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            REPOSITORY="${GITHUB_REPOSITORY:-}"
+            EVENT_FILE="${GITHUB_EVENT_PATH:-}"
+
+            if [ -z "$REPOSITORY" ]; then
+              echo "Unable to determine the GitHub repository." >&2
+              exit 1
+            fi
+
+            PR_NUMBER=""
+            if [ -n "$EVENT_FILE" ] && [ -f "$EVENT_FILE" ]; then
+              PR_NUMBER="$(jq -r '.number // empty' "$EVENT_FILE")"
+            fi
+
+            API_HEADERS=(
+              --header "Accept: application/vnd.github+json"
+              --header "X-GitHub-Api-Version: 2022-11-28"
+            )
+            if [ -n "${GITHUB_TOKEN:-}" ]; then
+              API_HEADERS+=(--header "Authorization: Bearer $GITHUB_TOKEN")
+            fi
+
+            API_URL="https://api.github.com/repos/$REPOSITORY"
+            REPOSITORY_URL="https://github.com/$REPOSITORY.git"
+            if [ -z "$PR_NUMBER" ] && [ -n "${GITHUB_SHA:-}" ]; then
+              PR_NUMBER="$(curl --fail --silent --show-error --location \
+                "${API_HEADERS[@]}" \
+                "$API_URL/commits/$GITHUB_SHA/pulls" |
+                jq -r '.[0].number // empty')"
+            fi
+
+            if [ -z "$PR_NUMBER" ]; then
+              echo "Unable to determine the pull request number." >&2
+              exit 1
+            fi
+
+            PR_DATA="$(curl --fail --silent --show-error --location \
+              "${API_HEADERS[@]}" \
+              "$API_URL/pulls/$PR_NUMBER")"
+            BASE_REF="$(printf '%s' "$PR_DATA" | jq -r '.base.ref // empty')"
+            FROM_SHA="$(printf '%s' "$PR_DATA" | jq -r '.base.sha // empty')"
+            TO_SHA="$(printf '%s' "$PR_DATA" | jq -r '.head.sha // empty')"
+            HEAD_REF="$(printf '%s' "$PR_DATA" | jq -r '.head.ref // empty')"
+            HEAD_REPOSITORY="$(printf '%s' "$PR_DATA" | jq -r '.head.repo.full_name // empty')"
+
+            if [ -z "$BASE_REF" ] || [ -z "$FROM_SHA" ] || [ -z "$TO_SHA" ]; then
+              echo "Unable to determine the pull request base or head from GitHub." >&2
+              exit 1
+            fi
+
+            if ! git cat-file -e "$FROM_SHA^{commit}" 2>/dev/null; then
+              git fetch --no-tags "$REPOSITORY_URL" "+refs/heads/$BASE_REF:refs/remotes/origin/$BASE_REF"
+            fi
+
+            if ! git cat-file -e "$FROM_SHA^{commit}" 2>/dev/null; then
+              FROM_SHA="$(git rev-parse --verify "refs/remotes/origin/$BASE_REF^{commit}")"
+            fi
+
+            if ! git cat-file -e "$TO_SHA^{commit}" 2>/dev/null \
+              && [ "$HEAD_REPOSITORY" = "$REPOSITORY" ] \
+              && [ -n "$HEAD_REF" ]; then
+              git fetch --no-tags "$REPOSITORY_URL" "+refs/heads/$HEAD_REF:refs/remotes/origin/pr-head"
+              TO_SHA="$(git rev-parse --verify 'refs/remotes/origin/pr-head^{commit}')"
+            fi
+
+            if ! git cat-file -e "$FROM_SHA^{commit}" 2>/dev/null; then
+              echo "Unable to resolve the pull request base commit: $FROM_SHA" >&2
+              exit 1
+            fi
+
+            if ! git cat-file -e "$TO_SHA^{commit}" 2>/dev/null; then
+              echo "Unable to resolve the pull request head commit: $TO_SHA" >&2
+              exit 1
+            fi
+
+            echo "Validating commits from $FROM_SHA to $TO_SHA (base: $BASE_REF)"
+            npx commitlint --from "$FROM_SHA" --to "$TO_SHA" --verbose
+          elif [ "$EVENT_NAME" = "push" ] && [ "${BEFORE_SHA:-}" != "0000000000000000000000000000000000000000" ]; then
+            npx commitlint --from "$BEFORE_SHA" --to "$CURRENT_SHA" --verbose
+          else
+            npx commitlint --last --verbose
+          fi
