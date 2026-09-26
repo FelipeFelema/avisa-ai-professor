@@ -183,6 +183,7 @@ export default function RegisterScreen() {
       eyebrow="Avisa Aí Professor"
       title="Crie sua conta"
       subtitle="Escolha seu perfil e preencha os dados em um fluxo simples e seguro."
+      backButton={{ fallbackHref: '/login' }}
       footer={
         <View style={styles.footer}>
           <Text style={styles.footerText}>Já possui uma conta?</Text>

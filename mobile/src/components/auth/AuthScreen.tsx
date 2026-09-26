@@ -1,7 +1,9 @@
 import { ReactNode } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import type { Href } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BackButton } from '@/components/ui/BackButton';
 import { theme } from '@/theme';
 
 type AuthScreenProps = {
@@ -10,34 +12,57 @@ type AuthScreenProps = {
   subtitle: string;
   children: ReactNode;
   footer?: ReactNode;
+  backButton?: { fallbackHref: Href };
 };
 
-export function AuthScreen({ eyebrow, title, subtitle, children, footer }: AuthScreenProps) {
+export function AuthScreen({
+  eyebrow,
+  title,
+  subtitle,
+  children,
+  footer,
+  backButton,
+}: AuthScreenProps) {
+  const keyboardBehavior = Platform.OS === 'ios' ? 'padding' : 'height';
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.backgroundBlobTop} />
       <View style={styles.backgroundBlobBottom} />
 
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
+      {backButton ? (
+        <View style={styles.backBar}>
+          <BackButton fallbackHref={backButton.fallbackHref} />
+        </View>
+      ) : null}
+
+      <KeyboardAvoidingView
+        testID={`auth-screen-keyboard-avoiding-view-${keyboardBehavior}`}
+        style={styles.keyboardAvoidingView}
+        behavior={keyboardBehavior}
       >
-        <View style={styles.card}>
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>{eyebrow}</Text>
+        <ScrollView
+          testID="auth-screen-scroll-view"
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.card}>
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>{eyebrow}</Text>
+            </View>
+
+            <Text accessibilityRole="header" style={styles.title}>
+              {title}
+            </Text>
+            <Text style={styles.subtitle}>{subtitle}</Text>
+
+            <View style={styles.content}>{children}</View>
           </View>
 
-          <Text accessibilityRole="header" style={styles.title}>
-            {title}
-          </Text>
-          <Text style={styles.subtitle}>{subtitle}</Text>
-
-          <View style={styles.content}>{children}</View>
-        </View>
-
-        {footer ? <View style={styles.footer}>{footer}</View> : null}
-      </ScrollView>
+          {footer ? <View style={styles.footer}>{footer}</View> : null}
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -46,6 +71,14 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: theme.colors.background,
+  },
+  backBar: {
+    paddingHorizontal: theme.spacing.xl,
+    paddingTop: theme.spacing.sm,
+    paddingBottom: theme.spacing.xs,
+  },
+  keyboardAvoidingView: {
+    flex: 1,
   },
   backgroundBlobTop: {
     position: 'absolute',
@@ -72,6 +105,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: theme.spacing.xl,
     paddingVertical: theme.spacing.xxl,
+    paddingBottom: theme.spacing.xxxl,
   },
   card: {
     width: '100%',

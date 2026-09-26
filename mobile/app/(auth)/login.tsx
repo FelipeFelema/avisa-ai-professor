@@ -124,13 +124,6 @@ export default function LoginScreen() {
           isLoading={loginMutation.isPending}
           onPress={handleSubmit(onSubmit)}
         />
-
-        <Button
-          label="Criar conta"
-          variant="ghost"
-          onPress={() => router.push('/register')}
-          style={styles.inlineLink}
-        />
       </View>
     </AuthScreen>
   );
@@ -160,10 +153,5 @@ const styles = StyleSheet.create({
   feedbackError: {
     color: theme.colors.danger,
     ...theme.typography.caption,
-  },
-  inlineLink: {
-    alignSelf: 'center',
-    minWidth: theme.targets.android,
-    paddingVertical: theme.spacing.xs,
   },
 });
