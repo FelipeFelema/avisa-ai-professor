@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, type Href } from 'expo-router';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import {
   Pressable,
   type PressableProps,
@@ -23,6 +23,7 @@ export type BackButtonProps = Omit<
 export function BackButton({ fallbackHref, style, ...pressableProps }: BackButtonProps) {
   const router = useRouter();
   const navigationLocked = useRef(false);
+  const [isNavigationLocked, setIsNavigationLocked] = useState(false);
 
   function handlePress() {
     if (navigationLocked.current) {
@@ -30,6 +31,7 @@ export function BackButton({ fallbackHref, style, ...pressableProps }: BackButto
     }
 
     navigationLocked.current = true;
+    setIsNavigationLocked(true);
 
     if (router.canGoBack()) {
       router.back();
@@ -42,8 +44,10 @@ export function BackButton({ fallbackHref, style, ...pressableProps }: BackButto
   return (
     <Pressable
       {...pressableProps}
+      disabled={isNavigationLocked}
       accessibilityRole="button"
       accessibilityLabel="Voltar"
+      accessibilityState={{ disabled: isNavigationLocked }}
       onPress={handlePress}
       style={({ pressed }) => [styles.button, pressed ? styles.pressed : null, style]}
     >
