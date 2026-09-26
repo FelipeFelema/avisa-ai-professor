@@ -2,10 +2,9 @@ import { useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { isAxiosError } from 'axios';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AnnouncementCard } from '@/components/announcements';
-import { Button, ConfirmationDialog, ScreenState } from '@/components/ui';
+import { Button, ConfirmationDialog, ScreenState, SecondaryScreen } from '@/components/ui';
 import { useAuth } from '@/hooks/useAuth';
 import { useClassroomAnnouncements } from '@/hooks/useClassroomAnnouncements';
 import { useDeleteClassroom } from '@/hooks/useDeleteClassroom';
@@ -79,38 +78,48 @@ export default function ClassroomDetailsScreen() {
   }
 
   if (classroomsLoading) {
-    return <ScreenState kind="loading" title="Carregando turma" message="Aguarde um momento." />;
+    return (
+      <SecondaryScreen fallbackHref="/classrooms">
+        <ScreenState kind="loading" title="Carregando turma" message="Aguarde um momento." />
+      </SecondaryScreen>
+    );
   }
 
   if (classroomsError) {
     return (
-      <ScreenState
-        kind="error"
-        title="Não foi possível carregar a turma"
-        message="Verifique sua conexão e tente novamente."
-        actionLabel="Tentar novamente"
-        onAction={() => {
-          void refetchClassrooms();
-        }}
-      />
+      <SecondaryScreen fallbackHref="/classrooms">
+        <ScreenState
+          kind="error"
+          title="Não foi possível carregar a turma"
+          message="Verifique sua conexão e tente novamente."
+          actionLabel="Tentar novamente"
+          onAction={() => {
+            void refetchClassrooms();
+          }}
+        />
+      </SecondaryScreen>
     );
   }
 
   if (!classroom) {
     return (
-      <ScreenState
-        kind="not-found"
-        title="Turma não encontrada"
-        message="Esta turma não está mais disponível."
-        actionLabel="Ver turmas"
-        onAction={() => router.replace('/classrooms')}
-      />
+      <SecondaryScreen fallbackHref="/classrooms">
+        <ScreenState
+          kind="not-found"
+          title="Turma não encontrada"
+          message="Esta turma não está mais disponível."
+          actionLabel="Ver turmas"
+          onAction={() => router.replace('/classrooms')}
+        />
+      </SecondaryScreen>
     );
   }
 
   if (announcementsLoading) {
     return (
-      <ScreenState kind="loading" title="Carregando comunicados" message="Aguarde um momento." />
+      <SecondaryScreen fallbackHref="/classrooms">
+        <ScreenState kind="loading" title="Carregando comunicados" message="Aguarde um momento." />
+      </SecondaryScreen>
     );
   }
 
@@ -119,23 +128,25 @@ export default function ClassroomDetailsScreen() {
       isAxiosError(announcementsErrorValue) && announcementsErrorValue.response?.status === 404;
 
     return (
-      <ScreenState
-        kind={notFound ? 'not-found' : 'error'}
-        title={notFound ? 'Turma não encontrada' : 'Não foi possível carregar os comunicados'}
-        message={
-          notFound
-            ? 'Esta turma não está mais disponível.'
-            : getHttpErrorMessage(announcementsErrorValue)
-        }
-        actionLabel={notFound ? 'Ver turmas' : 'Tentar novamente'}
-        onAction={() => {
-          if (notFound) {
-            router.replace('/classrooms');
-          } else {
-            void refetchAnnouncements();
+      <SecondaryScreen fallbackHref="/classrooms">
+        <ScreenState
+          kind={notFound ? 'not-found' : 'error'}
+          title={notFound ? 'Turma não encontrada' : 'Não foi possível carregar os comunicados'}
+          message={
+            notFound
+              ? 'Esta turma não está mais disponível.'
+              : getHttpErrorMessage(announcementsErrorValue)
           }
-        }}
-      />
+          actionLabel={notFound ? 'Ver turmas' : 'Tentar novamente'}
+          onAction={() => {
+            if (notFound) {
+              router.replace('/classrooms');
+            } else {
+              void refetchAnnouncements();
+            }
+          }}
+        />
+      </SecondaryScreen>
     );
   }
 
@@ -143,7 +154,7 @@ export default function ClassroomDetailsScreen() {
 
   return (
     <>
-      <SafeAreaView style={styles.safeArea}>
+      <SecondaryScreen fallbackHref="/classrooms">
         <ScrollView
           style={styles.container}
           contentContainerStyle={styles.content}
@@ -194,7 +205,7 @@ export default function ClassroomDetailsScreen() {
             ))
           )}
         </ScrollView>
-      </SafeAreaView>
+      </SecondaryScreen>
 
       {action ? (
         <ConfirmationDialog
@@ -220,10 +231,6 @@ export default function ClassroomDetailsScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  safeArea: {
     flex: 1,
     backgroundColor: theme.colors.background,
   },

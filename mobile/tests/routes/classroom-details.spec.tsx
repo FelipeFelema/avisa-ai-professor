@@ -43,6 +43,7 @@ function setDetailsContext(userId: string, classrooms = [classroom]) {
     push: jest.fn(),
     replace: mockReplace,
     back: jest.fn(),
+    canGoBack: jest.fn(),
   } as unknown as ReturnType<typeof useRouter>);
   mockUseLocalSearchParams.mockReturnValue({ id: classroom.id });
   mockUseAuth.mockReturnValue({

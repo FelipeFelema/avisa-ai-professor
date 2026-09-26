@@ -1,13 +1,17 @@
 import { useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { isAxiosError } from 'axios';
 
 import { AuthButton, AuthField } from '@/components/auth';
-import { ConfirmationDialog, ScreenState, type ConfirmationSummaryRow } from '@/components/ui';
+import {
+  ConfirmationDialog,
+  ScreenState,
+  SecondaryScreen,
+  type ConfirmationSummaryRow,
+} from '@/components/ui';
 import { getHttpErrorMessage } from '@/lib';
 import { useAuth } from '@/hooks/useAuth';
 import { useUpdateProfile } from '@/hooks/useUpdateProfile';
@@ -48,18 +52,24 @@ export default function ProfileEditScreen() {
   });
 
   if (isLoading) {
-    return <ScreenState kind="loading" title="Carregando perfil" message="Aguarde um momento." />;
+    return (
+      <SecondaryScreen fallbackHref="/profile">
+        <ScreenState kind="loading" title="Carregando perfil" message="Aguarde um momento." />
+      </SecondaryScreen>
+    );
   }
 
   if (!user) {
     return (
-      <ScreenState
-        kind="not-found"
-        title="Perfil não disponível"
-        message="Entre novamente para editar seus dados."
-        actionLabel="Entrar"
-        onAction={() => router.replace('/login')}
-      />
+      <SecondaryScreen fallbackHref="/profile">
+        <ScreenState
+          kind="not-found"
+          title="Perfil não disponível"
+          message="Entre novamente para editar seus dados."
+          actionLabel="Entrar"
+          onAction={() => router.replace('/login')}
+        />
+      </SecondaryScreen>
     );
   }
 
@@ -123,7 +133,7 @@ export default function ProfileEditScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SecondaryScreen fallbackHref="/profile">
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Text accessibilityRole="header" style={styles.title}>
           Editar perfil
@@ -194,15 +204,11 @@ export default function ProfileEditScreen() {
           errorMessage={confirmationError}
         />
       </ScrollView>
-    </SafeAreaView>
+    </SecondaryScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: AUTH_THEME.colors.background,
-  },
   content: {
     padding: AUTH_THEME.spacing.xl,
     gap: AUTH_THEME.spacing.xl,

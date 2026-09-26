@@ -6,6 +6,12 @@ import { renderWithProviders } from '../helpers/render';
 import { theme } from '@/theme';
 
 jest.mock('expo-router', () => ({
+  useRouter: jest.fn(() => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    back: jest.fn(),
+    canGoBack: jest.fn(),
+  })),
   useLocalSearchParams: jest.fn(() => ({ id: 'classroom-1' })),
 }));
 jest.mock('@/hooks/useCreateAnnouncement', () => ({

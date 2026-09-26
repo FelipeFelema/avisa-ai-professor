@@ -1,4 +1,3 @@
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
@@ -13,6 +12,7 @@ import { ANNOUNCEMENT_DURATIONS } from '@/types/announcement';
 
 import { AUTH_THEME } from '@/theme/auth';
 import { theme } from '@/theme';
+import { SecondaryScreen } from '@/components/ui';
 
 export default function NewAnnouncementScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -41,7 +41,7 @@ export default function NewAnnouncementScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SecondaryScreen fallbackHref={`/classrooms/${id}`}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Text style={styles.title}>Novo comunicado</Text>
         <Text style={styles.subtitle}>
@@ -153,16 +153,11 @@ export default function NewAnnouncementScreen() {
           </Text>
         </Pressable>
       </ScrollView>
-    </SafeAreaView>
+    </SecondaryScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: AUTH_THEME.colors.background,
-  },
-
   content: {
     padding: AUTH_THEME.spacing.xl,
     gap: AUTH_THEME.spacing.xl,

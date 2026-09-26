@@ -1,5 +1,6 @@
 import { act, fireEvent, waitFor } from '@testing-library/react-native';
 import { useRouter } from 'expo-router';
+import type { ReactNode } from 'react';
 import { Pressable as MockPressable, Text as MockText } from 'react-native';
 
 import ProfileEditScreen from '../../app/(app)/profile/edit';
@@ -14,6 +15,7 @@ jest.mock('expo-router', () => ({ useRouter: jest.fn() }));
 jest.mock('@/hooks/useAuth', () => ({ useAuth: jest.fn() }));
 jest.mock('@/hooks/useUpdateProfile', () => ({ useUpdateProfile: jest.fn() }));
 jest.mock('@/components/ui', () => ({
+  SecondaryScreen: ({ children }: { children?: ReactNode }) => <>{children}</>,
   ConfirmationDialog: ({
     visible,
     summary = [],
