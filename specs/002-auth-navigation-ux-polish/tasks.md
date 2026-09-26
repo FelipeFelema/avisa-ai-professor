@@ -50,13 +50,13 @@ description: "Task list for Auth Navigation UX Polish"
 
 ### Tests for User Story 1
 
-- [ ] T006 [P] [US1] Criar `mobile/tests/components/AuthScreen.spec.tsx` com testes para KeyboardAvoidingView por plataforma, `flexGrow`, `keyboardShouldPersistTaps="handled"`, espaço inferior rolável e BackButton opcional fora do ScrollView, cobrindo explicitamente cadastro com retorno e Login sem retorno.
-- [ ] T007 [P] [US1] Criar `mobile/tests/routes/auth-navigation-ux.spec.tsx` com testes do cadastro em Responsável e Professor, incluindo presença de `Confirmar senha`, `Código do professor` e `Cadastrar`, mensagens de validação alcançáveis, seleção de perfil, valores preservados ao alternar o perfil e ausência de alteração no payload/mutation; escrever os testes antes da implementação correspondente.
+- [X] T006 [P] [US1] Criar `mobile/tests/components/AuthScreen.spec.tsx` com testes para KeyboardAvoidingView por plataforma, `flexGrow`, `keyboardShouldPersistTaps="handled"`, espaço inferior rolável e BackButton opcional fora do ScrollView, cobrindo explicitamente cadastro com retorno e Login sem retorno.
+- [X] T007 [P] [US1] Criar `mobile/tests/routes/auth-navigation-ux.spec.tsx` com testes do cadastro em Responsável e Professor, incluindo presença de `Confirmar senha`, `Código do professor` e `Cadastrar`, mensagens de validação alcançáveis, seleção de perfil, valores preservados ao alternar o perfil e ausência de alteração no payload/mutation; escrever os testes antes da implementação correspondente.
 
 ### Implementation for User Story 1
 
-- [ ] T008 [US1] Evoluir `mobile/src/components/auth/AuthScreen.tsx` para usar KeyboardAvoidingView com `behavior="height"` no Android e `behavior="padding"` no iOS, preservar SafeAreaView, ScrollView, `flexGrow` e `keyboardShouldPersistTaps`, reservar espaço inferior suficiente e aceitar uma opção explícita de BackButton/fallback sem resetar filhos, footer ou estado de formulário.
-- [ ] T009 [US1] Atualizar `mobile/app/(auth)/register.tsx` para ativar o retorno visual com fallback `/login` por meio de `AuthScreen.tsx`, preservando `shouldUnregister`, `clearErrors`, `resetField`, seleção Responsável/Professor, validação, payload, mutation e feedbacks existentes.
+- [X] T008 [US1] Evoluir `mobile/src/components/auth/AuthScreen.tsx` para usar KeyboardAvoidingView com `behavior="height"` no Android e `behavior="padding"` no iOS, preservar SafeAreaView, ScrollView, `flexGrow` e `keyboardShouldPersistTaps`, reservar espaço inferior suficiente e aceitar uma opção explícita de BackButton/fallback sem resetar filhos, footer ou estado de formulário.
+- [X] T009 [US1] Atualizar `mobile/app/(auth)/register.tsx` para ativar o retorno visual com fallback `/login` por meio de `AuthScreen.tsx`, preservando `shouldUnregister`, `clearErrors`, `resetField`, seleção Responsável/Professor, validação, payload, mutation e feedbacks existentes.
 
 **Checkpoint**: O cadastro é independentemente navegável e rolável nos dois perfis; Login e as regras de cadastro continuam sem regressão funcional.
 
@@ -70,15 +70,15 @@ description: "Task list for Auth Navigation UX Polish"
 
 ### Tests for User Story 2
 
-- [ ] T010 [P] [US2] Criar `mobile/tests/components/BackButton.spec.tsx` cobrindo role, label, texto visual, alvo mínimo baseado em `theme.targets.android`, histórico chamando somente `back`, ausência de histórico chamando somente `replace` com o fallback, toque duplo produzindo uma única transição e ausência de requisição/listener nativo.
-- [ ] T011 [P] [US2] Criar `mobile/tests/routes/secondary-navigation.spec.tsx` com a matriz de `register`, `classrooms/new`, `classrooms/[id]`, `classrooms/[id]/new-announcement`, `announcements/[id]`, `announcements/[id]/edit` e `profile/edit`, cobrindo fallback estático/dinâmico, loading, erro, not-found, origem imediata e ausência do controle nas quatro telas raiz.
+- [X] T010 [P] [US2] Criar `mobile/tests/components/BackButton.spec.tsx` cobrindo role, label, texto visual, alvo mínimo baseado em `theme.targets.android`, histórico chamando somente `back`, ausência de histórico chamando somente `replace` com o fallback, toque duplo produzindo uma única transição e ausência de requisição/listener nativo.
+- [X] T011 [P] [US2] Criar `mobile/tests/routes/secondary-navigation.spec.tsx` com a matriz de `register`, `classrooms/new`, `classrooms/[id]`, `classrooms/[id]/new-announcement`, `announcements/[id]`, `announcements/[id]/edit` e `profile/edit`, cobrindo fallback estático/dinâmico, loading, erro, not-found, origem imediata e ausência do controle nas quatro telas raiz.
 
 ### Implementation for User Story 2
 
-- [ ] T012 [P] [US2] Envolver `mobile/app/(app)/classrooms/new.tsx` e `mobile/app/(app)/classrooms/[id].tsx` com `SecondaryScreen`, usando fallback `/classrooms`, mantendo as ações de formulário, query/mutation, confirmação e todos os retornos antecipados dentro do shell.
-- [ ] T013 [P] [US2] Envolver `mobile/app/(app)/classrooms/[id]/new-announcement.tsx` e `mobile/app/(app)/announcements/[id].tsx` com `SecondaryScreen`, usando `/classrooms/:classroomId` no novo comunicado e `/classrooms` até haver contexto, depois `/classrooms/:classroomId` no detalhe carregado, sem alterar formulários, estados, dados ou ações de conteúdo.
-- [ ] T014 [P] [US2] Envolver `mobile/app/(app)/announcements/[id]/edit.tsx` e `mobile/app/(app)/profile/edit.tsx` com `SecondaryScreen`, usando fallback `/announcements/:announcementId` e `/profile`, respectivamente, mantendo loading/erro/not-found, confirmação, formulário, retorno nativo e ações contextuais sem criar controles ambíguos.
-- [ ] T015 [US2] Reconciliar os mocks e expectativas de navegação afetados em `mobile/tests/routes/confirmation-matrix.spec.tsx`, `mobile/tests/routes/classroom-details.spec.tsx` e `mobile/tests/routes/profile-edit.spec.tsx`, adicionando `canGoBack` quando a tela compartilhada for montada e preservando asserções existentes de mutation, cache, confirmação e navegação pós-sucesso.
+- [X] T012 [P] [US2] Envolver `mobile/app/(app)/classrooms/new.tsx` e `mobile/app/(app)/classrooms/[id].tsx` com `SecondaryScreen`, usando fallback `/classrooms`, mantendo as ações de formulário, query/mutation, confirmação e todos os retornos antecipados dentro do shell.
+- [X] T013 [P] [US2] Envolver `mobile/app/(app)/classrooms/[id]/new-announcement.tsx` e `mobile/app/(app)/announcements/[id].tsx` com `SecondaryScreen`, usando `/classrooms/:classroomId` no novo comunicado e `/classrooms` até haver contexto, depois `/classrooms/:classroomId` no detalhe carregado, sem alterar formulários, estados, dados ou ações de conteúdo.
+- [X] T014 [P] [US2] Envolver `mobile/app/(app)/announcements/[id]/edit.tsx` e `mobile/app/(app)/profile/edit.tsx` com `SecondaryScreen`, usando fallback `/announcements/:announcementId` e `/profile`, respectivamente, mantendo loading/erro/not-found, confirmação, formulário, retorno nativo e ações contextuais sem criar controles ambíguos.
+- [X] T015 [US2] Reconciliar os mocks e expectativas de navegação afetados em `mobile/tests/routes/confirmation-matrix.spec.tsx`, `mobile/tests/routes/classroom-details.spec.tsx` e `mobile/tests/routes/profile-edit.spec.tsx`, adicionando `canGoBack` quando a tela compartilhada for montada e preservando asserções existentes de mutation, cache, confirmação e navegação pós-sucesso.
 
 **Checkpoint**: As sete rotas têm retorno visual em todos os estados, cada fallback usa `replace` somente sem histórico, e nenhum listener ou controle foi adicionado às telas raiz.
 
@@ -92,11 +92,11 @@ description: "Task list for Auth Navigation UX Polish"
 
 ### Tests for User Story 3
 
-- [ ] T016 [US3] Estender `mobile/tests/routes/auth-navigation-ux.spec.tsx` com os casos de Login: exatamente um `Criar conta`, associação ao texto `Não possui uma conta?`, abertura de `/register`, Login sem BackButton e preservação de campos, validações, feedbacks e `Entrar`; respeitar a alteração anterior do mesmo arquivo feita em T007.
+- [X] T016 [US3] Estender `mobile/tests/routes/auth-navigation-ux.spec.tsx` com os casos de Login: exatamente um `Criar conta`, associação ao texto `Não possui uma conta?`, abertura de `/register`, Login sem BackButton e preservação de campos, validações, feedbacks e `Entrar`; respeitar a alteração anterior do mesmo arquivo feita em T007.
 
 ### Implementation for User Story 3
 
-- [ ] T017 [US3] Remover o Button inline redundante e o estilo sem uso de `mobile/app/(auth)/login.tsx`, mantendo exatamente o CTA de footer que chama `router.push('/register')` e preservando mutation, campos, validações, feedbacks, `Entrar` e a ausência de retorno visual no Login.
+- [X] T017 [US3] Remover o Button inline redundante e o estilo sem uso de `mobile/app/(auth)/login.tsx`, mantendo exatamente o CTA de footer que chama `router.push('/register')` e preservando mutation, campos, validações, feedbacks, `Entrar` e a ausência de retorno visual no Login.
 
 **Checkpoint**: Login apresenta uma única ação visível de cadastro e nenhuma regra funcional de autenticação foi alterada.
 
@@ -106,11 +106,11 @@ description: "Task list for Auth Navigation UX Polish"
 
 **Purpose**: Consolidar acessibilidade, executar a validação automatizada/manual e deixar explícitas as limitações de evidência.
 
-- [ ] T018 [P] Estender `mobile/tests/accessibility/touch-targets.spec.tsx` para incluir `BackButton` na matriz de alvos, verificar os tokens compartilhados e manter a cobertura dos controles existentes sem introduzir valores literais divergentes.
-- [ ] T019 Executar o teste direcionado do quickstart a partir de `mobile/package.json` para `mobile/tests/components/BackButton.spec.tsx`, `mobile/tests/components/AuthScreen.spec.tsx`, `mobile/tests/routes/auth-navigation-ux.spec.tsx` e `mobile/tests/routes/secondary-navigation.spec.tsx`, corrigindo somente falhas dentro do escopo desta feature.
-- [ ] T020 Executar os gates descritos em `specs/002-auth-navigation-ux-polish/quickstart.md` usando `mobile/package.json`: `npm run typecheck`, `npm run lint`, `npm run format:check`, `npm run doctor`, `npm run test:ci` e `npm run export:ci`; classificar cada resultado como PASS, WARN, FAIL ou NOT RUN e não tratar export/Doctor como prova de usabilidade manual.
-- [ ] T021 Realizar o walkthrough Android e registrar em `specs/002-auth-navigation-ux-polish/evidence/android-navigation-matrix.md` a matriz das sete rotas, teclado nos dois perfis, erro/loading/not-found quando aplicável, botão/gesto nativo, toque rápido, origem/destino e versão do dispositivo; declarar explicitamente iOS, VoiceOver, participantes e métricas não executados como NOT MEASURED.
-- [ ] T022 Revisar `specs/002-auth-navigation-ux-polish/spec.md`, `specs/002-auth-navigation-ux-polish/plan.md`, `specs/002-auth-navigation-ux-polish/contracts/mobile-interactions.md` e o diff final de `mobile/`, executar `git diff --check` no artefato e confirmar que não houve alteração em backend, contratos externos, persistência, autenticação, dependências ou WIP não relacionado.
+- [X] T018 [P] Estender `mobile/tests/accessibility/touch-targets.spec.tsx` para incluir `BackButton` na matriz de alvos, verificar os tokens compartilhados e manter a cobertura dos controles existentes sem introduzir valores literais divergentes.
+- [X] T019 Executar o teste direcionado do quickstart a partir de `mobile/package.json` para `mobile/tests/components/BackButton.spec.tsx`, `mobile/tests/components/AuthScreen.spec.tsx`, `mobile/tests/routes/auth-navigation-ux.spec.tsx` e `mobile/tests/routes/secondary-navigation.spec.tsx`, corrigindo somente falhas dentro do escopo desta feature.
+- [X] T020 Executar os gates descritos em `specs/002-auth-navigation-ux-polish/quickstart.md` usando `mobile/package.json`: `npm run typecheck`, `npm run lint`, `npm run format:check`, `npm run doctor`, `npm run test:ci` e `npm run export:ci`; classificar cada resultado como PASS, WARN, FAIL ou NOT RUN e não tratar export/Doctor como prova de usabilidade manual.
+- [X] T021 Realizar o walkthrough Android e registrar em `specs/002-auth-navigation-ux-polish/evidence/android-navigation-matrix.md` a matriz das sete rotas, teclado nos dois perfis, erro/loading/not-found quando aplicável, botão/gesto nativo, toque rápido, origem/destino e versão do dispositivo; declarar explicitamente iOS, VoiceOver, participantes e métricas não executados como NOT MEASURED.
+- [X] T022 Revisar `specs/002-auth-navigation-ux-polish/spec.md`, `specs/002-auth-navigation-ux-polish/plan.md`, `specs/002-auth-navigation-ux-polish/contracts/mobile-interactions.md` e o diff final de `mobile/`, executar `git diff --check` no artefato e confirmar que não houve alteração em backend, contratos externos, persistência, autenticação, dependências ou WIP não relacionado.
 
 ---
 
@@ -200,3 +200,8 @@ Implementation: T017 -> remove only the redundant inline CTA from login.tsx
 - Não reativar globalmente o header do Stack, instalar `BackHandler`, usar `push` para fallback ou adicionar biblioteca de teclado.
 - Preservar alterações não relacionadas no worktree; nenhuma tarefa autoriza reset, restore, limpeza ou commit.
 - `tasks.md` é planejamento; nenhum critério de sucesso fica aprovado antes das validações automatizadas e do walkthrough Android correspondentes.
+
+## Phase 7: Convergence
+
+- [X] T023 Executar o walkthrough Android completo e atualizar `specs/002-auth-navigation-ux-polish/evidence/android-navigation-matrix.md` com dispositivo/versão, matriz das sete rotas, teclado nos dois perfis, estados de loading/erro/not-found, botão/gesto nativo e toque rápido, mantendo iOS, VoiceOver, participantes e métricas como `NOT MEASURED` quando indisponíveis conforme SC-001, SC-002, SC-003, SC-005, SC-006 e T021
+- [X] T024 Expor o lock transitório do `BackButton` como estado `disabled`/acessibilidade durante a janela de navegação e adicionar a asserção correspondente, preservando o guard por `useRef`, a consulta de `canGoBack()` no toque e a transição única conforme plan: estado desabilitado do BackButton
