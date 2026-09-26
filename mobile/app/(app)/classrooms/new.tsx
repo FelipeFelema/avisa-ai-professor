@@ -4,9 +4,8 @@ import { useRouter } from 'expo-router';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
 import { isAxiosError } from 'axios';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Button, FormField } from '@/components/ui';
+import { Button, FormField, SecondaryScreen } from '@/components/ui';
 import { HTTP_STATUS } from '@/constants/http-status';
 import { useCreateClassroom } from '@/hooks/useCreateClassroom';
 import { theme } from '@/theme';
@@ -72,7 +71,7 @@ export default function NewClassroomScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SecondaryScreen fallbackHref="/classrooms">
       <View style={styles.content}>
         <View style={styles.header}>
           <Text accessibilityRole="header" style={styles.title}>
@@ -112,15 +111,11 @@ export default function NewClassroomScreen() {
           onPress={handleSubmit(onSubmit)}
         />
       </View>
-    </SafeAreaView>
+    </SecondaryScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
   content: {
     flex: 1,
     padding: theme.spacing.xl,

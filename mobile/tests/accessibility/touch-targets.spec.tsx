@@ -3,7 +3,7 @@ import { render } from '@testing-library/react-native';
 
 import { AuthRolePicker } from '@/components/auth';
 import { ClassroomCard } from '@/components/home';
-import { Button, ScreenState } from '@/components/ui';
+import { BackButton, Button, ScreenState } from '@/components/ui';
 import { theme } from '@/theme';
 
 type PlatformTarget = {
@@ -35,6 +35,9 @@ describe.each(platformTargets)('$name touch targets', ({ minimum }) => {
   it('enforces the platform minimum on shared and route-facing controls', async () => {
     const buttonView = await render(<Button label="Salvar" onPress={jest.fn()} />);
     expectMinimumTarget(buttonView.getByRole('button'), minimum);
+
+    const backView = await render(<BackButton fallbackHref="/login" />);
+    expectMinimumTarget(backView.getByRole('button', { name: 'Voltar' }), minimum);
 
     const stateView = await render(
       <ScreenState

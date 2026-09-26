@@ -15,10 +15,9 @@ description: "Task list template for feature implementation"
 
 ## Format: `[ID] [P?] [Story] Description`
 
-- **[P]**: Can share a ready wave after its direct dependencies are satisfied and its owned paths are disjoint from concurrent tasks
+- **[P]**: Can run in parallel (different files, no dependencies)
 - **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)
 - Include exact file paths in descriptions
-- Record task lane, direct dependencies, owned paths, and verification in the `Execution Coordination` table; do not add new markers to checklist lines
 
 ## Path Conventions
 
@@ -161,28 +160,6 @@ Examples of foundational tasks (adjust based on your project):
 
 ---
 
-## Execution Coordination
-
-The generated file MUST contain one row for every task. This is the execution contract used by dependency-aware implementers and subagents.
-
-| Task | Lane | Depends On | Dependency Reason | Owned Paths | Verification |
-|------|------|------------|-------------------|-------------|--------------|
-| T001 | coordinator | - | Root setup task | [exact paths] | [command or observable check] |
-| T012 | backend | T004, T007 | Model requires schema and base entity | src/models/[entity1].py | [targeted test command] |
-| T015 | client | T010 | Client consumes the validated endpoint contract | src/[location]/[file].py | [targeted client test command] |
-
-Allowed lanes: `backend`, `client`, `quality`, and `coordinator`. Dependencies are direct edges only. A stable checked-in contract may allow backend and client tasks to run concurrently; an unstable boundary creates a dependency. Tasks eligible for the same wave must have disjoint owned paths.
-
-### Coordination Validation
-
-- Every task appears exactly once in the table
-- Every dependency references an existing task and the graph has no cycles
-- Every edge states why it exists
-- Owned paths are exact enough to prevent concurrent edits to the same file
-- Verification proves the task's own result, not merely that a command started
-
----
-
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
@@ -210,12 +187,12 @@ Allowed lanes: `backend`, `client`, `quality`, and `coordinator`. Dependencies a
 
 ### Parallel Opportunities
 
-- Ready Setup tasks marked [P] with disjoint owned paths can run in parallel
-- Ready Foundational tasks marked [P] with disjoint owned paths can run in parallel (within Phase 2)
+- All Setup tasks marked [P] can run in parallel
+- All Foundational tasks marked [P] can run in parallel (within Phase 2)
 - Once Foundational phase completes, all user stories can start in parallel (if team capacity allows)
 - All tests for a user story marked [P] can run in parallel
 - Models within a story marked [P] can run in parallel
-- Different user stories can be worked on in parallel when the coordination table has no dependency path or file overlap between them
+- Different user stories can be worked on in parallel by different team members
 
 ---
 
@@ -256,18 +233,18 @@ Task: "Create [Entity2] model in src/models/[entity2].py"
 With multiple developers:
 
 1. Team completes Setup + Foundational together
-2. The coordinator computes tasks whose dependencies are satisfied
-3. Backend and client specialists take disjoint ready work concurrently
-4. The coordinator verifies the wave and releases newly unblocked tasks
-5. Integration checks run after all of their provider and consumer dependencies
+2. Once Foundational is done:
+   - Developer A: User Story 1
+   - Developer B: User Story 2
+   - Developer C: User Story 3
+3. Stories complete and integrate independently
 
 ---
 
 ## Notes
 
-- [P] tasks = candidates for a parallel ready wave after their dependencies are satisfied
+- [P] tasks = different files, no dependencies
 - [Story] label maps task to specific user story for traceability
-- Execution Coordination is the source for lanes, direct dependency reasons, file ownership, and narrow verification
 - Each user story should be independently completable and testable
 - Verify tests fail before implementing
 - Commit after each task or logical group

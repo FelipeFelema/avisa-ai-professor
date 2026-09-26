@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -16,6 +15,7 @@ import {
   ConfirmationDialog,
   type ConfirmationSummaryRow,
   ScreenState,
+  SecondaryScreen,
 } from '@/components/ui';
 import { AuthField } from '@/components/auth';
 import { getHttpErrorMessage } from '@/lib';
@@ -127,33 +127,39 @@ export default function EditAnnouncementScreen() {
 
   if (isLoading) {
     return (
-      <ScreenState kind="loading" title="Carregando comunicado" message="Aguarde um momento." />
+      <SecondaryScreen fallbackHref={`/announcements/${id}`}>
+        <ScreenState kind="loading" title="Carregando comunicado" message="Aguarde um momento." />
+      </SecondaryScreen>
     );
   }
 
   if (announcementIsError) {
     return (
-      <ScreenState
-        kind="error"
-        title="Não foi possível carregar o comunicado"
-        message={getHttpErrorMessage(announcementError)}
-        actionLabel="Tentar novamente"
-        onAction={() => {
-          void refetchAnnouncement();
-        }}
-      />
+      <SecondaryScreen fallbackHref={`/announcements/${id}`}>
+        <ScreenState
+          kind="error"
+          title="Não foi possível carregar o comunicado"
+          message={getHttpErrorMessage(announcementError)}
+          actionLabel="Tentar novamente"
+          onAction={() => {
+            void refetchAnnouncement();
+          }}
+        />
+      </SecondaryScreen>
     );
   }
 
   if (!announcement) {
     return (
-      <ScreenState
-        kind="not-found"
-        title="Comunicado não encontrado"
-        message="Este comunicado não está mais disponível."
-        actionLabel="Voltar"
-        onAction={() => router.back()}
-      />
+      <SecondaryScreen fallbackHref={`/announcements/${id}`}>
+        <ScreenState
+          kind="not-found"
+          title="Comunicado não encontrado"
+          message="Este comunicado não está mais disponível."
+          actionLabel="Voltar"
+          onAction={() => router.back()}
+        />
+      </SecondaryScreen>
     );
   }
 
@@ -219,7 +225,7 @@ export default function EditAnnouncementScreen() {
   const pending = isConfirming || updateAnnouncement.isPending;
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SecondaryScreen fallbackHref={`/announcements/${announcement.id}`}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Text accessibilityRole="header" style={styles.title}>
           Editar comunicado
@@ -320,16 +326,11 @@ export default function EditAnnouncementScreen() {
           errorMessage={confirmationError}
         />
       ) : null}
-    </SafeAreaView>
+    </SecondaryScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: AUTH_THEME.colors.background,
-  },
-
   content: {
     padding: AUTH_THEME.spacing.xl,
     gap: AUTH_THEME.spacing.xl,

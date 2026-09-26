@@ -1,10 +1,9 @@
 import { useRef, useState } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { isAxiosError } from 'axios';
 
-import { Button, ConfirmationDialog, ScreenState } from '@/components/ui';
+import { Button, ConfirmationDialog, ScreenState, SecondaryScreen } from '@/components/ui';
 import { useAnnouncement } from '@/hooks/useAnnouncement';
 import { useAuth } from '@/hooks/useAuth';
 import { useDeleteAnnouncement } from '@/hooks/useDeleteAnnouncement';
@@ -35,7 +34,9 @@ export default function AnnouncementDetailsScreen() {
 
   if (isLoading) {
     return (
-      <ScreenState kind="loading" title="Carregando comunicado" message="Aguarde um momento." />
+      <SecondaryScreen fallbackHref="/classrooms">
+        <ScreenState kind="loading" title="Carregando comunicado" message="Aguarde um momento." />
+      </SecondaryScreen>
     );
   }
 
@@ -43,35 +44,39 @@ export default function AnnouncementDetailsScreen() {
     const notFound = isAxiosError(announcementError) && announcementError.response?.status === 404;
 
     return (
-      <ScreenState
-        kind={notFound ? 'not-found' : 'error'}
-        title={notFound ? 'Comunicado não encontrado' : 'Não foi possível carregar o comunicado'}
-        message={
-          notFound
-            ? 'Este comunicado não está mais disponível.'
-            : getHttpErrorMessage(announcementError)
-        }
-        actionLabel={notFound ? 'Voltar' : 'Tentar novamente'}
-        onAction={() => {
-          if (notFound) {
-            router.back();
-          } else {
-            void refetchAnnouncement();
+      <SecondaryScreen fallbackHref="/classrooms">
+        <ScreenState
+          kind={notFound ? 'not-found' : 'error'}
+          title={notFound ? 'Comunicado não encontrado' : 'Não foi possível carregar o comunicado'}
+          message={
+            notFound
+              ? 'Este comunicado não está mais disponível.'
+              : getHttpErrorMessage(announcementError)
           }
-        }}
-      />
+          actionLabel={notFound ? 'Voltar' : 'Tentar novamente'}
+          onAction={() => {
+            if (notFound) {
+              router.back();
+            } else {
+              void refetchAnnouncement();
+            }
+          }}
+        />
+      </SecondaryScreen>
     );
   }
 
   if (!announcement) {
     return (
-      <ScreenState
-        kind="not-found"
-        title="Comunicado não encontrado"
-        message="Este comunicado não está mais disponível."
-        actionLabel="Voltar"
-        onAction={() => router.back()}
-      />
+      <SecondaryScreen fallbackHref="/classrooms">
+        <ScreenState
+          kind="not-found"
+          title="Comunicado não encontrado"
+          message="Este comunicado não está mais disponível."
+          actionLabel="Voltar"
+          onAction={() => router.back()}
+        />
+      </SecondaryScreen>
     );
   }
 
@@ -129,7 +134,7 @@ export default function AnnouncementDetailsScreen() {
   const pending = isConfirming || deleteMutation.isPending;
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SecondaryScreen fallbackHref={`/classrooms/${announcement.classroomId}`}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Text accessibilityRole="header" style={styles.title}>
           {announcement.title}
@@ -195,16 +200,11 @@ export default function AnnouncementDetailsScreen() {
           errorMessage={confirmationError}
         />
       ) : null}
-    </SafeAreaView>
+    </SecondaryScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: AUTH_THEME.colors.background,
-  },
-
   content: {
     padding: AUTH_THEME.spacing.xl,
     gap: AUTH_THEME.spacing.lg,

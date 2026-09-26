@@ -1,6 +1,6 @@
 ---
 name: "speckit-implement"
-description: "Execute tasks.md with dependency-aware multi-agent orchestration, parallelizing independent backend and client work while validating every completed task."
+description: "Execute the implementation plan by processing and executing all tasks defined in tasks.md"
 compatibility: "Requires spec-kit project structure with .specify/ directory"
 metadata:
   author: "github-spec-kit"
@@ -21,7 +21,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 **Check for extension hooks (before implementation)**:
 - Check if `.specify/extensions.yml` exists in the project root.
 - If it exists, read it and look for entries under the `hooks.before_implement` key
-- If the YAML cannot be parsed or is invalid, skip hook checking silently and continue normally
+- If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then continue normally
 - Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.
 - For each remaining hook, do **not** attempt to interpret or evaluate hook `condition` expressions:
   - If the hook has no `condition` field, or it is null/empty, treat the hook as executable
@@ -98,8 +98,6 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **IF EXISTS**: Read research.md for technical decisions and constraints
    - **IF EXISTS**: Read .specify/memory/constitution.md for governance constraints
    - **IF EXISTS**: Read quickstart.md for integration scenarios
-   - The coordinator reads this context once and retains only the decisions, sections, contracts, paths, and commands needed by the live DAG. Prefer targeted `rg` searches and bounded excerpts over repeatedly printing large artifacts, lockfiles, or diffs.
-   - Treat these artifacts as already prepared and analyzed. Do not reopen architecture or requirements during normal implementation; if a task exposes a material ambiguity or requires a new architectural decision, isolate that task and follow the manual escalation rule in step 8.
 
 4. **Project Setup Verification**:
    - **REQUIRED**: Create/verify ignore files based on actual project setup:
@@ -145,57 +143,39 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **Terraform**: `.terraform/`, `*.tfstate*`, `*.tfvars`, `.terraform.lock.hcl`
    - **Kubernetes/k8s**: `*.secret.yaml`, `secrets/`, `.kube/`, `kubeconfig*`, `*.key`, `*.crt`
 
-5. Parse tasks.md and build an execution model:
-   - **Task phases**: Setup, Foundational, user stories, Integration, Polish, and any Convergence phases
-   - **Task details**: ID, description, owned file paths, story label, and parallel marker `[P]`
-   - **Coordination contract**: If `## Execution Coordination` exists, parse each task's lane, direct dependencies, dependency reason, owned paths, and verification command
-   - **Dependency DAG**: Combine explicit dependencies with necessary implicit edges from TDD order, architecture layers, contracts, shared files, and phase checkpoints
-   - **Validation**: Reject dependency cycles, unknown task IDs, or concurrent ownership of the same file; do not guess through an invalid graph
-   - Treat `[P]` as a useful hint, never as sufficient proof that two tasks are safe to run concurrently
+5. Parse tasks.md structure and extract:
+   - **Task phases**: Setup, Tests, Core, Integration, Polish
+   - **Task dependencies**: Sequential vs parallel execution rules
+   - **Task details**: ID, description, file paths, parallel markers [P]
+   - **Execution flow**: Order and dependency requirements
 
-6. Orchestrate implementation with a rolling ready schedule:
-   - Read and follow [references/multi-agent-orchestration.md](references/multi-agent-orchestration.md)
-   - The main agent is the **coordinator**, expected to be selected manually as `gpt-5.6-luna` with `high` reasoning: it owns the DAG, scheduling, integration, validation, user communication, and all edits to task checkboxes. Do not change the root model or repository/global model defaults from this skill.
-   - Classify ready work into **backend/data**, **client** (web, frontend, or mobile), and **integration/quality** lanes from the plan, paths, and contracts; roles are execution aids, not substitutes for dependency analysis
-   - Execute small, sequential, cross-cutting, or context-cheap tasks directly when delegation overhead is not justified. Delegate only independent, sufficiently substantial work, grouping consecutive ready tasks from the same lane when their context and exclusive ownership are compatible.
-   - When subagents are available, delegate bounded, disjoint task packets to specialized workers. Keep worker context minimal, give each worker exclusive ownership of its declared files, and keep at most **2 implementation workers active simultaneously** by default.
-   - Spawn every implementation worker with explicit overrides `model: "gpt-5.6-luna"`, `reasoning_effort: "high"`, and `fork_turns: "none"`. Do not rely on parent inheritance or repository/global `[agents]` defaults for this workflow.
-   - Workers are depth 1 and must not spawn or delegate to another agent. Depth 2+ is prohibited.
-   - Run backend and client workers simultaneously only when there is no unmet dependency path or file overlap. If client work depends on unfinished backend behavior, complete and validate the required backend node first; a stable checked-in contract may allow client work with mocks before the backend implementation finishes
-   - Recompute readiness whenever a worker result is verified. Within the currently allowed phase set, start a newly unblocked task in a free slot without waiting for unrelated active workers; synchronize only at an explicit join, integration task, or phase checkpoint
-   - If subagents or model overrides are unavailable, execute the same ready-wave schedule sequentially in the main agent; preserve the dependency and verification protocol
-   - Complete the phase checkpoint before advancing, except when tasks.md explicitly declares independent user-story phases that may proceed together
+6. Execute implementation following the task plan:
+   - **Phase-by-phase execution**: Complete each phase before moving to the next
+   - **Respect dependencies**: Run sequential tasks in order, parallel tasks [P] can run together
+   - **Follow TDD approach**: Execute test tasks before their corresponding implementation tasks
+   - **File-based coordination**: Tasks affecting the same files must run sequentially
+   - **Validation checkpoints**: Verify each phase completion before proceeding
 
-7. Apply implementation rules within every worker packet:
-   - **Setup first**: Initialize project structure, dependencies, and configuration before consumers
-   - **Tests before code**: When TDD tasks exist, complete the failing test task before its corresponding implementation task
-   - **Contract before consumer**: Stabilize schemas and interface contracts before backend or client consumers, unless tasks.md explicitly defines another order
-   - **Core development**: Implement models, services, commands, endpoints, and client behavior within the assigned scope
-   - **Integration work**: Coordinate database connections, generated clients, middleware, logging, and external services only after their providers are ready
-   - **Polish and validation**: Run unit, integration, type, lint, security, and performance checks required by the task or plan
+7. Implementation execution rules:
+   - **Setup first**: Initialize project structure, dependencies, configuration
+   - **Tests before code**: If you need to write tests for contracts, entities, and integration scenarios
+   - **Core development**: Implement models, services, CLI commands, endpoints
+   - **Integration work**: Database connections, middleware, logging, external services
+   - **Polish and validation**: Unit tests, performance optimization, documentation
 
-8. Track progress and handle failures:
-   - Report active and newly released tasks, delegated roles, dependencies being waited on, and completed verification at each scheduling update
-   - Continue independent successful branches when one parallel worker fails, but do not release nodes that depend on the failed work
-   - Inspect every worker result and the actual shared-worktree diff; never accept a worker's completion claim without evidence
-   - The coordinator alone marks a task `[X]`, and only after its changes and required verification are confirmed
-   - Use a focused follow-up for a repair that remains inside the same task packet. Escalate or stop when the fix changes architecture, scope, dependencies, or file ownership
-   - Never silently switch a worker to `xhigh`, `max`, `gpt-5.6-sol`, `gpt-5.6-terra`, or another costlier profile. If Luna High cannot reliably finish a task because it needs a new architectural decision, material ambiguity resolution, or exceptionally complex debugging, stop only that task, preserve safe independent progress, explain the evidence for escalation, and let the user choose manually between Luna XHigh and Sol High.
-   - Never discard user or worker changes with destructive git commands when resolving an overlap; stop and reconcile deliberately
+8. Progress tracking and error handling:
+   - Report progress after each completed task
+   - Halt execution if any non-parallel task fails
+   - For parallel tasks [P], continue with successful tasks, report failed ones
+   - Provide clear error messages with context for debugging
+   - Suggest next steps if implementation cannot proceed
+   - **IMPORTANT** For completed tasks, make sure to mark the task off as [X] in the tasks file.
 
-9. Complete proportional phase and integration validation:
-   - At every completed phase checkpoint, derive the applicable validation set from that phase's tasks and changed surfaces, then from `quickstart.md`, contracts, real package scripts, existing tests, and implemented code. Treat declared task verification as a minimum, not as a rigid global checklist.
-   - Run only commands that exist and only gates relevant to the completed scope. Do not run or invent a check owned by a future phase; identify it as outside the current scope instead of as a current gap.
-   - Separate **general code-health checks** (for example typecheck, lint, formatting, build, dependency/environment health) from **behavior-specific evidence** (unit, integration, e2e, contract, accessibility, or other tests and observations tied to the phase outcome).
-   - General health checks do not by themselves prove delivered behavior. If the phase is setup-only and intentionally has no behavioral assertion yet, say so and name the later owner when the artifacts identify one.
-   - Never hide an empty suite with `--passWithNoTests`. When an existing script intentionally uses it to prove runner infrastructure, report that the runner initialized and zero tests ran; do not present it as behavioral coverage.
-   - For every relevant check, retain the exact command, observed exit/result and useful counts, plus what the evidence proves. Use `PASS`, `WARN`, `FAIL`, `NOT RUN`, or `NOT APPLICABLE` when needed, and never report `PASS` without evidence from the current execution.
-   - Keep successful output economical (for example `✅ mobile:typecheck — exit 0` or `✅ tests — 14 passed`). For a failure, include only the diagnostic lines needed to act; do not dump complete successful logs, lockfile diffs, or repeated suite output.
-   - Verify all required tasks are completed and marked `[X]`
-   - Check that the integrated implementation matches the specification, contracts, and technical plan
-   - Verify worker evidence with targeted diff/path inspection and run each task's narrow checks. Run the broad phase or feature validation required by quickstart.md only at the applicable gate; do not duplicate expensive suites without a reason.
-   - Confirm no dependency was bypassed, no file was concurrently owned, and no worker concern remains unresolved
-   - Record material deviations from the plan in the completion report and recommend `$speckit-mentor review` to reconcile the learning guide when that skill is installed
+9. Completion validation:
+   - Verify all required tasks are completed
+   - Check that implemented features match the original specification
+   - Validate that tests pass and coverage meets requirements
+   - Confirm the implementation follows the technical plan
 
 Note: This command assumes a complete task breakdown exists in tasks.md. If tasks are incomplete or missing, suggest running `$speckit-tasks` first to regenerate the task list.
 
@@ -206,7 +186,7 @@ Note: This command assumes a complete task breakdown exists in tasks.md. If task
 Check if `.specify/extensions.yml` exists in the project root.
 - If it does not exist, or no hooks are registered under `hooks.after_implement`, skip to the Completion Report.
 - If it exists, read it and look for entries under the `hooks.after_implement` key.
-- If the YAML cannot be parsed or is invalid, skip hook checking silently and continue to the Completion Report.
+- If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then continue to the Completion Report.
 - Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.
 - For each remaining hook, do **not** attempt to interpret or evaluate hook `condition` expressions:
   - If the hook has no `condition` field, or it is null/empty, treat the hook as executable
@@ -236,17 +216,11 @@ Check if `.specify/extensions.yml` exists in the project root.
 
 ## Completion Report
 
-Report final status with:
-- Completed task IDs grouped by launch event, dependency branch, and worker role
-- Dependencies that forced sequential execution and independent work that ran concurrently
-- Files changed and verification evidence
-- Worker concerns, implementation deviations, and remaining maintenance risks
-- A short `Verification Summary` covering only relevant checks and commands actually executed. For each, report the result, what it proves, and—when omission would mislead—what it does not prove. Keep future-phase checks explicitly outside scope and distinguish an infrastructure-only empty test run from behavioral coverage.
+Report final status with summary of completed work.
 
 ## Done When
 
 - [ ] All tasks in tasks.md completed and marked `[X]`
-- [ ] Dependency DAG validated and all delegated file ownership remained disjoint
 - [ ] Implementation validated against specification, plan, and test coverage
 - [ ] Extension hooks dispatched or skipped according to the rules in Mandatory Post-Execution Hooks above
 - [ ] Completion reported to user with summary of completed work

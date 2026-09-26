@@ -21,7 +21,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 **Check for extension hooks (before tasks generation)**:
 - Check if `.specify/extensions.yml` exists in the project root.
 - If it exists, read it and look for entries under the `hooks.before_tasks` key
-- If the YAML cannot be parsed or is invalid, skip hook checking silently and continue normally
+- If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then continue normally
 - Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.
 - For each remaining hook, do **not** attempt to interpret or evaluate hook `condition` expressions:
   - If the hook has no `condition` field, or it is null/empty, treat the hook as executable
@@ -69,12 +69,9 @@ You **MUST** consider the user input before proceeding (if not empty).
    - If contracts/ exists: Map interface contracts to user stories
    - If research.md exists: Extract decisions for setup tasks
    - Generate tasks organized by user story (see Task Generation Rules below)
-   - Generate a task-level dependency DAG with an explicit reason for every edge; do not rely only on phase order or `[P]`
-   - Assign each task to a coordination lane (`backend`, `client`, `quality`, or `coordinator`) from its responsibility and owned paths
-   - Generate dependency views showing both user-story completion order and cross-lane task dependencies
-   - Create parallel execution examples from ready tasks with disjoint owned paths
+   - Generate dependency graph showing user story completion order
+   - Create parallel execution examples per user story
    - Validate task completeness (each user story has all needed tasks, independently testable)
-   - Validate that the task DAG is acyclic, every dependency references an existing earlier task, and concurrently eligible tasks do not own the same path
 
 4. **Generate tasks.md**: Use TASKS_TEMPLATE_CONTENT (from the JSON output above) as the structure. For compatibility with older setup scripts that omit TASKS_TEMPLATE_CONTENT, read TASKS_TEMPLATE instead. Fill with:
    - Correct feature name from plan.md
@@ -85,7 +82,6 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Final Phase: Polish & cross-cutting concerns
    - All tasks must follow the strict checklist format (see Task Generation Rules below)
    - Clear file paths for each task
-   - An `## Execution Coordination` table containing every task exactly once with lane, direct dependencies, dependency reason, owned paths, and verification
    - Dependencies section showing story completion order
    - Parallel execution examples per story
    - Implementation strategy section (MVP first, incremental delivery)
@@ -97,7 +93,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 Check if `.specify/extensions.yml` exists in the project root.
 - If it does not exist, or no hooks are registered under `hooks.after_tasks`, skip to the Completion Report.
 - If it exists, read it and look for entries under the `hooks.after_tasks` key.
-- If the YAML cannot be parsed or is invalid, skip hook checking silently and continue to the Completion Report.
+- If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then continue to the Completion Report.
 - Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.
 - For each remaining hook, do **not** attempt to interpret or evaluate hook `condition` expressions:
   - If the hook has no `condition` field, or it is null/empty, treat the hook as executable
@@ -131,8 +127,6 @@ Output path to generated tasks.md and summary:
 - Total task count
 - Task count per user story
 - Parallel opportunities identified
-- Task count per execution lane and the dependency chain most likely to determine the critical path
-- Cross-lane dependencies that force backend/client sequencing versus contract-first work that can proceed concurrently
 - Independent test criteria for each story
 - Suggested MVP scope (typically just User Story 1)
 - Format validation: Confirm ALL tasks follow the checklist format (checkbox, ID, labels, file paths)
@@ -159,7 +153,7 @@ Every task MUST strictly follow this format:
 
 1. **Checkbox**: ALWAYS start with `- [ ]` (markdown checkbox)
 2. **Task ID**: Sequential number (T001, T002, T003...) in execution order
-3. **[P] marker**: Include ONLY if, after its direct dependencies are satisfied, the task can share a ready wave with at least one other task using disjoint owned paths
+3. **[P] marker**: Include ONLY if task is parallelizable (different files, no dependencies on incomplete tasks)
 4. **[Story] label**: REQUIRED for user story phase tasks only
    - Format: [US1], [US2], [US3], etc. (maps to user stories from spec.md)
    - Setup phase: NO story label
@@ -198,36 +192,12 @@ Every task MUST strictly follow this format:
    - Map each entity to the user story(ies) that need it
    - If entity serves multiple stories: Put in earliest story or Setup phase
    - Relationships → service layer tasks in appropriate story phase
+   - For each field with constraints in data-model.md (max length, nullable/required, enum values, validation rules), quote the constraint verbatim in the task description so it is not left to implementation-time discretion
 
 4. **From Setup/Infrastructure**:
    - Shared infrastructure → Setup phase (Phase 1)
    - Foundational/blocking tasks → Foundational phase (Phase 2)
    - Story-specific setup → within that story's phase
-
-### Execution Coordination Contract (REQUIRED)
-
-After the task phases, generate this machine-readable Markdown table and include every task exactly once:
-
-```markdown
-## Execution Coordination
-
-| Task | Lane | Depends On | Dependency Reason | Owned Paths | Verification |
-|------|------|------------|-------------------|-------------|--------------|
-| T001 | coordinator | - | Root task | package.json | npm run lint |
-| T014 | backend | T012, T013 | Service consumes both models | backend/src/services/user.ts | npm test -- user.service |
-```
-
-Rules:
-
-- **Lane**: Use `backend` for server/data work, `client` for web/frontend/mobile work, `quality` for tests/integration/docs, and `coordinator` for shared files or cross-lane work unsafe to delegate.
-- **Depends On**: List only direct task IDs. Use `-` for a root node. Dependencies must refer to existing tasks and normally have a lower numeric ID.
-- **Dependency Reason**: State the concrete boundary, artifact, phase gate, TDD rule, or shared-file constraint that creates the edge.
-- **Owned Paths**: List the exact files or narrow directories the task may change. Concurrently eligible tasks MUST have disjoint owned paths.
-- **Verification**: Give the narrow command or observable check that proves this task is complete; use an explicit manual check only when no command exists.
-- Keep checklist lines compatible with core Spec Kit. Do not add lane markers to the task line; coordination metadata belongs in this table.
-- `[P]` means the task may share a ready wave with at least one other task after all of its own dependencies are satisfied. It does not override the table or live file conflicts.
-- A stable checked-in contract can unblock backend and client consumers concurrently. If the response shape, generated types, authentication behavior, or error semantics are still being defined, make the client task depend on the task that stabilizes them.
-- Reject cycles, missing task rows, unknown dependencies, vague ownership, and verification that cannot demonstrate the described result.
 
 ### Phase Structure
 
@@ -241,6 +211,5 @@ Rules:
 ## Done When
 
 - [ ] tasks.md generated with all phases, task IDs, and file paths
-- [ ] Execution Coordination table covers every task and defines a valid acyclic dependency graph
 - [ ] Extension hooks dispatched or skipped according to the rules in Mandatory Post-Execution Hooks above
 - [ ] Completion reported to user with task count, story breakdown, and MVP scope
