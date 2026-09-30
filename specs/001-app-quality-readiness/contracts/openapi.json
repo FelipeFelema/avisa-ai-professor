@@ -695,11 +695,12 @@
       "LastAnnouncementSummary": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "title", "createdAt"],
+        "required": ["id", "title", "createdAt", "expiresAt"],
         "properties": {
           "id": { "type": "string", "format": "uuid" },
           "title": { "type": "string" },
-          "createdAt": { "type": "string", "format": "date-time" }
+          "createdAt": { "type": "string", "format": "date-time" },
+          "expiresAt": { "type": "string", "format": "date-time" }
         }
       },
       "ClassroomSummary": {

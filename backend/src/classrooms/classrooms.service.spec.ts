@@ -211,6 +211,7 @@ describe('ClassroomsService', () => {
 
   describe('findMyClassrooms', () => {
     it('should return user classroms', async () => {
+      const expiresAt = new Date('2026-09-29T23:59:59.000Z');
       const mockResult = [
         {
           id: 'classroom-1',
@@ -232,7 +233,8 @@ describe('ClassroomsService', () => {
             {
               id: 'announcement-1',
               title: 'Anúncio 1',
-              createdAt: new Date(),
+              createdAt: new Date('2026-09-26T12:00:00.000Z'),
+              expiresAt,
             },
           ],
         },
@@ -267,6 +269,21 @@ describe('ClassroomsService', () => {
               some: { userId: 'user-id' },
             },
           },
+          select: expect.objectContaining({
+            announcements: {
+              where: {
+                expiresAt: { gte: expect.any(Date) as unknown as Date },
+              },
+              orderBy: { createdAt: 'desc' },
+              take: 1,
+              select: {
+                id: true,
+                title: true,
+                createdAt: true,
+                expiresAt: true,
+              },
+            },
+          }) as unknown as Record<string, unknown>,
         }),
       );
 
@@ -283,6 +300,7 @@ describe('ClassroomsService', () => {
             id: 'announcement-1',
             title: 'Anúncio 1',
             createdAt: mockResult[0].announcements[0].createdAt,
+            expiresAt,
           },
         },
         {
@@ -293,6 +311,86 @@ describe('ClassroomsService', () => {
             id: 'teacher-2',
             name: 'Professor Test 2',
           },
+          lastAnnouncement: null,
+        },
+      ]);
+    });
+  });
+
+  describe('findAvailableClassrooms', () => {
+    it('should preserve search and membership rules while mapping the active announcement summary', async () => {
+      const expiresAt = new Date('2026-09-29T23:59:59.000Z');
+      const createdAt = new Date('2026-09-26T12:00:00.000Z');
+      const mockResult = [
+        {
+          id: 'classroom-available',
+          name: 'Matemática',
+          ownerId: 'teacher-1',
+          owner: { id: 'teacher-1', name: 'Professor Test' },
+          announcements: [
+            {
+              id: 'announcement-newest',
+              title: 'Comunicado ativo',
+              createdAt,
+              expiresAt,
+            },
+          ],
+        },
+        {
+          id: 'classroom-without-announcement',
+          name: 'Português',
+          ownerId: 'teacher-2',
+          owner: { id: 'teacher-2', name: 'Professor Test 2' },
+          announcements: [],
+        },
+      ];
+
+      mockPrisma.classroom.findMany.mockResolvedValue(mockResult);
+
+      const result = await service.findAvailableClassrooms('user-id', 'mat');
+
+      expect(mockPrisma.classroom.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            name: { contains: 'mat', mode: 'insensitive' },
+            userClassrooms: { none: { userId: 'user-id' } },
+          },
+          select: expect.objectContaining({
+            announcements: {
+              where: {
+                expiresAt: { gte: expect.any(Date) as unknown as Date },
+              },
+              orderBy: { createdAt: 'desc' },
+              take: 1,
+              select: {
+                id: true,
+                title: true,
+                createdAt: true,
+                expiresAt: true,
+              },
+            },
+          }) as unknown as Record<string, unknown>,
+        }),
+      );
+
+      expect(result).toEqual([
+        {
+          id: 'classroom-available',
+          name: 'Matemática',
+          ownerId: 'teacher-1',
+          teacher: { id: 'teacher-1', name: 'Professor Test' },
+          lastAnnouncement: {
+            id: 'announcement-newest',
+            title: 'Comunicado ativo',
+            createdAt,
+            expiresAt,
+          },
+        },
+        {
+          id: 'classroom-without-announcement',
+          name: 'Português',
+          ownerId: 'teacher-2',
+          teacher: { id: 'teacher-2', name: 'Professor Test 2' },
           lastAnnouncement: null,
         },
       ]);

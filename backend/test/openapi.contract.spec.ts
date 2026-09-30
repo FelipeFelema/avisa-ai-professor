@@ -238,6 +238,13 @@ describe('OpenAPI runtime contract', () => {
       expectSchemaMatch(runtime.components.schemas[schemaName], expectedSchema);
     }
 
+    expect(runtime.components.schemas.LastAnnouncementSummary.required).toEqual(
+      expect.arrayContaining(['expiresAt']),
+    );
+    expect(
+      runtime.components.schemas.LastAnnouncementSummary.properties?.expiresAt,
+    ).toEqual({ type: 'string', format: 'date-time' });
+
     expect(runtime.components.schemas.AuthTokensResponse.description).toMatch(
       /\bsid\b/i,
     );
