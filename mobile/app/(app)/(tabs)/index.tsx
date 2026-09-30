@@ -1,27 +1,41 @@
-import { StyleSheet, ScrollView } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 
-import { EmptyClassroomState, HomeHeader, ClassroomCard } from '@/components/home';
+import { ClassroomCard, EmptyClassroomState, HomeHeader } from '@/components/home';
+import { ScreenState } from '@/components/ui';
 import { useAuth } from '@/hooks/useAuth';
-import { AUTH_THEME } from '@/theme/auth';
 import { useMyClassrooms } from '@/hooks/useMyClassrooms';
+import { AUTH_THEME } from '@/theme/auth';
 
 export default function HomeScreen() {
   const router = useRouter();
   const { user } = useAuth();
-  const { data: classrooms, isLoading } = useMyClassrooms();
+  const { data: classrooms, isLoading, isError, refetch } = useMyClassrooms();
 
   return (
     <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       <HomeHeader name={user?.name ?? 'Usuário'} />
 
-      {isLoading ? null : classrooms && classrooms.length > 0 ? (
+      {isLoading ? (
+        <ScreenState kind="loading" title="Carregando suas turmas" message="Aguarde um momento." />
+      ) : isError ? (
+        <ScreenState
+          kind="error"
+          title="Não foi possível carregar suas turmas"
+          message="Verifique sua conexão e tente novamente."
+          actionLabel="Tentar novamente"
+          onAction={() => {
+            void refetch();
+          }}
+        />
+      ) : classrooms && classrooms.length > 0 ? (
         classrooms.map((classroom) => (
           <ClassroomCard
             key={classroom.id}
             name={classroom.name}
             teacher={classroom.teacher?.name ?? 'Professor não informado'}
             lastAnnouncement={classroom.lastAnnouncement?.title}
+            announcementExpiresAt={classroom.lastAnnouncement?.expiresAt}
             onPress={() => router.push(`/classrooms/${classroom.id}`)}
           />
         ))
