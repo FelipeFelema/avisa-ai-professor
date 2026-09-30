@@ -12,6 +12,7 @@ export interface ClassroomSummary {
     id: string;
     title: string;
     createdAt: string;
+    expiresAt: string;
   } | null;
 }
 
