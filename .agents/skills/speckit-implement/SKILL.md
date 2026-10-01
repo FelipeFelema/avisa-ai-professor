@@ -99,6 +99,19 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **IF EXISTS**: Read .specify/memory/constitution.md for governance constraints
    - **IF EXISTS**: Read quickstart.md for integration scenarios
 
+### Dependency-Aware Multi-Agent Orchestration
+
+- **REQUIRED**: Read `.agents/skills/speckit-implement/references/multi-agent-orchestration.md` before scheduling or executing implementation tasks.
+- **REQUIRED**: Apply the orchestration protocol defined in that reference throughout implementation.
+- The main agent remains the coordinator and is responsible for dependency analysis, scheduling, task-state updates, integration, and final validation.
+- Respect any explicit phase fence in the user input: later phases remain locked until authorized. If no phase fence is given, follow the complete task plan phase by phase.
+- Treat `[P]` only as a parallelism hint. Do not spawn workers merely because tasks are marked `[P]`.
+- Before spawning a worker, the coordinator MUST confirm all of the following: the task is ready in the live DAG; its direct and transitive dependencies are verified; its owned paths are disjoint from active workers; the work is substantial enough to amortize worker setup; and a worker slot is available.
+- Spawn only the bounded worker packet defined in the reference, using its explicit model, reasoning, context-isolation, ownership, validation, and return-contract rules. Group small compatible tasks in one packet instead of creating one worker per task.
+- If any spawn criterion is not met, the coordinator MUST implement the work directly or leave it locked behind its unresolved dependency.
+- Only the coordinator may edit task checkboxes. A worker result is evidence to inspect, not permission to mark a task `[X]`.
+- The coordinator MUST inspect each worker's diff, changed paths, and narrow validation before integrating it, then recompute the ready set before scheduling more work.
+
 4. **Project Setup Verification**:
    - **REQUIRED**: Create/verify ignore files based on actual project setup:
 
@@ -148,13 +161,15 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **Task dependencies**: Sequential vs parallel execution rules
    - **Task details**: ID, description, file paths, parallel markers [P]
    - **Execution flow**: Order and dependency requirements
+   - **Execution coordination**: If `## Execution Coordination` exists, parse its lane, direct dependencies, dependency reason, owned paths, and verification columns. If it does not exist, derive those fields from the task descriptions and dependency sections, report ambiguity, and schedule conservatively without inventing dependencies.
 
 6. Execute implementation following the task plan:
-   - **Phase-by-phase execution**: Complete each phase before moving to the next
-   - **Respect dependencies**: Run sequential tasks in order, parallel tasks [P] can run together
-   - **Follow TDD approach**: Execute test tasks before their corresponding implementation tasks
-   - **File-based coordination**: Tasks affecting the same files must run sequentially
-   - **Validation checkpoints**: Verify each phase completion before proceeding
+   - **Orchestration**: Schedule and execute work according to `.agents/skills/speckit-implement/references/multi-agent-orchestration.md`
+   - **Phase-by-phase execution**: Complete each phase before moving to the next, unless the user explicitly authorizes a different phase scope.
+   - **Respect dependencies**: Treat `[P]` only as a candidate for parallel work; schedule together only after verifying the live DAG, direct and transitive dependencies, disjoint owned paths, compatible lanes, and the worker limit.
+   - **Follow TDD approach**: Execute test tasks before their corresponding implementation tasks.
+   - **File-based coordination**: Tasks affecting the same files must run sequentially.
+   - **Validation checkpoints**: Verify each phase completion before proceeding.
 
 7. Implementation execution rules:
    - **Setup first**: Initialize project structure, dependencies, configuration
@@ -165,14 +180,15 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 8. Progress tracking and error handling:
    - Report progress after each completed task
-   - Halt execution if any non-parallel task fails
-   - For parallel tasks [P], continue with successful tasks, report failed ones
+   - If a task fails or a worker returns `BLOCKED`, `NEEDS_CONTEXT`, or `NEEDS_MANUAL_ESCALATION`, keep its dependent nodes locked and preserve independent progress; do not halt the whole run solely because one branch failed.
+   - Stop at the affected phase gate or required join when its prerequisite fails; do not skip the failed task or its dependents.
+   - For parallel tasks, integrate successful results, report failed or blocked branches, and recompute the ready set before scheduling more work.
    - Provide clear error messages with context for debugging
    - Suggest next steps if implementation cannot proceed
-   - **IMPORTANT** For completed tasks, make sure to mark the task off as [X] in the tasks file.
+   - **IMPORTANT** Only the coordinator may mark a task `[X]`, and only after inspecting the worker diff, changed paths, and verification.
 
 9. Completion validation:
-   - Verify all required tasks are completed
+   - Verify all required tasks in the user-authorized scope are completed
    - Check that implemented features match the original specification
    - Validate that tests pass and coverage meets requirements
    - Confirm the implementation follows the technical plan
@@ -220,7 +236,7 @@ Report final status with summary of completed work.
 
 ## Done When
 
-- [ ] All tasks in tasks.md completed and marked `[X]`
+- [ ] All tasks in the user-authorized scope completed and marked `[X]`
 - [ ] Implementation validated against specification, plan, and test coverage
 - [ ] Extension hooks dispatched or skipped according to the rules in Mandatory Post-Execution Hooks above
 - [ ] Completion reported to user with summary of completed work
