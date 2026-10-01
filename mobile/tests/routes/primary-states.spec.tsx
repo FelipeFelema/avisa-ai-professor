@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 import { useRouter } from 'expo-router';
 
 import ClassroomsScreen from '../../app/(app)/(tabs)/classrooms';
@@ -26,6 +26,9 @@ const mockUseDeleteClassroom = jest.mocked(useDeleteClassroom);
 const mockUseJoinClassroom = jest.mocked(useJoinClassroom);
 const mockUseLeaveClassroom = jest.mocked(useLeaveClassroom);
 const mockUseMyClassrooms = jest.mocked(useMyClassrooms);
+
+const mockRefetchClassrooms = jest.fn();
+const mockRefetchAvailableClassrooms = jest.fn();
 
 type TreeNode = {
   props?: Record<string, unknown>;
@@ -65,14 +68,28 @@ const classroom = {
   lastAnnouncement: null,
 };
 
+const availableClassroom = {
+  id: 'classroom-2',
+  name: 'Matemática',
+  ownerId: 'owner-2',
+  teacher: { id: 'owner-2', name: 'Professora Beatriz' },
+  lastAnnouncement: null,
+};
+
 function setClassroomsState({
   data = [],
   isLoading = false,
   isError = false,
+  availableData = [],
+  availableLoading = false,
+  availableError = false,
 }: {
   data?: (typeof classroom)[];
   isLoading?: boolean;
   isError?: boolean;
+  availableData?: (typeof availableClassroom)[];
+  availableLoading?: boolean;
+  availableError?: boolean;
 } = {}) {
   mockUseRouter.mockReturnValue({
     push: jest.fn(),
@@ -91,11 +108,13 @@ function setClassroomsState({
     data,
     isLoading,
     isError,
-    refetch: jest.fn(),
+    refetch: mockRefetchClassrooms,
   } as never);
   mockUseAvailableClassrooms.mockReturnValue({
-    data: [],
-    isLoading: false,
+    data: availableData,
+    isLoading: availableLoading,
+    isError: availableError,
+    refetch: mockRefetchAvailableClassrooms,
   } as never);
   mockUseJoinClassroom.mockReturnValue({ mutate: jest.fn(), isPending: false } as never);
   mockUseLeaveClassroom.mockReturnValue({ mutate: jest.fn(), isPending: false } as never);
@@ -108,30 +127,58 @@ beforeEach(() => {
 });
 
 describe('primary route states and semantics', () => {
-  it('exposes accessible loading and error states with a next action', async () => {
-    setClassroomsState({ isLoading: true });
-    const loadingView = await renderWithProviders(<ClassroomsScreen />);
-    expect(getByAccessibilityRole(loadingView, 'summary')).toBeTruthy();
-    expect(loadingView.getByRole('header', { name: 'Carregando turmas' })).toBeTruthy();
+  it('keeps loading and error states independent for both classroom sections', async () => {
+    setClassroomsState({ isLoading: true, availableData: [availableClassroom] });
+    const myLoadingView = await renderWithProviders(<ClassroomsScreen />);
+    expect(myLoadingView.getByRole('header', { name: 'Minhas turmas' })).toBeTruthy();
+    expect(myLoadingView.getByRole('header', { name: 'Turmas disponíveis' })).toBeTruthy();
+    expect(myLoadingView.getByRole('header', { name: 'Carregando suas turmas' })).toBeTruthy();
+    expect(myLoadingView.getByRole('button', { name: 'Entrar: Matemática' })).toBeTruthy();
 
-    setClassroomsState({ isError: true });
-    const errorView = await renderWithProviders(<ClassroomsScreen />);
-    expect(getByAccessibilityRole(errorView, 'summary')).toBeTruthy();
-    expect(errorView.getByRole('button', { name: 'Tentar novamente' })).toBeTruthy();
+    setClassroomsState({ data: [classroom], availableLoading: true });
+    const availableLoadingView = await renderWithProviders(<ClassroomsScreen />);
+    expect(
+      availableLoadingView.getByRole('button', { name: 'Abrir turma Historia do Brasil' }),
+    ).toBeTruthy();
+    expect(availableLoadingView.getByRole('header', { name: 'Buscando turmas' })).toBeTruthy();
+
+    setClassroomsState({ isError: true, availableData: [availableClassroom] });
+    const myErrorView = await renderWithProviders(<ClassroomsScreen />);
+    expect(
+      myErrorView.getByRole('header', { name: 'Não foi possível carregar suas turmas' }),
+    ).toBeTruthy();
+    expect(myErrorView.getByRole('button', { name: 'Tentar novamente' })).toBeTruthy();
+    expect(myErrorView.getByRole('button', { name: 'Entrar: Matemática' })).toBeTruthy();
+    expect(mockRefetchClassrooms).not.toHaveBeenCalled();
+
+    setClassroomsState({ data: [classroom], availableError: true });
+    const availableErrorView = await renderWithProviders(<ClassroomsScreen />);
+    expect(
+      availableErrorView.getByRole('header', { name: 'Não foi possível buscar turmas' }),
+    ).toBeTruthy();
+    expect(
+      availableErrorView.getByRole('button', { name: 'Abrir turma Historia do Brasil' }),
+    ).toBeTruthy();
+    await fireEvent.press(availableErrorView.getByRole('button', { name: 'Tentar novamente' }));
+    expect(mockRefetchAvailableClassrooms).toHaveBeenCalledTimes(1);
   });
 
-  it('exposes an accessible empty state and a named success heading', async () => {
-    setClassroomsState();
-    const emptyView = await renderWithProviders(<ClassroomsScreen />);
-    expect(getByAccessibilityRole(emptyView, 'summary')).toBeTruthy();
-    expect(emptyView.getByText(/Voc/)).toBeTruthy();
+  it('associates empty and populated results with their own accessible sections', async () => {
+    setClassroomsState({ availableData: [availableClassroom] });
+    const availableResultsView = await renderWithProviders(<ClassroomsScreen />);
+    expect(getByAccessibilityRole(availableResultsView, 'summary')).toBeTruthy();
+    expect(availableResultsView.getByText(/Você ainda não participa/)).toBeTruthy();
+    expect(availableResultsView.getByRole('button', { name: 'Entrar: Matemática' })).toBeTruthy();
+    expect(availableResultsView.queryByText('Nenhuma turma disponível')).toBeNull();
 
     setClassroomsState({ data: [classroom] });
-    const successView = await renderWithProviders(<ClassroomsScreen />);
-    expect(successView.getByRole('header', { name: 'Turmas' })).toBeTruthy();
+    const myResultsView = await renderWithProviders(<ClassroomsScreen />);
+    expect(myResultsView.getByRole('header', { name: 'Turmas' })).toBeTruthy();
     expect(
-      successView.getByRole('button', { name: 'Abrir turma Historia do Brasil' }),
+      myResultsView.getByRole('button', { name: 'Abrir turma Historia do Brasil' }),
     ).toBeTruthy();
+    expect(myResultsView.getByText('Nenhuma turma disponível')).toBeTruthy();
+    expect(myResultsView.queryByText(/Você ainda não participa/)).toBeNull();
   });
 
   it('gives announcement cards a discoverable button role and name', async () => {

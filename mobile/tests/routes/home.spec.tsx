@@ -19,6 +19,24 @@ const mockPush = jest.fn();
 const mockRefetch = jest.fn();
 const referenceNow = new Date(2026, 8, 29, 12, 0, 0, 0);
 
+function collectText(node: unknown, result: string[] = []): string[] {
+  if (typeof node === 'string') {
+    result.push(node);
+    return result;
+  }
+
+  if (Array.isArray(node)) {
+    node.forEach((child) => collectText(child, result));
+    return result;
+  }
+
+  if (node && typeof node === 'object' && 'children' in node) {
+    collectText((node as { children?: unknown }).children, result);
+  }
+
+  return result;
+}
+
 type ClassroomFixture = {
   id: string;
   name: string;
@@ -151,6 +169,53 @@ describe('home primary surface', () => {
     expect(getByText('Nenhum comunicado disponível.')).toBeTruthy();
     expect(queryAllByText(/Expira/)).toHaveLength(3);
     expect(queryAllByText(/Expira em -\d+ dias/)).toHaveLength(0);
+  });
+
+  it('keeps long content and shared card information order without hiding absent data', async () => {
+    const longName = 'Turma de História e Geografia com um nome muito comprido';
+    const longAnnouncement =
+      'Comunicado com um título longo que precisa continuar legível em uma largura estreita';
+
+    setHomeState({
+      data: [
+        {
+          id: 'classroom-long',
+          name: longName,
+          ownerId: 'owner-long',
+          teacher: null,
+          lastAnnouncement: {
+            id: 'announcement-long',
+            title: longAnnouncement,
+            createdAt: referenceNow.toISOString(),
+            expiresAt: expirationIso(2),
+          },
+        },
+        {
+          id: 'classroom-empty',
+          name: 'Turma sem comunicado',
+          ownerId: 'owner-empty',
+          teacher: null,
+          lastAnnouncement: null,
+        },
+      ],
+    });
+
+    const view = await renderWithProviders(<HomeScreen />);
+    const text = collectText(view.toJSON());
+    const nameIndex = text.indexOf(longName);
+    const teacherIndex = text.findIndex((value) => value.startsWith('Professor:'));
+    const labelIndex = text.indexOf('Último comunicado');
+    const announcementIndex = text.indexOf(longAnnouncement);
+
+    expect(view.getByText(longName)).toBeTruthy();
+    expect(view.getByText(longAnnouncement)).toBeTruthy();
+    expect(view.getAllByText('Professor: Professor não informado')).toHaveLength(2);
+    expect(view.getByText('Nenhum comunicado disponível.')).toBeTruthy();
+    expect(nameIndex).toBeGreaterThanOrEqual(0);
+    expect(nameIndex).toBeLessThan(teacherIndex);
+    expect(teacherIndex).toBeLessThan(labelIndex);
+    expect(labelIndex).toBeLessThan(announcementIndex);
+    expect(view.getByRole('button', { name: `Abrir turma ${longName}` })).toBeTruthy();
   });
 
   it('renders a distinct loading state instead of the empty state', async () => {
