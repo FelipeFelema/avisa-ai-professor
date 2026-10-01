@@ -77,15 +77,15 @@ description: "Task list for feature implementation"
 
 ### Tests for User Story 2
 
-- [ ] T014 [P] [US2] Extend `mobile/tests/components/FormField.spec.tsx` to verify the optional leading search icon is exactly one `search-outline`, decorative/non-announced, and does not change the input's label, value, callback, disabled state, helper, or error semantics.
-- [ ] T015 [P] [US2] Extend `mobile/tests/routes/classrooms-list.spec.tsx` to verify visual order, Professor-only `Criar turma`, no reserved action space for Responsável, search value/callback preservation, and unchanged open/join/leave/delete labels and mutation wiring.
-- [ ] T016 [P] [US2] Extend `mobile/tests/routes/primary-states.spec.tsx` to verify independent loading/error/empty states for Minhas turmas and Turmas disponíveis, accessible section headings, retry actions, and no mixing of the two lists.
+- [X] T014 [P] [US2] Extend `mobile/tests/components/FormField.spec.tsx` to verify the optional leading search icon is exactly one `search-outline`, decorative/non-announced, and does not change the input's label, value, callback, disabled state, helper, or error semantics.
+- [X] T015 [P] [US2] Extend `mobile/tests/routes/classrooms-list.spec.tsx` to verify visual order, Professor-only `Criar turma`, no reserved action space for Responsável, search value/callback preservation, and unchanged open/join/leave/delete labels and mutation wiring.
+- [X] T016 [P] [US2] Extend `mobile/tests/routes/primary-states.spec.tsx` to verify independent loading/error/empty states for Minhas turmas and Turmas disponíveis, accessible section headings, retry actions, and no mixing of the two lists.
 
 ### Implementation for User Story 2
 
-- [ ] T017 [P] [US2] Add an optional decorative leading-icon prop to `FormField` in `mobile/src/components/ui/FormField.tsx`, rendering `Ionicons` with `search-outline` support while preserving the existing label/input/error/helper/accessibility contract and touch target.
-- [ ] T018 [P] [US2] Add contextual title/description options to `EmptyClassroomState` in `mobile/src/components/home/EmptyClassroomState.tsx`, preserving current defaults, explicit section association, accessible summary/header semantics, and the optional `Ver turmas` action.
-- [ ] T019 [US2] Compose the Turmas hierarchy in `mobile/app/(app)/(tabs)/classrooms.tsx` with accessible introduction and section headers, the decorative search icon, contextual empty states, and token-based responsive styles, while preserving query keys, `search`, loading/error/results, role visibility, confirmations, mutations, navigation, and ownership action selection.
+- [X] T017 [P] [US2] Add an optional decorative leading-icon prop to `FormField` in `mobile/src/components/ui/FormField.tsx`, rendering `Ionicons` with `search-outline` support while preserving the existing label/input/error/helper/accessibility contract and touch target.
+- [X] T018 [P] [US2] Add contextual title/description options to `EmptyClassroomState` in `mobile/src/components/home/EmptyClassroomState.tsx`, preserving current defaults, explicit section association, accessible summary/header semantics, and the optional `Ver turmas` action.
+- [X] T019 [US2] Compose the Turmas hierarchy in `mobile/app/(app)/(tabs)/classrooms.tsx` with accessible introduction and section headers, the decorative search icon, contextual empty states, and token-based responsive styles, while preserving query keys, `search`, loading/error/results, role visibility, confirmations, mutations, navigation, and ownership action selection.
 
 **Checkpoint**: Turmas is independently testable for both profiles and both lists without any functional search or classroom-action change.
 
@@ -99,12 +99,12 @@ description: "Task list for feature implementation"
 
 ### Tests for User Story 3
 
-- [ ] T020 [P] [US3] Add cross-surface assertions in `mobile/tests/routes/home.spec.tsx` and `mobile/tests/routes/classrooms-list.spec.tsx` for long content, missing teacher/announcement, consistent card information order, contextual empty text, and distinct open versus enter/leave/delete controls.
-- [ ] T021 [P] [US3] Extend `mobile/tests/accessibility/touch-targets.spec.tsx` to cover the altered classroom card, empty-state, header, and search controls for project platform minimums, roles, names, visible focus/pressed treatment, and non-color-only action/expiration semantics.
+- [X] T020 [P] [US3] Add cross-surface assertions in `mobile/tests/routes/home.spec.tsx` and `mobile/tests/routes/classrooms-list.spec.tsx` for long content, missing teacher/announcement, consistent card information order, contextual empty text, and distinct open versus enter/leave/delete controls.
+- [X] T021 [P] [US3] Extend `mobile/tests/accessibility/touch-targets.spec.tsx` to cover the altered classroom card, empty-state, header, and search controls for project platform minimums, roles, names, visible focus/pressed treatment, and non-color-only action/expiration semantics.
 
 ### Implementation for User Story 3
 
-- [ ] T022 [US3] Refine the shared layout and accessibility behavior in `mobile/src/components/home/ClassroomCard.tsx` and `mobile/src/components/home/EmptyClassroomState.tsx` so variable text wraps naturally with no fixed content height or unjustified `numberOfLines`, actions stay in their own subtree, essential content remains readable, and empty-state meaning is explicit without changing domain actions.
+- [X] T022 [US3] Refine the shared layout and accessibility behavior in `mobile/src/components/home/ClassroomCard.tsx` and `mobile/src/components/home/EmptyClassroomState.tsx` so variable text wraps naturally with no fixed content height or unjustified `numberOfLines`, actions stay in their own subtree, essential content remains readable, and empty-state meaning is explicit without changing domain actions.
 
 **Checkpoint**: The same shared primitives serve all primary surfaces consistently, while every existing classroom action remains distinguishable and operable.
 
@@ -114,11 +114,11 @@ description: "Task list for feature implementation"
 
 **Purpose**: Validate the complete feature, capture available evidence, and make scope/evidence limitations explicit.
 
-- [ ] T023 Create the feature evidence matrix in `specs/003-primary-surfaces-visual-polish/evidence/primary-surfaces-validation.md`, with rows for Home/Turmas profiles, four Home states, expiration cases, search regressions, classroom actions, long content, enlarged text, and statuses `PASS`, `WARN`, `FAIL`, `NOT RUN`, or `NOT MEASURED`.
-- [ ] T024 Run the directed backend unit, integration, contract, typecheck, lint, format, and build commands from `specs/003-primary-surfaces-visual-polish/quickstart.md` against `backend/package.json`, and record results and any pre-existing/global failures in `specs/003-primary-surfaces-visual-polish/evidence/primary-surfaces-validation.md`.
-- [ ] T025 Run the directed mobile Jest, typecheck, lint, format, Expo Doctor, and export commands from `specs/003-primary-surfaces-visual-polish/quickstart.md` against `mobile/package.json`, and record results without treating export or Doctor as manual usability evidence in `specs/003-primary-surfaces-visual-polish/evidence/primary-surfaces-validation.md`.
-- [ ] T026 Execute the Android walkthrough described in `specs/003-primary-surfaces-visual-polish/quickstart.md` against `mobile/app/(app)/(tabs)/index.tsx` and `mobile/app/(app)/(tabs)/classrooms.tsx`, covering `PARENT`/`PROFESSOR`, states, expiration, search regression, actions, long content, narrow width, and enlarged text; record observations in `specs/003-primary-surfaces-visual-polish/evidence/primary-surfaces-validation.md`.
-- [ ] T027 Perform the final scope and contract audit against `specs/003-primary-surfaces-visual-polish/spec.md`, `specs/003-primary-surfaces-visual-polish/plan.md`, `specs/003-primary-surfaces-visual-polish/contracts/primary-surfaces.md`, `backend/prisma/schema.prisma`, and `specs/001-app-quality-readiness/contracts/openapi.json`, confirming no out-of-scope detail/Profile/theme/search/domain changes and marking unavailable iOS or human-audit evidence as `NOT MEASURED`.
+- [X] T023 Create the feature evidence matrix in `specs/003-primary-surfaces-visual-polish/evidence/primary-surfaces-validation.md`, with rows for Home/Turmas profiles, four Home states, expiration cases, search regressions, classroom actions, long content, enlarged text, and statuses `PASS`, `WARN`, `FAIL`, `NOT RUN`, or `NOT MEASURED`.
+- [X] T024 Run the directed backend unit, integration, contract, typecheck, lint, format, and build commands from `specs/003-primary-surfaces-visual-polish/quickstart.md` against `backend/package.json`, and record results and any pre-existing/global failures in `specs/003-primary-surfaces-visual-polish/evidence/primary-surfaces-validation.md`.
+- [X] T025 Run the directed mobile Jest, typecheck, lint, format, Expo Doctor, and export commands from `specs/003-primary-surfaces-visual-polish/quickstart.md` against `mobile/package.json`, and record results without treating export or Doctor as manual usability evidence in `specs/003-primary-surfaces-visual-polish/evidence/primary-surfaces-validation.md`.
+- [X] T026 Execute the Android walkthrough described in `specs/003-primary-surfaces-visual-polish/quickstart.md` against `mobile/app/(app)/(tabs)/index.tsx` and `mobile/app/(app)/(tabs)/classrooms.tsx`, covering `PARENT`/`PROFESSOR`, states, expiration, search regression, actions, long content, narrow width, and enlarged text; record observations in `specs/003-primary-surfaces-visual-polish/evidence/primary-surfaces-validation.md`.
+- [X] T027 Perform the final scope and contract audit against `specs/003-primary-surfaces-visual-polish/spec.md`, `specs/003-primary-surfaces-visual-polish/plan.md`, `specs/003-primary-surfaces-visual-polish/contracts/primary-surfaces.md`, `backend/prisma/schema.prisma`, and `specs/001-app-quality-readiness/contracts/openapi.json`, confirming no out-of-scope detail/Profile/theme/search/domain changes and marking unavailable iOS or human-audit evidence as `NOT MEASURED`.
 
 ## Dependencies & Execution Order
 
