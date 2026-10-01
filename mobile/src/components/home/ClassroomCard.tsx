@@ -54,6 +54,7 @@ export function ClassroomCard({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={`Abrir turma ${name}`}
+          accessibilityHint="Abre a turma para ver os detalhes."
           style={({ pressed }) => [styles.cardContent, pressed && styles.cardPressed]}
           onPress={onPress}
         >
@@ -64,13 +65,15 @@ export function ClassroomCard({
       )}
 
       {actionLabel && onActionPress ? (
-        <Button
-          label={actionLabel}
-          accessibilityLabel={`${actionLabel}: ${name}`}
-          style={styles.actionButton}
-          variant={actionVariant === 'danger' ? 'destructive' : 'primary'}
-          onPress={onActionPress}
-        />
+        <View style={styles.actionContainer}>
+          <Button
+            label={actionLabel}
+            accessibilityLabel={`${actionLabel}: ${name}`}
+            style={styles.actionButton}
+            variant={actionVariant === 'danger' ? 'destructive' : 'primary'}
+            onPress={onActionPress}
+          />
+        </View>
       ) : null}
     </View>
   );
@@ -78,6 +81,7 @@ export function ClassroomCard({
 
 const styles = StyleSheet.create({
   card: {
+    width: '100%',
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.lg,
     borderWidth: 1,
@@ -97,6 +101,7 @@ const styles = StyleSheet.create({
 
   cardContent: {
     alignSelf: 'stretch',
+    width: '100%',
     minHeight: theme.targets.android,
     minWidth: theme.targets.android,
     gap: theme.spacing.sm,
@@ -109,12 +114,14 @@ const styles = StyleSheet.create({
   name: {
     ...theme.typography.sectionTitle,
     color: theme.colors.text,
+    width: '100%',
     flexShrink: 1,
   },
 
   teacher: {
     ...theme.typography.body,
     color: theme.colors.textMuted,
+    width: '100%',
     flexShrink: 1,
   },
 
@@ -127,23 +134,31 @@ const styles = StyleSheet.create({
   label: {
     ...theme.typography.label,
     color: theme.colors.text,
+    width: '100%',
     flexShrink: 1,
   },
 
   announcement: {
     ...theme.typography.body,
     color: theme.colors.textMuted,
+    width: '100%',
     flexShrink: 1,
   },
 
   expiration: {
     ...theme.typography.caption,
     color: theme.colors.textMuted,
+    width: '100%',
     flexShrink: 1,
   },
 
-  actionButton: {
-    alignSelf: 'flex-end',
+  actionContainer: {
+    width: '100%',
+    alignItems: 'flex-end',
     marginTop: theme.spacing.md,
+  },
+
+  actionButton: {
+    maxWidth: '100%',
   },
 });
