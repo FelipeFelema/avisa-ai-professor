@@ -256,6 +256,104 @@ describe('Classrooms Integration Tests', () => {
     expect(left.body).not.toHaveProperty('userClassrooms');
   });
 
+  describe('classroom summary list endpoints', () => {
+    it('should return active expiration data without changing search or membership behavior', async () => {
+      const ownerToken = await createProfessorToken('summary-owner');
+      const parentToken = await createParentToken('summary-parent');
+      const activeClassroomId = await createClassroom(
+        ownerToken,
+        'summary-active',
+      );
+      const emptyClassroomId = await createClassroom(
+        ownerToken,
+        'summary-empty',
+      );
+
+      const announcementResponse = await request(app.getHttpServer())
+        .post('/api/v1/announcements')
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({
+          title: 'Comunicado ativo',
+          content: 'Conteúdo do comunicado ativo',
+          durationInDays: 7,
+          classroomId: activeClassroomId,
+        })
+        .expect(201);
+
+      const announcement = announcementResponse.body as {
+        id: string;
+        title: string;
+        createdAt: string;
+        expiresAt: string;
+      };
+
+      const myClassroomsResponse = await request(app.getHttpServer())
+        .get('/api/v1/classrooms/my')
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .expect(200);
+
+      const myClassrooms = myClassroomsResponse.body as Array<{
+        id: string;
+        lastAnnouncement: {
+          id: string;
+          title: string;
+          createdAt: string;
+          expiresAt: string;
+        } | null;
+      }>;
+      const activeSummary = myClassrooms.find(
+        (classroom) => classroom.id === activeClassroomId,
+      );
+      const emptySummary = myClassrooms.find(
+        (classroom) => classroom.id === emptyClassroomId,
+      );
+
+      expect(activeSummary?.lastAnnouncement).toEqual({
+        id: announcement.id,
+        title: announcement.title,
+        createdAt: announcement.createdAt,
+        expiresAt: announcement.expiresAt,
+      });
+      expect(emptySummary?.lastAnnouncement).toBeNull();
+
+      const availableResponse = await request(app.getHttpServer())
+        .get('/api/v1/classrooms')
+        .query({ search: 'SUMMARY-ACTIVE' })
+        .set('Authorization', `Bearer ${parentToken}`)
+        .expect(200);
+
+      const availableClassrooms = availableResponse.body as Array<{
+        id: string;
+        lastAnnouncement: {
+          id: string;
+          expiresAt: string;
+        } | null;
+      }>;
+
+      expect(availableClassrooms).toHaveLength(1);
+      expect(availableClassrooms[0]).toMatchObject({
+        id: activeClassroomId,
+      });
+      expect(availableClassrooms[0]?.lastAnnouncement).toMatchObject({
+        id: announcement.id,
+        expiresAt: announcement.expiresAt,
+      });
+
+      await request(app.getHttpServer())
+        .post(`/api/v1/classrooms/${activeClassroomId}/join`)
+        .set('Authorization', `Bearer ${parentToken}`)
+        .expect(201);
+
+      const availableAfterJoin = await request(app.getHttpServer())
+        .get('/api/v1/classrooms')
+        .query({ search: 'SUMMARY-ACTIVE' })
+        .set('Authorization', `Bearer ${parentToken}`)
+        .expect(200);
+
+      expect(availableAfterJoin.body).toEqual([]);
+    });
+  });
+
   describe('DELETE /api/v1/classrooms/:id', () => {
     it('should return 204 and atomically cascade memberships and announcements', async () => {
       const ownerLabel = 'delete-owner';

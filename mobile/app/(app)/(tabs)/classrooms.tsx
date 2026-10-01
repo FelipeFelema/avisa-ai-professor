@@ -86,24 +86,6 @@ export default function ClassroomsScreen() {
     });
   }
 
-  if (classroomsLoading) {
-    return <ScreenState kind="loading" title="Carregando turmas" message="Aguarde um momento." />;
-  }
-
-  if (classroomsError) {
-    return (
-      <ScreenState
-        kind="error"
-        title="Não foi possível carregar suas turmas"
-        message="Verifique sua conexão e tente novamente."
-        actionLabel="Tentar novamente"
-        onAction={() => {
-          void refetchClassrooms();
-        }}
-      />
-    );
-  }
-
   return (
     <>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -130,69 +112,93 @@ export default function ClassroomsScreen() {
 
         <FormField
           label="Buscar turmas"
+          leadingIcon="search-outline"
           placeholder="Buscar turmas..."
           value={search}
           onChangeText={setSearch}
         />
 
-        <Text style={styles.sectionTitle}>Minhas turmas</Text>
+        <View style={styles.section}>
+          <Text accessibilityRole="header" style={styles.sectionTitle}>
+            Minhas turmas
+          </Text>
 
-        {classrooms && classrooms.length > 0 ? (
-          classrooms.map((classroom) => {
-            const isOwner = user?.id === classroom.ownerId;
+          {classroomsLoading ? (
+            <ScreenState
+              kind="loading"
+              title="Carregando suas turmas"
+              message="Aguarde um momento."
+            />
+          ) : classroomsError ? (
+            <ScreenState
+              kind="error"
+              title="Não foi possível carregar suas turmas"
+              message="Verifique sua conexão e tente novamente."
+              actionLabel="Tentar novamente"
+              onAction={() => {
+                void refetchClassrooms();
+              }}
+            />
+          ) : classrooms && classrooms.length > 0 ? (
+            classrooms.map((classroom) => {
+              const isOwner = user?.id === classroom.ownerId;
 
-            return (
+              return (
+                <ClassroomCard
+                  key={classroom.id}
+                  name={classroom.name}
+                  teacher={classroom.teacher?.name ?? 'Professor não informado'}
+                  lastAnnouncement={classroom.lastAnnouncement?.title}
+                  actionLabel={isOwner ? 'Excluir turma' : 'Sair'}
+                  actionVariant="danger"
+                  onActionPress={() => openAction(isOwner ? 'delete' : 'leave', classroom)}
+                  onPress={() => router.push(`/classrooms/${classroom.id}`)}
+                />
+              );
+            })
+          ) : (
+            <EmptyClassroomState />
+          )}
+        </View>
+
+        <View style={styles.section}>
+          <Text accessibilityRole="header" style={styles.sectionTitle}>
+            Turmas disponíveis
+          </Text>
+
+          {availableLoading ? (
+            <ScreenState kind="loading" title="Buscando turmas" />
+          ) : availableError ? (
+            <ScreenState
+              kind="error"
+              title="Não foi possível buscar turmas"
+              message="Verifique sua conexão e tente novamente."
+              actionLabel="Tentar novamente"
+              onAction={() => {
+                void refetchAvailableClassrooms();
+              }}
+            />
+          ) : availableClassrooms.length > 0 ? (
+            availableClassrooms.map((classroom) => (
               <ClassroomCard
                 key={classroom.id}
                 name={classroom.name}
                 teacher={classroom.teacher?.name ?? 'Professor não informado'}
                 lastAnnouncement={classroom.lastAnnouncement?.title}
-                actionLabel={isOwner ? 'Excluir turma' : 'Sair'}
-                actionVariant="danger"
-                onActionPress={() => openAction(isOwner ? 'delete' : 'leave', classroom)}
-                onPress={() => router.push(`/classrooms/${classroom.id}`)}
+                actionLabel="Entrar"
+                actionVariant="primary"
+                onActionPress={() => {
+                  joinMutation.mutate(classroom.id);
+                }}
               />
-            );
-          })
-        ) : (
-          <EmptyClassroomState />
-        )}
-
-        <Text style={styles.sectionTitle}>Turmas disponíveis</Text>
-
-        {availableLoading ? (
-          <ScreenState kind="loading" title="Buscando turmas" />
-        ) : availableError ? (
-          <ScreenState
-            kind="error"
-            title="Não foi possível buscar turmas"
-            message="Verifique sua conexão e tente novamente."
-            actionLabel="Tentar novamente"
-            onAction={() => {
-              void refetchAvailableClassrooms();
-            }}
-          />
-        ) : availableClassrooms.length > 0 ? (
-          availableClassrooms.map((classroom) => (
-            <ClassroomCard
-              key={classroom.id}
-              name={classroom.name}
-              teacher={classroom.teacher?.name ?? 'Professor não informado'}
-              lastAnnouncement={classroom.lastAnnouncement?.title}
-              actionLabel="Entrar"
-              actionVariant="primary"
-              onActionPress={() => {
-                joinMutation.mutate(classroom.id);
-              }}
+            ))
+          ) : (
+            <EmptyClassroomState
+              title="Nenhuma turma disponível"
+              description="Quando houver novas turmas, elas aparecerão aqui."
             />
-          ))
-        ) : (
-          <ScreenState
-            kind="empty"
-            title="Nenhuma turma disponível"
-            message="Quando houver novas turmas, elas aparecerão aqui."
-          />
-        )}
+          )}
+        </View>
       </ScrollView>
 
       {action ? (
@@ -241,6 +247,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     ...theme.typography.sectionTitle,
     color: theme.colors.text,
-    marginTop: theme.spacing.lg,
   },
+  section: { gap: theme.spacing.md },
 });

@@ -1,12 +1,14 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/ui';
+import { getClassroomAnnouncementExpirationLabel } from '@/lib/classroom-expiration';
 import { theme } from '@/theme';
 
 type ClassroomCardProps = {
   name: string;
   teacher: string;
   lastAnnouncement?: string;
+  announcementExpiresAt?: string | null;
 
   actionVariant?: 'primary' | 'danger';
 
@@ -20,11 +22,16 @@ export function ClassroomCard({
   name,
   teacher,
   lastAnnouncement,
+  announcementExpiresAt,
   actionVariant = 'primary',
   actionLabel,
   onActionPress,
   onPress,
 }: ClassroomCardProps) {
+  const expirationLabel = lastAnnouncement
+    ? getClassroomAnnouncementExpirationLabel(announcementExpiresAt)
+    : null;
+
   const cardContent = (
     <>
       <Text style={styles.name}>{name}</Text>
@@ -36,6 +43,8 @@ export function ClassroomCard({
       <Text style={styles.label}>Último comunicado</Text>
 
       <Text style={styles.announcement}>{lastAnnouncement ?? 'Nenhum comunicado disponível.'}</Text>
+
+      {expirationLabel ? <Text style={styles.expiration}>{expirationLabel}</Text> : null}
     </>
   );
 
@@ -45,6 +54,7 @@ export function ClassroomCard({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={`Abrir turma ${name}`}
+          accessibilityHint="Abre a turma para ver os detalhes."
           style={({ pressed }) => [styles.cardContent, pressed && styles.cardPressed]}
           onPress={onPress}
         >
@@ -55,13 +65,15 @@ export function ClassroomCard({
       )}
 
       {actionLabel && onActionPress ? (
-        <Button
-          label={actionLabel}
-          accessibilityLabel={`${actionLabel}: ${name}`}
-          style={styles.actionButton}
-          variant={actionVariant === 'danger' ? 'destructive' : 'primary'}
-          onPress={onActionPress}
-        />
+        <View style={styles.actionContainer}>
+          <Button
+            label={actionLabel}
+            accessibilityLabel={`${actionLabel}: ${name}`}
+            style={styles.actionButton}
+            variant={actionVariant === 'danger' ? 'destructive' : 'primary'}
+            onPress={onActionPress}
+          />
+        </View>
       ) : null}
     </View>
   );
@@ -69,6 +81,7 @@ export function ClassroomCard({
 
 const styles = StyleSheet.create({
   card: {
+    width: '100%',
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.lg,
     borderWidth: 1,
@@ -87,6 +100,8 @@ const styles = StyleSheet.create({
   },
 
   cardContent: {
+    alignSelf: 'stretch',
+    width: '100%',
     minHeight: theme.targets.android,
     minWidth: theme.targets.android,
     gap: theme.spacing.sm,
@@ -99,11 +114,15 @@ const styles = StyleSheet.create({
   name: {
     ...theme.typography.sectionTitle,
     color: theme.colors.text,
+    width: '100%',
+    flexShrink: 1,
   },
 
   teacher: {
     ...theme.typography.body,
     color: theme.colors.textMuted,
+    width: '100%',
+    flexShrink: 1,
   },
 
   separator: {
@@ -115,15 +134,31 @@ const styles = StyleSheet.create({
   label: {
     ...theme.typography.label,
     color: theme.colors.text,
+    width: '100%',
+    flexShrink: 1,
   },
 
   announcement: {
     ...theme.typography.body,
     color: theme.colors.textMuted,
+    width: '100%',
+    flexShrink: 1,
+  },
+
+  expiration: {
+    ...theme.typography.caption,
+    color: theme.colors.textMuted,
+    width: '100%',
+    flexShrink: 1,
+  },
+
+  actionContainer: {
+    width: '100%',
+    alignItems: 'flex-end',
+    marginTop: theme.spacing.md,
   },
 
   actionButton: {
-    alignSelf: 'flex-end',
-    marginTop: theme.spacing.md,
+    maxWidth: '100%',
   },
 });

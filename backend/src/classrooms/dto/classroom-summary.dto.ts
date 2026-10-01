@@ -33,6 +33,9 @@ export class LastAnnouncementSummaryDto {
 
   @ApiProperty({ type: 'string', format: 'date-time' })
   createdAt!: Date;
+
+  @ApiProperty({ type: 'string', format: 'date-time' })
+  expiresAt!: Date;
 }
 
 @closedSchema({
