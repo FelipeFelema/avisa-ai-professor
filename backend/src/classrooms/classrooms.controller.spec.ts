@@ -17,6 +17,7 @@ describe('ClassroomsController', () => {
             create: jest.fn(),
             join: jest.fn(),
             leave: jest.fn(),
+            findAvailableClassrooms: jest.fn(),
             findMyClassrooms: jest.fn(),
             delete: jest.fn(),
           }),
@@ -41,6 +42,34 @@ describe('ClassroomsController', () => {
     expect(classroomsService.delete).toHaveBeenCalledWith(
       'owner-id',
       'classroom-id',
+    );
+  });
+
+  it('passes the validated search value and authenticated user to the available list', async () => {
+    classroomsService.findAvailableClassrooms.mockResolvedValue([]);
+
+    await controller.findAvailable(
+      { user: { id: 'parent-id' } } as never,
+      { search: 'Matemática' } as never,
+    );
+
+    expect(classroomsService.findAvailableClassrooms).toHaveBeenCalledWith(
+      'parent-id',
+      'Matemática',
+    );
+  });
+
+  it('passes an omitted search through as the unfiltered available-list variant', async () => {
+    classroomsService.findAvailableClassrooms.mockResolvedValue([]);
+
+    await controller.findAvailable(
+      { user: { id: 'parent-id' } } as never,
+      {} as never,
+    );
+
+    expect(classroomsService.findAvailableClassrooms).toHaveBeenCalledWith(
+      'parent-id',
+      undefined,
     );
   });
 

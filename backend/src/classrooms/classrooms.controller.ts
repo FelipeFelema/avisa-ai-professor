@@ -25,6 +25,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Role } from '@prisma/client';
 import { AuthUser } from '../common/types/auth-user.type';
 import { CreateClassroomDto } from './dto/create-classroom.dto';
+import { FindAvailableClassroomsQueryDto } from './dto/find-available-classrooms-query.dto';
 import {
   ClassroomMemberDto,
   ClassroomSummaryDto,
@@ -182,7 +183,10 @@ export class ClassroomsController {
     required: false,
     type: 'string',
     maxLength: 80,
-    description: 'Filtro case-insensitive pelo nome',
+    style: 'form',
+    explode: true,
+    description:
+      'Pesquisa por substring literal do nome, sem diferenciar maiúsculas/minúsculas e preservando acentos. Parâmetro escalar único com serialização form; valores repetidos são rejeitados. O limite de 80 pontos de código Unicode é aplicado após remover espaços externos. Vazio significa sem filtro.',
   })
   @ApiResponse({
     status: 200,
@@ -196,9 +200,12 @@ export class ClassroomsController {
   @ApiUnauthorizedResponse()
   findAvailable(
     @Request() req: { user: AuthUser },
-    @Query('search') search?: string,
+    @Query() query: FindAvailableClassroomsQueryDto,
   ) {
-    return this.classroomsService.findAvailableClassrooms(req.user.id, search);
+    return this.classroomsService.findAvailableClassrooms(
+      req.user.id,
+      query.search as string | undefined,
+    );
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

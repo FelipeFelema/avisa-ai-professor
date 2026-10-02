@@ -1,8 +1,4 @@
-import {
-  INestApplication,
-  ValidationPipe,
-  VersioningType,
-} from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { Role } from '@prisma/client';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -10,6 +6,8 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 
 import { AppModule } from '../src/app.module';
+import { ClassroomsService } from '../src/classrooms/classrooms.service';
+import { configureApp } from '../src/configure-app';
 import { PrismaService } from '../src/prisma/prisma.service';
 
 type AuthResponse = {
@@ -124,11 +122,49 @@ describe('Classrooms Integration Tests', () => {
     return (response.body as AuthResponse).access_token;
   };
 
+  const createAdminToken = async (label: string) => {
+    const inviteCode = makeInviteCode(`admin-${label}`);
+
+    await prisma.inviteCode.create({
+      data: {
+        code: inviteCode,
+        role: Role.ADMIN,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      },
+    });
+
+    const response = await request(app.getHttpServer())
+      .post('/api/v1/auth/register')
+      .set('X-Forwarded-For', `classrooms-admin-${testPrefix}-${label}`)
+      .send({
+        name: 'Admin Integration Test',
+        email: makeEmail(`admin-${label}`),
+        password: testPassword,
+        teacherCode: inviteCode,
+      })
+      .expect(201);
+
+    return (response.body as AuthResponse).access_token;
+  };
+
   const createClassroom = async (professorToken: string, label: string) => {
     const response = await request(app.getHttpServer())
       .post('/api/v1/classrooms')
       .set('Authorization', `Bearer ${professorToken}`)
       .send({ name: makeClassroomName(label) })
+      .expect(201);
+
+    return (response.body as { id: string }).id;
+  };
+
+  const createClassroomWithName = async (
+    professorToken: string,
+    name: string,
+  ) => {
+    const response = await request(app.getHttpServer())
+      .post('/api/v1/classrooms')
+      .set('Authorization', `Bearer ${professorToken}`)
+      .send({ name })
       .expect(201);
 
     return (response.body as { id: string }).id;
@@ -141,19 +177,7 @@ describe('Classrooms Integration Tests', () => {
 
     app = moduleFixture.createNestApplication();
 
-    app.setGlobalPrefix('api');
-
-    app.enableVersioning({
-      type: VersioningType.URI,
-    });
-
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        forbidNonWhitelisted: true,
-        transform: true,
-      }),
-    );
+    configureApp(app);
 
     const httpServer = app.getHttpAdapter().getInstance() as {
       set: (key: string, value: unknown) => void;
@@ -254,6 +278,164 @@ describe('Classrooms Integration Tests', () => {
       }),
     );
     expect(left.body).not.toHaveProperty('userClassrooms');
+  });
+
+  describe('GET /api/v1/classrooms search contract', () => {
+    const availableRequest = (token: string, search?: string) => {
+      const result = request(app.getHttpServer()).get('/api/v1/classrooms');
+      const withSearch =
+        search === undefined ? result : result.query({ search });
+
+      return withSearch.set('Authorization', `Bearer ${token}`);
+    };
+
+    it('matches literal, case-insensitive substrings and keeps my classrooms unfiltered', async () => {
+      const ownerToken = await createProfessorToken('search-fixture-owner');
+      const parentToken = await createParentToken('search-fixture-parent');
+      const names = {
+        math6: `${testPrefix} Matemática 6º A`,
+        math7: `${testPrefix} Matemática 7º B`,
+        portuguese: `${testPrefix} Português 6º A`,
+        associated: `${testPrefix} Matemática associada`,
+        percent: `${testPrefix} Valor 10% real`,
+        underscore: `${testPrefix} Sub_nome`,
+        backslash: `${testPrefix} Caminho\\Turma`,
+      };
+      const ids = {
+        math6: await createClassroomWithName(ownerToken, names.math6),
+        math7: await createClassroomWithName(ownerToken, names.math7),
+        portuguese: await createClassroomWithName(ownerToken, names.portuguese),
+        associated: await createClassroomWithName(ownerToken, names.associated),
+        percent: await createClassroomWithName(ownerToken, names.percent),
+        underscore: await createClassroomWithName(ownerToken, names.underscore),
+        backslash: await createClassroomWithName(ownerToken, names.backslash),
+      };
+
+      await request(app.getHttpServer())
+        .post(`/api/v1/classrooms/${ids.associated}/join`)
+        .set('Authorization', `Bearer ${parentToken}`)
+        .expect(201);
+
+      const idsFor = async (search?: string) => {
+        const response = await availableRequest(parentToken, search).expect(
+          200,
+        );
+        return (response.body as Array<{ id: string }>).map(({ id }) => id);
+      };
+
+      expect(new Set(await idsFor('matemática'))).toEqual(
+        new Set([ids.math6, ids.math7]),
+      );
+      expect(new Set(await idsFor('MATEMÁTICA'))).toEqual(
+        new Set([ids.math6, ids.math7]),
+      );
+      expect(new Set(await idsFor('  Matemática  '))).toEqual(
+        new Set([ids.math6, ids.math7]),
+      );
+      expect(await idsFor('matematica')).toEqual([]);
+      expect(new Set(await idsFor('6º A'))).toEqual(
+        new Set([ids.math6, ids.portuguese]),
+      );
+      expect(await idsFor('%')).toEqual([ids.percent]);
+      expect(await idsFor('_')).toEqual([ids.underscore]);
+      expect(await idsFor('\\')).toEqual([ids.backslash]);
+
+      const unfiltered = new Set([
+        ids.math6,
+        ids.math7,
+        ids.portuguese,
+        ids.percent,
+        ids.underscore,
+        ids.backslash,
+      ]);
+      expect(new Set(await idsFor())).toEqual(unfiltered);
+      expect(new Set(await idsFor('   '))).toEqual(unfiltered);
+
+      const myClassroomsResponse = await request(app.getHttpServer())
+        .get('/api/v1/classrooms/my')
+        .set('Authorization', `Bearer ${parentToken}`)
+        .expect(200);
+      expect(myClassroomsResponse.body).toEqual([
+        expect.objectContaining({ id: ids.associated }),
+      ]);
+    });
+
+    it('accepts every existing authenticated role without changing list authorization', async () => {
+      const ownerToken = await createProfessorToken('search-role-owner');
+      const classroomId = await createClassroomWithName(
+        ownerToken,
+        `${testPrefix} Role Access`,
+      );
+      const tokens = [
+        await createParentToken('search-role-parent'),
+        await createProfessorToken('search-role-professor'),
+        await createAdminToken('search-role-admin'),
+      ];
+
+      for (const token of tokens) {
+        const response = await availableRequest(token, 'role access').expect(
+          200,
+        );
+        expect(response.body).toEqual([
+          expect.objectContaining({ id: classroomId }),
+        ]);
+      }
+    });
+
+    it('accepts 80 normalized code points and rejects 81 before invoking the list service', async () => {
+      const parentToken = await createParentToken('search-length-parent');
+      const service = app.get(ClassroomsService);
+      const findAvailable = jest.spyOn(service, 'findAvailableClassrooms');
+
+      try {
+        await availableRequest(parentToken, `  ${'A'.repeat(80)}  `).expect(
+          200,
+        );
+        findAvailable.mockClear();
+
+        await availableRequest(parentToken, 'A'.repeat(81)).expect(400);
+        expect(findAvailable).not.toHaveBeenCalled();
+      } finally {
+        findAvailable.mockRestore();
+      }
+    });
+
+    it.each([
+      [
+        'repeated values',
+        'repeat',
+        '/api/v1/classrooms?search=mat&search=port',
+      ],
+      [
+        'bracket notation under the simple parser',
+        'bracket',
+        '/api/v1/classrooms?search%5B%5D=mat',
+      ],
+      [
+        'unknown query fields',
+        'extra',
+        '/api/v1/classrooms?search=mat&extra=value',
+      ],
+    ])('rejects %s as a closed query contract', async (_case, label, path) => {
+      const parentToken = await createParentToken(`search-${label}`);
+
+      await request(app.getHttpServer())
+        .get(path)
+        .set('Authorization', `Bearer ${parentToken}`)
+        .expect(400);
+    });
+
+    it('keeps missing and invalid sessions at the existing 401 boundary', async () => {
+      await request(app.getHttpServer())
+        .get('/api/v1/classrooms')
+        .query({ search: 'mat' })
+        .expect(401);
+      await request(app.getHttpServer())
+        .get('/api/v1/classrooms')
+        .query({ search: 'mat' })
+        .set('Authorization', 'Bearer invalid-session')
+        .expect(401);
+    });
   });
 
   describe('classroom summary list endpoints', () => {

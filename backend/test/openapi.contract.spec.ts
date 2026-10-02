@@ -220,6 +220,32 @@ describe('OpenAPI runtime contract', () => {
       }
     }
 
+    const canonicalSearchParameter = designContract.paths[
+      '/api/v1/classrooms'
+    ]?.get?.parameters?.find((parameter) => parameter['name'] === 'search');
+    const runtimeSearchParameter = runtime.paths[
+      '/api/v1/classrooms'
+    ]?.get?.parameters?.find((parameter) => parameter['name'] === 'search');
+
+    expect(canonicalSearchParameter).toMatchObject({
+      name: 'search',
+      in: 'query',
+      required: false,
+      style: 'form',
+      explode: true,
+      schema: { type: 'string', maxLength: 80 },
+    });
+    expect(runtimeSearchParameter).toEqual(canonicalSearchParameter);
+    expect(canonicalSearchParameter?.['schema']).not.toHaveProperty(
+      'minLength',
+    );
+    expect(canonicalSearchParameter?.['description']).toContain(
+      'é aplicado após remover espaços externos',
+    );
+    expect(canonicalSearchParameter?.['description']).toContain(
+      'valores repetidos são rejeitados',
+    );
+
     expect(runtime.components.securitySchemes.bearerAuth).toMatchObject({
       type: 'http',
       scheme: 'bearer',
