@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 
 import RootLayout from '../../app/_layout';
 import ProfileScreen from '../../app/(app)/(tabs)/profile';
@@ -8,8 +9,15 @@ import RegisterScreen from '../../app/(auth)/register';
 import TabsLayout from '../../app/(app)/(tabs)/_layout';
 import AppLayout from '../../app/(app)/_layout';
 import AuthLayout from '../../app/(auth)/_layout';
+import ClassroomsScreen from '../../app/(app)/(tabs)/classrooms';
 import { STORAGE_KEYS } from '@/constants/storage';
 import { useAuth } from '@/hooks/useAuth';
+import { useAvailableClassrooms } from '@/hooks/useAvailableClassrooms';
+import { useDeleteClassroom } from '@/hooks/useDeleteClassroom';
+import { useJoinClassroom } from '@/hooks/useJoinClassroom';
+import { useLeaveClassroom } from '@/hooks/useLeaveClassroom';
+import { useMyClassrooms } from '@/hooks/useMyClassrooms';
+import { darkTheme, lightTheme } from '@/theme';
 import { renderWithProviders } from '../helpers/render';
 import { ThemeController, ThemeSwitcher } from '../helpers/theme';
 
@@ -46,6 +54,11 @@ jest.mock('expo-status-bar', () => {
 });
 
 jest.mock('@/hooks/useAuth', () => ({ useAuth: jest.fn() }));
+jest.mock('@/hooks/useMyClassrooms', () => ({ useMyClassrooms: jest.fn() }));
+jest.mock('@/hooks/useAvailableClassrooms', () => ({ useAvailableClassrooms: jest.fn() }));
+jest.mock('@/hooks/useJoinClassroom', () => ({ useJoinClassroom: jest.fn() }));
+jest.mock('@/hooks/useLeaveClassroom', () => ({ useLeaveClassroom: jest.fn() }));
+jest.mock('@/hooks/useDeleteClassroom', () => ({ useDeleteClassroom: jest.fn() }));
 jest.mock('@/providers/AppProvider', () => {
   const React = require('react');
   const { ThemeProvider } = require('@/providers/ThemeProvider');
@@ -62,9 +75,19 @@ jest.mock('@/providers/AppProvider', () => {
 });
 
 const mockUseAuth = jest.mocked(useAuth);
+const mockUseMyClassrooms = jest.mocked(useMyClassrooms);
+const mockUseAvailableClassrooms = jest.mocked(useAvailableClassrooms);
+const mockUseJoinClassroom = jest.mocked(useJoinClassroom);
+const mockUseLeaveClassroom = jest.mocked(useLeaveClassroom);
+const mockUseDeleteClassroom = jest.mocked(useDeleteClassroom);
 const mockGetItem = jest.mocked(AsyncStorage.getItem);
 const mockSetItem = jest.mocked(AsyncStorage.setItem);
 const login = jest.fn();
+const refetchAvailable = jest.fn();
+const joinClassroom = jest.fn();
+const leaveClassroom = jest.fn();
+const deleteClassroom = jest.fn();
+let availableQueryState: Record<string, unknown>;
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -72,6 +95,19 @@ beforeEach(() => {
   mockSetItem.mockResolvedValue(undefined);
   login.mockReset();
   login.mockResolvedValue(undefined);
+  refetchAvailable.mockReset();
+  refetchAvailable.mockResolvedValue({ data: [] });
+  joinClassroom.mockReset();
+  leaveClassroom.mockReset();
+  deleteClassroom.mockReset();
+  availableQueryState = {
+    data: [],
+    isLoading: false,
+    isFetching: false,
+    isStale: false,
+    isError: false,
+    refetch: refetchAvailable,
+  };
   mockUseAuth.mockReturnValue({
     user: null,
     isAuthenticated: false,
@@ -79,6 +115,19 @@ beforeEach(() => {
     login,
     register: jest.fn(),
   } as never);
+  mockUseMyClassrooms.mockReturnValue({
+    data: [],
+    isLoading: false,
+    isError: false,
+  } as never);
+  mockUseAvailableClassrooms.mockImplementation(() => availableQueryState as never);
+  mockUseJoinClassroom.mockReturnValue({ mutate: joinClassroom, isPending: false } as never);
+  mockUseLeaveClassroom.mockReturnValue({ mutate: leaveClassroom, isPending: false } as never);
+  mockUseDeleteClassroom.mockReturnValue({ mutate: deleteClassroom, isPending: false } as never);
+});
+
+afterEach(() => {
+  jest.useRealTimers();
 });
 
 describe('theme-aware app surfaces and navigation', () => {
@@ -256,6 +305,100 @@ describe('theme-aware app surfaces and navigation', () => {
     expectProfileAccessibility('Escuro');
     await fireEvent.press(view.getByText('Select Claro'));
     expectProfileAccessibility('Claro');
+  });
+
+  it('keeps classroom search feedback, controls, and its timer through live theme changes', async () => {
+    jest.useFakeTimers();
+    const availableClassroom = {
+      id: 'available-classroom',
+      name: 'Matemática',
+      ownerId: 'teacher-1',
+      teacher: { id: 'teacher-1', name: 'Prof. Ana' },
+      lastAnnouncement: null,
+    };
+    const view = await renderWithProviders(
+      <>
+        <ClassroomsScreen />
+        <ThemeSwitcher />
+      </>,
+    );
+    const input = view.getByLabelText('Buscar turma pelo nome');
+
+    await fireEvent.changeText(input, 'matemática');
+    expect(view.getByText('Aguardando pesquisa')).toBeTruthy();
+    await act(async () => jest.advanceTimersByTime(150));
+    await fireEvent.press(view.getByText('Select Escuro'));
+
+    expect(input.props.value).toBe('matemática');
+    expect(input.props.placeholderTextColor).toBe(darkTheme.colors.textMuted);
+    expect(view.getByText('Aguardando pesquisa')).toBeTruthy();
+    await act(async () => jest.advanceTimersByTime(149));
+    expect(view.getByText('Aguardando pesquisa')).toBeTruthy();
+    await act(async () => jest.advanceTimersByTime(1));
+    expect(view.getByText('Nenhuma turma encontrada para «matemática»')).toBeTruthy();
+    expect(view.getByRole('button', { name: 'Limpar pesquisa' })).toBeTruthy();
+    expect(
+      mockUseAvailableClassrooms.mock.calls.filter(
+        ([term, options]) => term === 'matemática' && options?.enabled,
+      ),
+    ).toHaveLength(1);
+
+    await fireEvent.changeText(input, 'm'.repeat(81));
+    const validation = view.getByText('Use até 80 caracteres na pesquisa');
+    expect(input.props.value).toBe('m'.repeat(81));
+    expect(StyleSheet.flatten(validation.props.style).color).toBe(darkTheme.colors.danger);
+    await fireEvent.press(view.getByText('Select Claro'));
+    expect(input.props.value).toBe('m'.repeat(81));
+    expect(
+      StyleSheet.flatten(view.getByText('Use até 80 caracteres na pesquisa').props.style).color,
+    ).toBe(lightTheme.colors.danger);
+
+    availableQueryState = {
+      data: [availableClassroom],
+      isLoading: false,
+      isFetching: true,
+      isStale: true,
+      isError: false,
+      refetch: refetchAvailable,
+    };
+    await fireEvent.changeText(input, 'mat');
+    await act(async () => jest.advanceTimersByTime(300));
+    expect(view.getByText('Buscando turmas')).toBeTruthy();
+    expect(view.queryByText(availableClassroom.name)).toBeNull();
+    expect(view.queryByRole('button', { name: `Entrar: ${availableClassroom.name}` })).toBeNull();
+    await fireEvent.press(view.getByText('Select Escuro'));
+    expect(input.props.value).toBe('mat');
+    expect(input.props.placeholderTextColor).toBe(darkTheme.colors.textMuted);
+    expect(view.getByText('Buscando turmas')).toBeTruthy();
+
+    availableQueryState = {
+      data: [availableClassroom],
+      isLoading: false,
+      isFetching: false,
+      isStale: false,
+      isError: true,
+      refetch: refetchAvailable,
+    };
+    await fireEvent.press(view.getByText('Select Claro'));
+    expect(view.getByText('Não foi possível buscar turmas')).toBeTruthy();
+    expect(view.getByRole('button', { name: 'Tentar novamente' })).toBeTruthy();
+    expect(input.props.value).toBe('mat');
+    await fireEvent.press(view.getByRole('button', { name: 'Tentar novamente' }));
+    expect(refetchAvailable).toHaveBeenCalledTimes(1);
+
+    availableQueryState = {
+      data: [],
+      isLoading: false,
+      isFetching: false,
+      isStale: false,
+      isError: false,
+      refetch: refetchAvailable,
+    };
+    await fireEvent.press(view.getByRole('button', { name: 'Limpar pesquisa' }));
+    expect(view.getByText('Aguardando pesquisa')).toBeTruthy();
+    expect(view.queryByText('Não foi possível buscar turmas')).toBeNull();
+    await act(async () => jest.advanceTimersByTime(300));
+    expect(view.getByText('Nenhuma turma disponível')).toBeTruthy();
   });
 
   it('matches public and authenticated stack backgrounds to the active palette', async () => {

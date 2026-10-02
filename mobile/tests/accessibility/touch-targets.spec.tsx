@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { fireEvent } from '@testing-library/react-native';
 
 import { AnnouncementCard } from '@/components/announcements';
@@ -232,19 +232,66 @@ describe.each(platformTargets)('$name touch targets', ({ minimum }) => {
       expect(actionControl.props.accessibilityRole).toBe('button');
 
       const searchView = await renderWithProviders(
-        <FormField label="Buscar turmas" leadingIcon="search-outline" placeholder="Buscar" />,
+        <View>
+          <FormField
+            label="Buscar turma pelo nome"
+            leadingIcon="search-outline"
+            placeholder="Buscar turma pelo nome..."
+            error="Use até 80 caracteres na pesquisa"
+          />
+          <Button
+            label="Limpar pesquisa"
+            accessibilityLabel="Limpar pesquisa"
+            variant="ghost"
+            onPress={jest.fn()}
+          />
+          <ScreenState
+            kind="error"
+            title="Não foi possível buscar turmas"
+            message="Verifique sua conexão e tente novamente."
+            actionLabel="Tentar novamente"
+            onAction={jest.fn()}
+          />
+        </View>,
       );
-      const searchInput = searchView.getByLabelText('Buscar turmas');
+      const searchInput = searchView.getByLabelText('Buscar turma pelo nome');
       const searchStyle = StyleSheet.flatten(searchInput.props.style) as {
         minHeight?: number;
         flex?: number;
       };
       expect(searchStyle.minHeight).toBeGreaterThanOrEqual(minimum);
       expect(searchStyle.flex).toBe(1);
+      expect(searchInput.props.accessibilityLabel).toBe('Buscar turma pelo nome');
+      expect(searchInput.props.accessibilityHint).toBe('Use até 80 caracteres na pesquisa');
       const searchIcon = searchView.getByTestId('form-field-leading-icon');
       expect(searchIcon.props.name).toBe('search-outline');
       expect(searchIcon.props.accessible).toBe(false);
       expect(searchIcon.props.accessibilityRole).toBeUndefined();
+
+      const clearControl = searchView.getByRole('button', { name: 'Limpar pesquisa' });
+      const retryControl = searchView.getByRole('button', { name: 'Tentar novamente' });
+      expect(clearControl.props.accessibilityRole).toBe('button');
+      expect(clearControl.props.accessibilityLabel).toBe('Limpar pesquisa');
+      expect(retryControl.props.accessibilityRole).toBe('button');
+      expectMinimumTarget(clearControl, minimum);
+      expectMinimumTarget(retryControl, minimum);
+      expect(
+        searchView.getByText('Use até 80 caracteres na pesquisa').props.accessibilityRole,
+      ).toBe('alert');
+
+      const searchReadingOrder = collectText(searchView.toJSON());
+      expect(searchReadingOrder.indexOf('Buscar turma pelo nome')).toBeLessThan(
+        searchReadingOrder.indexOf('Use até 80 caracteres na pesquisa'),
+      );
+      expect(searchReadingOrder.indexOf('Use até 80 caracteres na pesquisa')).toBeLessThan(
+        searchReadingOrder.indexOf('Limpar pesquisa'),
+      );
+      expect(searchReadingOrder.indexOf('Limpar pesquisa')).toBeLessThan(
+        searchReadingOrder.indexOf('Não foi possível buscar turmas'),
+      );
+      expect(searchReadingOrder.indexOf('Não foi possível buscar turmas')).toBeLessThan(
+        searchReadingOrder.indexOf('Tentar novamente'),
+      );
     });
 
     it('keeps theme choices named, selected, and large enough to tap', async () => {

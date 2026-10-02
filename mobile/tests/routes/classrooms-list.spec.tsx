@@ -1,4 +1,4 @@
-import { fireEvent } from '@testing-library/react-native';
+import { act, fireEvent } from '@testing-library/react-native';
 import { useRouter } from 'expo-router';
 import { StyleSheet } from 'react-native';
 
@@ -18,6 +18,7 @@ const mockLeaveClassroom = jest.fn();
 const mockJoinClassroom = jest.fn();
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
+const mockRefetchAvailable = jest.fn();
 
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(),
@@ -115,6 +116,10 @@ function setClassroomContext(
   mockUseAvailableClassrooms.mockReturnValue({
     data: availableData,
     isLoading: false,
+    isFetching: false,
+    isStale: false,
+    isError: false,
+    refetch: mockRefetchAvailable,
   } as unknown as ReturnType<typeof useAvailableClassrooms>);
   mockUseJoinClassroom.mockReturnValue({
     mutate: mockJoinClassroom,
@@ -132,18 +137,23 @@ function setClassroomContext(
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockRefetchAvailable.mockResolvedValue({ data: [] });
   setClassroomContext('owner-1');
 });
 
+afterEach(() => {
+  jest.useRealTimers();
+});
+
 describe('classrooms list route', () => {
-  it('keeps the introduction, search, and section order', async () => {
+  it('places the named search field inside the available section', async () => {
     const view = await renderWithProviders(<ClassroomsScreen />);
     const text = collectText(view.toJSON());
 
-    expect(text.indexOf('Turmas')).toBeLessThan(text.indexOf('Buscar turmas'));
-    expect(text.indexOf('Buscar turmas')).toBeLessThan(text.indexOf('Minhas turmas'));
+    expect(text.indexOf('Turmas')).toBeLessThan(text.indexOf('Minhas turmas'));
     expect(text.indexOf('Minhas turmas')).toBeLessThan(text.indexOf('Turmas disponíveis'));
-    expect(view.getByLabelText('Buscar turmas')).toBeTruthy();
+    expect(text.indexOf('Turmas disponíveis')).toBeLessThan(text.indexOf('Buscar turma pelo nome'));
+    expect(view.getByLabelText('Buscar turma pelo nome')).toBeTruthy();
     expect(view.getByRole('header', { name: 'Minhas turmas' })).toBeTruthy();
     expect(view.getByRole('header', { name: 'Turmas disponíveis' })).toBeTruthy();
   });
@@ -158,17 +168,227 @@ describe('classrooms list route', () => {
     expect(parentView.queryByText('Criar turma')).toBeNull();
   });
 
-  it('preserves the search value and forwards the unchanged search parameter', async () => {
+  it('preserves raw input while querying the normalized available term', async () => {
+    jest.useFakeTimers();
     const view = await renderWithProviders(<ClassroomsScreen />);
-    const input = view.getByLabelText('Buscar turmas');
+    const input = view.getByLabelText('Buscar turma pelo nome');
 
-    await fireEvent.changeText(input, 'matemática');
+    await fireEvent.changeText(input, '  matemática  ');
 
-    expect(mockUseAvailableClassrooms).toHaveBeenLastCalledWith('matemática');
-    expect(input.props.value).toBe('matemática');
+    expect(mockUseAvailableClassrooms).toHaveBeenLastCalledWith('', {
+      enabled: false,
+    });
+    expect(input.props.value).toBe('  matemática  ');
+    expect(view.getByText('Aguardando pesquisa')).toBeTruthy();
+
+    await act(async () => jest.advanceTimersByTime(300));
+    expect(mockUseAvailableClassrooms).toHaveBeenLastCalledWith('matemática', {
+      enabled: true,
+    });
+    jest.useRealTimers();
+  });
+
+  it('blocks over-limit input without truncating and restores available results when corrected', async () => {
+    jest.useFakeTimers();
+    setClassroomContext('parent-1', 'PARENT', [availableClassroom], [classroom]);
+    const view = await renderWithProviders(<ClassroomsScreen />);
+    const input = view.getByLabelText('Buscar turma pelo nome');
+    const invalidSearch = 'm'.repeat(81);
+
+    await fireEvent.changeText(input, invalidSearch);
+
+    expect(input.props.value).toBe(invalidSearch);
+    expect(mockUseAvailableClassrooms).toHaveBeenLastCalledWith('', {
+      enabled: false,
+    });
+    expect(view.getByText('Use até 80 caracteres na pesquisa')).toBeTruthy();
+    expect(view.queryByText(availableClassroom.name)).toBeNull();
+    expect(view.getByText(classroom.name)).toBeTruthy();
+    expect(view.getByLabelText('Sair: História do Brasil')).toBeTruthy();
+
+    await fireEvent.changeText(input, '');
+
+    expect(input.props.value).toBe('');
+    expect(view.queryByText('Use até 80 caracteres na pesquisa')).toBeNull();
+    expect(view.queryByText(availableClassroom.name)).toBeNull();
+    expect(view.getByText('Aguardando pesquisa')).toBeTruthy();
+    expect(mockUseAvailableClassrooms).toHaveBeenLastCalledWith('', {
+      enabled: false,
+    });
+    await act(async () => jest.advanceTimersByTime(300));
+    expect(mockUseAvailableClassrooms).toHaveBeenLastCalledWith('', { enabled: true });
+    expect(view.getByText(availableClassroom.name)).toBeTruthy();
+    expect(view.getByText(classroom.name)).toBeTruthy();
+    jest.useRealTimers();
+  });
+
+  it.each([
+    ['loading', { isLoading: true }, 'Buscando turmas'],
+    ['error', { data: [availableClassroom], isError: true }, 'Não foi possível buscar turmas'],
+    ['results', { data: [availableClassroom] }, availableClassroom.name],
+    ['empty', { data: [] }, 'Nenhuma turma disponível'],
+  ])(
+    'keeps my classroom content and actions during the available %s state',
+    async (_state, result, expected) => {
+      setClassroomContext('parent-1', 'PARENT', [], [classroom]);
+      mockUseAvailableClassrooms.mockReturnValue({
+        data: [],
+        isLoading: false,
+        isFetching: false,
+        isStale: false,
+        isError: false,
+        refetch: mockRefetchAvailable,
+        ...result,
+      } as never);
+
+      const view = await renderWithProviders(<ClassroomsScreen />);
+
+      expect(view.getByText(classroom.name)).toBeTruthy();
+      expect(view.getByLabelText('Sair: História do Brasil')).toBeTruthy();
+      expect(view.getByText(expected)).toBeTruthy();
+      expect(mockJoinClassroom).not.toHaveBeenCalled();
+      expect(mockLeaveClassroom).not.toHaveBeenCalled();
+      expect(mockDeleteClassroom).not.toHaveBeenCalled();
+    },
+  );
+
+  it('hides an earlier error and result during the current term pause', async () => {
+    jest.useFakeTimers();
+    setClassroomContext('parent-1', 'PARENT', [availableClassroom], [classroom]);
+    mockUseAvailableClassrooms.mockReturnValue({
+      data: [availableClassroom],
+      isLoading: false,
+      isFetching: false,
+      isStale: false,
+      isError: true,
+      refetch: mockRefetchAvailable,
+    } as never);
+    const view = await renderWithProviders(<ClassroomsScreen />);
+
+    expect(view.getByText('Não foi possível buscar turmas')).toBeTruthy();
+    await fireEvent.changeText(view.getByLabelText('Buscar turma pelo nome'), 'história');
+
+    expect(view.getByText('Aguardando pesquisa')).toBeTruthy();
+    expect(view.queryByText('Não foi possível buscar turmas')).toBeNull();
+    expect(view.queryByText(availableClassroom.name)).toBeNull();
+    expect(view.getByText(classroom.name)).toBeTruthy();
+    expect(mockRefetchAvailable).not.toHaveBeenCalled();
+
+    await act(async () => jest.advanceTimersByTime(300));
+    expect(view.getByText('Não foi possível buscar turmas')).toBeTruthy();
+    expect(view.getByRole('button', { name: 'Tentar novamente' })).toBeTruthy();
+    expect(view.getByLabelText('Buscar turma pelo nome').props.value).toBe('história');
+
+    mockUseAvailableClassrooms.mockReturnValue({
+      data: [],
+      isLoading: false,
+      isFetching: false,
+      isStale: false,
+      isError: false,
+      refetch: mockRefetchAvailable,
+    } as never);
+    await fireEvent.press(view.getByRole('button', { name: 'Limpar pesquisa' }));
+    expect(view.getByText('Aguardando pesquisa')).toBeTruthy();
+    expect(view.queryByText('Não foi possível buscar turmas')).toBeNull();
+    await act(async () => jest.advanceTimersByTime(300));
+    expect(view.getByText('Nenhuma turma disponível')).toBeTruthy();
+    jest.useRealTimers();
+  });
+
+  it('shows contextual no-match and clears it before the unfiltered results settle', async () => {
+    jest.useFakeTimers();
+    setClassroomContext('parent-1', 'PARENT', [availableClassroom], [classroom]);
+    const emptyResult = {
+      data: [],
+      isLoading: false,
+      isFetching: false,
+      isStale: false,
+      isError: false,
+      refetch: mockRefetchAvailable,
+    };
+    mockUseAvailableClassrooms.mockReturnValue({
+      data: [availableClassroom],
+      isLoading: false,
+      isFetching: false,
+      isStale: false,
+      isError: false,
+      refetch: mockRefetchAvailable,
+    } as never);
+    const view = await renderWithProviders(<ClassroomsScreen />);
+
+    await fireEvent.changeText(view.getByLabelText('Buscar turma pelo nome'), 'astronomia');
+    expect(view.getByText('Aguardando pesquisa')).toBeTruthy();
+    expect(view.queryByText(availableClassroom.name)).toBeNull();
+    expect(view.getByText(classroom.name)).toBeTruthy();
+    mockUseAvailableClassrooms.mockReturnValue(emptyResult as never);
+    await act(async () => jest.advanceTimersByTime(300));
+    expect(view.getByText('Nenhuma turma encontrada para «astronomia»')).toBeTruthy();
+    expect(view.getByRole('button', { name: 'Limpar pesquisa' })).toBeTruthy();
+    expect(view.getByText(classroom.name)).toBeTruthy();
+
+    await fireEvent.press(view.getByRole('button', { name: 'Limpar pesquisa' }));
+    expect(view.getByLabelText('Buscar turma pelo nome').props.value).toBe('');
+    expect(view.queryByText('Nenhuma turma encontrada para «astronomia»')).toBeNull();
+    expect(view.getByText('Aguardando pesquisa')).toBeTruthy();
+    expect(view.getByText(classroom.name)).toBeTruthy();
+
+    await act(async () => jest.advanceTimersByTime(300));
+    expect(view.getByText('Nenhuma turma disponível')).toBeTruthy();
+    jest.useRealTimers();
+  });
+
+  it.each([
+    ['fetching', { isFetching: true }],
+    ['stale', { isStale: true }],
+  ])('hides stale available cards while a %s refresh is required', async (_state, queryState) => {
+    setClassroomContext('parent-1', 'PARENT', [availableClassroom], [classroom]);
+    mockUseAvailableClassrooms.mockReturnValue({
+      data: [availableClassroom],
+      isLoading: false,
+      isFetching: false,
+      isStale: false,
+      isError: false,
+      refetch: mockRefetchAvailable,
+      ...queryState,
+    } as never);
+
+    const view = await renderWithProviders(<ClassroomsScreen />);
+
+    expect(view.getByText('Buscando turmas')).toBeTruthy();
+    expect(view.queryByText(availableClassroom.name)).toBeNull();
+    expect(view.queryByRole('button', { name: `Entrar: ${availableClassroom.name}` })).toBeNull();
+    expect(view.getByText(classroom.name)).toBeTruthy();
+    expect(view.getByLabelText('Sair: História do Brasil')).toBeTruthy();
+  });
+
+  it('retries only the current settled term and does not offer an old retry during edits', async () => {
+    jest.useFakeTimers();
+    const view = await renderWithProviders(<ClassroomsScreen />);
+    mockUseAvailableClassrooms.mockReturnValue({
+      data: [],
+      isLoading: false,
+      isFetching: false,
+      isStale: false,
+      isError: true,
+      refetch: mockRefetchAvailable,
+    } as never);
+
+    await fireEvent.changeText(view.getByLabelText('Buscar turma pelo nome'), 'matemática');
+    await act(async () => jest.advanceTimersByTime(300));
+    await fireEvent.press(view.getByRole('button', { name: 'Tentar novamente' }));
+    expect(mockRefetchAvailable).toHaveBeenCalledTimes(1);
+
+    await fireEvent.changeText(view.getByLabelText('Buscar turma pelo nome'), 'história');
+    expect(view.getByText('Aguardando pesquisa')).toBeTruthy();
+    expect(view.queryByRole('button', { name: 'Tentar novamente' })).toBeNull();
+    await fireEvent.press(view.getByRole('button', { name: 'Limpar pesquisa' }));
+    expect(view.queryByRole('button', { name: 'Tentar novamente' })).toBeNull();
+    expect(mockRefetchAvailable).toHaveBeenCalledTimes(1);
+    jest.useRealTimers();
   });
 
   it('keeps a filled search and its filter stable during a live theme switch', async () => {
+    jest.useFakeTimers();
     const view = await renderWithProviders(
       <>
         <ClassroomsScreen />
@@ -176,18 +396,35 @@ describe('classrooms list route', () => {
       </>,
     );
 
-    await fireEvent.changeText(view.getByLabelText('Buscar turmas'), 'matemática');
+    await fireEvent.changeText(view.getByLabelText('Buscar turma pelo nome'), 'matemática');
+    await act(async () => jest.advanceTimersByTime(150));
     expect(
-      StyleSheet.flatten(view.getByLabelText('Buscar turmas').parent?.props.style).backgroundColor,
+      StyleSheet.flatten(view.getByLabelText('Buscar turma pelo nome').parent?.props.style)
+        .backgroundColor,
     ).toBe(lightTheme.colors.surface);
 
     await fireEvent.press(view.getByText('Select Escuro'));
 
-    expect(view.getByLabelText('Buscar turmas').props.value).toBe('matemática');
+    expect(view.getByLabelText('Buscar turma pelo nome').props.value).toBe('matemática');
     expect(
-      StyleSheet.flatten(view.getByLabelText('Buscar turmas').parent?.props.style).backgroundColor,
+      StyleSheet.flatten(view.getByLabelText('Buscar turma pelo nome').parent?.props.style)
+        .backgroundColor,
     ).toBe(darkTheme.colors.surface);
-    expect(mockUseAvailableClassrooms).toHaveBeenLastCalledWith('matemática');
+    expect(mockUseAvailableClassrooms).toHaveBeenLastCalledWith('', {
+      enabled: false,
+    });
+    expect(view.getByText('Aguardando pesquisa')).toBeTruthy();
+    await act(async () => jest.advanceTimersByTime(149));
+    expect(mockUseAvailableClassrooms).toHaveBeenLastCalledWith('', { enabled: false });
+    await act(async () => jest.advanceTimersByTime(1));
+    expect(mockUseAvailableClassrooms).toHaveBeenLastCalledWith('matemática', {
+      enabled: true,
+    });
+    expect(
+      mockUseAvailableClassrooms.mock.calls.filter(
+        ([term, options]) => term === 'matemática' && options?.enabled,
+      ),
+    ).toHaveLength(1);
     expect(mockPush).not.toHaveBeenCalled();
     expect(mockJoinClassroom).not.toHaveBeenCalled();
     expect(mockLeaveClassroom).not.toHaveBeenCalled();
