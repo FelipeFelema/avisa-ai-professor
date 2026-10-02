@@ -16,7 +16,8 @@ import {
 import { Button } from '@/components/ui';
 import { HTTP_STATUS } from '@/constants/http-status';
 import { useAuth } from '@/hooks/useAuth';
-import { theme } from '@/theme';
+import { useTheme } from '@/hooks/useTheme';
+import type { Theme } from '@/theme';
 import type { RegisterRequest } from '@/types/auth';
 import { registerSchema, type RegisterFormData } from '@/validations/register.schema';
 
@@ -82,6 +83,9 @@ function getFriendlyFieldMessage(field: RegisterField, message: string): string 
 }
 
 export default function RegisterScreen() {
+  const { palette: theme } = useTheme();
+  const styles = createStyles(theme);
+
   const router = useRouter();
 
   const [role, setRole] = useState<AuthRoleValue | null>(null);
@@ -313,32 +317,34 @@ export default function RegisterScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  content: {
-    gap: theme.spacing.lg,
-  },
-  form: {
-    gap: theme.spacing.lg,
-  },
-  footer: {
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-  },
-  footerText: {
-    color: theme.colors.textMuted,
-    ...theme.typography.caption,
-  },
-  footerLink: {
-    minWidth: theme.targets.android,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.xs,
-    borderRadius: theme.radius.pill,
-    borderWidth: 1,
-    borderColor: theme.colors.borderStrong,
-    backgroundColor: theme.colors.surface,
-  },
-  feedbackError: {
-    color: theme.colors.danger,
-    ...theme.typography.caption,
-  },
-});
+function createStyles(theme: Theme) {
+  return StyleSheet.create({
+    content: {
+      gap: theme.spacing.lg,
+    },
+    form: {
+      gap: theme.spacing.lg,
+    },
+    footer: {
+      alignItems: 'center',
+      gap: theme.spacing.sm,
+    },
+    footerText: {
+      color: theme.colors.textMuted,
+      ...theme.typography.caption,
+    },
+    footerLink: {
+      minWidth: theme.targets.android,
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.xs,
+      borderRadius: theme.radius.pill,
+      borderWidth: 1,
+      borderColor: theme.colors.borderStrong,
+      backgroundColor: theme.colors.surface,
+    },
+    feedbackError: {
+      color: theme.colors.danger,
+      ...theme.typography.caption,
+    },
+  });
+}

@@ -4,7 +4,8 @@ import type { Href } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BackButton } from '@/components/ui/BackButton';
-import { theme } from '@/theme';
+import { useTheme } from '@/hooks/useTheme';
+import type { Theme } from '@/theme';
 
 type AuthScreenProps = {
   eyebrow: string;
@@ -13,6 +14,7 @@ type AuthScreenProps = {
   children: ReactNode;
   footer?: ReactNode;
   backButton?: { fallbackHref: Href };
+  headerAccessory?: ReactNode;
 };
 
 export function AuthScreen({
@@ -22,7 +24,11 @@ export function AuthScreen({
   children,
   footer,
   backButton,
+  headerAccessory,
 }: AuthScreenProps) {
+  const { palette: theme } = useTheme();
+  const styles = createStyles(theme);
+
   const keyboardBehavior = Platform.OS === 'ios' ? 'padding' : 'height';
 
   return (
@@ -57,6 +63,8 @@ export function AuthScreen({
             </Text>
             <Text style={styles.subtitle}>{subtitle}</Text>
 
+            {headerAccessory ? <View style={styles.headerAccessory}>{headerAccessory}</View> : null}
+
             <View style={styles.content}>{children}</View>
           </View>
 
@@ -67,94 +75,99 @@ export function AuthScreen({
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  backBar: {
-    paddingHorizontal: theme.spacing.xl,
-    paddingTop: theme.spacing.sm,
-    paddingBottom: theme.spacing.xs,
-  },
-  keyboardAvoidingView: {
-    flex: 1,
-  },
-  backgroundBlobTop: {
-    position: 'absolute',
-    top: -70,
-    right: -40,
-    width: 180,
-    height: 180,
-    borderRadius: 180,
-    backgroundColor: theme.colors.primarySubtle,
-    opacity: 0.72,
-  },
-  backgroundBlobBottom: {
-    position: 'absolute',
-    bottom: -90,
-    left: -50,
-    width: 220,
-    height: 220,
-    borderRadius: 220,
-    backgroundColor: theme.colors.surfaceMuted,
-    opacity: 0.55,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.xxl,
-    paddingBottom: theme.spacing.xxxl,
-  },
-  card: {
-    width: '100%',
-    maxWidth: 480,
-    alignSelf: 'center',
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.xl,
-    padding: theme.spacing.xxl,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    shadowColor: theme.colors.text,
-    shadowOpacity: 0.08,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 4,
-  },
-  badge: {
-    alignSelf: 'flex-start',
-    backgroundColor: theme.colors.primarySubtle,
-    borderRadius: theme.radius.pill,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.xs,
-    marginBottom: theme.spacing.md,
-  },
-  badgeText: {
-    color: theme.colors.primaryPressed,
-    ...theme.typography.caption,
-    fontWeight: '700',
-    letterSpacing: 0.8,
-    textTransform: 'uppercase',
-  },
-  title: {
-    color: theme.colors.text,
-    ...theme.typography.title,
-    letterSpacing: -0.4,
-  },
-  subtitle: {
-    marginTop: theme.spacing.sm,
-    color: theme.colors.textMuted,
-    ...theme.typography.body,
-  },
-  content: {
-    marginTop: theme.spacing.xl,
-    gap: theme.spacing.lg,
-  },
-  footer: {
-    width: '100%',
-    maxWidth: 480,
-    alignSelf: 'center',
-    marginTop: theme.spacing.lg,
-  },
-});
+function createStyles(theme: Theme) {
+  return StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+    backBar: {
+      paddingHorizontal: theme.spacing.xl,
+      paddingTop: theme.spacing.sm,
+      paddingBottom: theme.spacing.xs,
+    },
+    keyboardAvoidingView: {
+      flex: 1,
+    },
+    backgroundBlobTop: {
+      position: 'absolute',
+      top: -70,
+      right: -40,
+      width: 180,
+      height: 180,
+      borderRadius: 180,
+      backgroundColor: theme.colors.primarySubtle,
+      opacity: 0.72,
+    },
+    backgroundBlobBottom: {
+      position: 'absolute',
+      bottom: -90,
+      left: -50,
+      width: 220,
+      height: 220,
+      borderRadius: 220,
+      backgroundColor: theme.colors.surfaceMuted,
+      opacity: 0.55,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      justifyContent: 'center',
+      paddingHorizontal: theme.spacing.xl,
+      paddingVertical: theme.spacing.xxl,
+      paddingBottom: theme.spacing.xxxl,
+    },
+    card: {
+      width: '100%',
+      maxWidth: 480,
+      alignSelf: 'center',
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.radius.xl,
+      padding: theme.spacing.xxl,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      shadowColor: theme.colors.text,
+      shadowOpacity: 0.08,
+      shadowRadius: 24,
+      shadowOffset: { width: 0, height: 10 },
+      elevation: 4,
+    },
+    badge: {
+      alignSelf: 'flex-start',
+      backgroundColor: theme.colors.primarySubtle,
+      borderRadius: theme.radius.pill,
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.xs,
+      marginBottom: theme.spacing.md,
+    },
+    badgeText: {
+      color: theme.colors.primaryPressed,
+      ...theme.typography.caption,
+      fontWeight: '700',
+      letterSpacing: 0.8,
+      textTransform: 'uppercase',
+    },
+    title: {
+      color: theme.colors.text,
+      ...theme.typography.title,
+      letterSpacing: -0.4,
+    },
+    subtitle: {
+      marginTop: theme.spacing.sm,
+      color: theme.colors.textMuted,
+      ...theme.typography.body,
+    },
+    headerAccessory: {
+      marginTop: theme.spacing.lg,
+    },
+    content: {
+      marginTop: theme.spacing.xl,
+      gap: theme.spacing.lg,
+    },
+    footer: {
+      width: '100%',
+      maxWidth: 480,
+      alignSelf: 'center',
+      marginTop: theme.spacing.lg,
+    },
+  });
+}

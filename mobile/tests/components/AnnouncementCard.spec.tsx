@@ -1,7 +1,10 @@
 import { fireEvent } from '@testing-library/react-native';
-import { render } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 
 import { AnnouncementCard } from '@/components/announcements/AnnouncementCard';
+import { darkTheme, lightTheme } from '@/theme';
+import { renderWithProviders } from '../helpers/render';
+import { ThemeSwitcher } from '../helpers/theme';
 
 function collectText(node: unknown, result: string[] = []): string[] {
   if (typeof node === 'string') {
@@ -41,7 +44,7 @@ describe('AnnouncementCard', () => {
   it('keeps title, authorship, preview, expiration, and one accessible destination in order', async () => {
     const onPress = jest.fn();
     const content = 'Linha 1\nLinha 2\nLinha 3\nLinha 4';
-    const view = await render(
+    const view = await renderWithProviders(
       <AnnouncementCard
         title="Aviso importante"
         content={content}
@@ -72,7 +75,7 @@ describe('AnnouncementCard', () => {
     [1, 'Expira em 1 dia'],
     [4, 'Expira em 4 dias'],
   ])('shows the exact expiration label for a %s-day calendar difference', async (days, label) => {
-    const view = await render(
+    const view = await renderWithProviders(
       <AnnouncementCard
         title="Aviso"
         content="Conteúdo"
@@ -87,7 +90,7 @@ describe('AnnouncementCard', () => {
   it.each([undefined, 'not-a-date', localDate(-1, 23)])(
     'omits an invalid or past expiration label (%s)',
     async (expiresAt) => {
-      const view = await render(
+      const view = await renderWithProviders(
         <AnnouncementCard
           title="Aviso"
           content="Conteúdo"
@@ -100,4 +103,31 @@ describe('AnnouncementCard', () => {
       expect(view.queryByText('Comunicado ativo')).toBeNull();
     },
   );
+
+  it('restyles a mounted card while preserving its destination action', async () => {
+    const onPress = jest.fn();
+    const view = await renderWithProviders(
+      <>
+        <AnnouncementCard
+          title="Aviso importante"
+          content="Conteúdo completo"
+          author="Prof. Ana"
+          onPress={onPress}
+        />
+        <ThemeSwitcher />
+      </>,
+    );
+    const cardStyle = () => {
+      const card = view.getByRole('button', { name: 'Abrir comunicado Aviso importante' });
+      const style = card.props.style;
+      return StyleSheet.flatten(typeof style === 'function' ? style({ pressed: false }) : style);
+    };
+
+    expect(cardStyle().backgroundColor).toBe(lightTheme.colors.surface);
+    await fireEvent.press(view.getByText('Select Escuro'));
+    expect(cardStyle().backgroundColor).toBe(darkTheme.colors.surface);
+    expect(view.getByRole('button', { name: 'Abrir comunicado Aviso importante' })).toBeTruthy();
+    await fireEvent.press(view.getByRole('button', { name: 'Abrir comunicado Aviso importante' }));
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
 });

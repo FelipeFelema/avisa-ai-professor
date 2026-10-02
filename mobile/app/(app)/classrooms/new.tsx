@@ -8,7 +8,8 @@ import { isAxiosError } from 'axios';
 import { Button, FormField, SecondaryScreen } from '@/components/ui';
 import { HTTP_STATUS } from '@/constants/http-status';
 import { useCreateClassroom } from '@/hooks/useCreateClassroom';
-import { theme } from '@/theme';
+import { useTheme } from '@/hooks/useTheme';
+import type { Theme } from '@/theme';
 import {
   createClassroomSchema,
   type CreateClassroomFormData,
@@ -29,6 +30,9 @@ function getApiErrorMessage(error: unknown): string | null {
 }
 
 export default function NewClassroomScreen() {
+  const { palette: theme } = useTheme();
+  const styles = createStyles(theme);
+
   const router = useRouter();
   const [submitError, setSubmitError] = useState('');
   const createClassroom = useCreateClassroom();
@@ -115,25 +119,27 @@ export default function NewClassroomScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  content: {
-    flex: 1,
-    padding: theme.spacing.xl,
-    gap: theme.spacing.xl,
-  },
-  header: {
-    gap: theme.spacing.sm,
-  },
-  title: {
-    ...theme.typography.title,
-    color: theme.colors.text,
-  },
-  subtitle: {
-    ...theme.typography.body,
-    color: theme.colors.textMuted,
-  },
-  error: {
-    ...theme.typography.caption,
-    color: theme.colors.danger,
-  },
-});
+function createStyles(theme: Theme) {
+  return StyleSheet.create({
+    content: {
+      flex: 1,
+      padding: theme.spacing.xl,
+      gap: theme.spacing.xl,
+    },
+    header: {
+      gap: theme.spacing.sm,
+    },
+    title: {
+      ...theme.typography.title,
+      color: theme.colors.text,
+    },
+    subtitle: {
+      ...theme.typography.body,
+      color: theme.colors.textMuted,
+    },
+    error: {
+      ...theme.typography.caption,
+      color: theme.colors.danger,
+    },
+  });
+}

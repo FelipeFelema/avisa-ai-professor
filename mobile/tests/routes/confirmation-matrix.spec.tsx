@@ -18,6 +18,7 @@ import { useMyClassrooms } from '@/hooks/useMyClassrooms';
 import { useUpdateAnnouncement } from '@/hooks/useUpdateAnnouncement';
 import { theme } from '@/theme';
 import { renderWithProviders } from '../helpers/render';
+import { ThemeController } from '../helpers/theme';
 
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(),
@@ -367,7 +368,13 @@ describe('confirmation matrix', () => {
       isPending: false,
     } as unknown as ReturnType<typeof useDeleteAnnouncement>);
 
-    const view = await renderWithProviders(<AnnouncementDetailsScreen />);
+    let setTheme!: (preference: 'light' | 'dark') => void;
+    const view = await renderWithProviders(
+      <>
+        <AnnouncementDetailsScreen />
+        <ThemeController onReady={(setter) => (setTheme = setter)} />
+      </>,
+    );
     await fireEvent.press(view.getByRole('button', { name: 'Excluir comunicado' }));
     expect(view.getAllByText('Aviso atual').length).toBeGreaterThan(0);
     expect(view.getByText('Esta ação é irreversível.')).toBeTruthy();
@@ -380,6 +387,8 @@ describe('confirmation matrix', () => {
     if (!confirmButton) throw new Error('Botão de confirmação da exclusão não encontrado');
     await fireEvent.press(confirmButton);
     await waitFor(() => expect(view.getByRole('button', { name: 'Aguarde...' })).toBeTruthy());
+    await act(async () => setTheme('dark'));
+    expect(view.getByRole('button', { name: 'Aguarde...' })).toBeTruthy();
     expect(view.getByRole('button', { name: 'Cancelar' }).props.accessibilityState.disabled).toBe(
       true,
     );

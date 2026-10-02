@@ -19,7 +19,8 @@ import {
 } from '@/components/ui';
 import { AuthField } from '@/components/auth';
 import { getHttpErrorMessage } from '@/lib';
-import { AUTH_THEME } from '@/theme/auth';
+import { useTheme } from '@/hooks/useTheme';
+import { getAuthTheme } from '@/theme/auth';
 import { useAnnouncement } from '@/hooks/useAnnouncement';
 import {
   useUpdateAnnouncement,
@@ -79,6 +80,10 @@ function buildAnnouncementSummary(
 }
 
 export default function EditAnnouncementScreen() {
+  const { palette: theme } = useTheme();
+  const AUTH_THEME = getAuthTheme(theme);
+  const styles = createStyles(AUTH_THEME);
+
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
 
@@ -330,87 +335,89 @@ export default function EditAnnouncementScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  content: {
-    padding: AUTH_THEME.spacing.xl,
-    gap: AUTH_THEME.spacing.xl,
-  },
+function createStyles(AUTH_THEME: ReturnType<typeof getAuthTheme>) {
+  return StyleSheet.create({
+    content: {
+      padding: AUTH_THEME.spacing.xl,
+      gap: AUTH_THEME.spacing.xl,
+    },
 
-  title: {
-    fontSize: AUTH_THEME.typography.title,
-    fontWeight: '800',
-    color: AUTH_THEME.colors.text,
-    textAlign: 'center',
-  },
+    title: {
+      fontSize: AUTH_THEME.typography.title,
+      fontWeight: '800',
+      color: AUTH_THEME.colors.text,
+      textAlign: 'center',
+    },
 
-  subtitle: {
-    textAlign: 'center',
-    color: AUTH_THEME.colors.muted,
-    fontSize: AUTH_THEME.typography.body,
-    lineHeight: 22,
-  },
+    subtitle: {
+      textAlign: 'center',
+      color: AUTH_THEME.colors.muted,
+      fontSize: AUTH_THEME.typography.body,
+      lineHeight: 22,
+    },
 
-  field: {
-    gap: AUTH_THEME.spacing.sm,
-  },
+    field: {
+      gap: AUTH_THEME.spacing.sm,
+    },
 
-  label: {
-    color: AUTH_THEME.colors.text,
-    fontWeight: '700',
-    fontSize: AUTH_THEME.typography.body,
-  },
+    label: {
+      color: AUTH_THEME.colors.text,
+      fontWeight: '700',
+      fontSize: AUTH_THEME.typography.body,
+    },
 
-  textArea: {
-    minHeight: 180,
-    padding: AUTH_THEME.spacing.md,
-  },
+    textArea: {
+      minHeight: 180,
+      padding: AUTH_THEME.spacing.md,
+    },
 
-  durationContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: AUTH_THEME.spacing.sm,
-  },
+    durationContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: AUTH_THEME.spacing.sm,
+    },
 
-  durationChip: {
-    minHeight: 48,
-    minWidth: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: AUTH_THEME.spacing.lg,
-    paddingVertical: AUTH_THEME.spacing.sm,
-    borderRadius: AUTH_THEME.radius.pill,
-    borderWidth: 1,
-    borderColor: AUTH_THEME.colors.border,
-    backgroundColor: AUTH_THEME.colors.surface,
-  },
+    durationChip: {
+      minHeight: 48,
+      minWidth: 48,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: AUTH_THEME.spacing.lg,
+      paddingVertical: AUTH_THEME.spacing.sm,
+      borderRadius: AUTH_THEME.radius.pill,
+      borderWidth: 1,
+      borderColor: AUTH_THEME.colors.border,
+      backgroundColor: AUTH_THEME.colors.surface,
+    },
 
-  durationText: {
-    color: AUTH_THEME.colors.text,
-    fontWeight: '600',
-  },
+    durationText: {
+      color: AUTH_THEME.colors.text,
+      fontWeight: '600',
+    },
 
-  submitButton: {
-    minWidth: '100%',
-    marginTop: AUTH_THEME.spacing.xl,
-  },
+    submitButton: {
+      minWidth: '100%',
+      marginTop: AUTH_THEME.spacing.xl,
+    },
 
-  selectedDurationChip: {
-    backgroundColor: AUTH_THEME.colors.primary,
-    borderColor: AUTH_THEME.colors.primary,
-  },
+    selectedDurationChip: {
+      backgroundColor: AUTH_THEME.colors.primary,
+      borderColor: AUTH_THEME.colors.primary,
+    },
 
-  selectedDurationText: {
-    color: AUTH_THEME.colors.white,
-  },
+    selectedDurationText: {
+      color: AUTH_THEME.colors.onPrimary,
+    },
 
-  error: {
-    color: AUTH_THEME.colors.error,
-    fontSize: AUTH_THEME.typography.caption,
-    marginTop: AUTH_THEME.spacing.xs,
-  },
+    error: {
+      color: AUTH_THEME.colors.error,
+      fontSize: AUTH_THEME.typography.caption,
+      marginTop: AUTH_THEME.spacing.xs,
+    },
 
-  feedback: {
-    color: AUTH_THEME.colors.muted,
-    fontSize: AUTH_THEME.typography.caption,
-  },
-});
+    feedback: {
+      color: AUTH_THEME.colors.muted,
+      fontSize: AUTH_THEME.typography.caption,
+    },
+  });
+}

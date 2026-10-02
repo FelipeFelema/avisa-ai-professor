@@ -1,4 +1,4 @@
-import { fireEvent, render } from '@testing-library/react-native';
+import { fireEvent } from '@testing-library/react-native';
 import { useRouter } from 'expo-router';
 
 import ClassroomsScreen from '../../app/(app)/(tabs)/classrooms';
@@ -182,7 +182,7 @@ describe('primary route states and semantics', () => {
   });
 
   it('gives announcement cards a discoverable button role and name', async () => {
-    const view = await render(
+    const view = await renderWithProviders(
       <AnnouncementCard
         title="Aviso importante"
         content="Leia este comunicado."

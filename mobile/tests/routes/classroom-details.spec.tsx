@@ -1,5 +1,6 @@
 import { fireEvent } from '@testing-library/react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { StyleSheet } from 'react-native';
 
 import ClassroomDetailsScreen from '../../app/(app)/classrooms/[id]';
 import { useAuth } from '@/hooks/useAuth';
@@ -7,7 +8,9 @@ import { useClassroomAnnouncements } from '@/hooks/useClassroomAnnouncements';
 import { useDeleteClassroom } from '@/hooks/useDeleteClassroom';
 import { useLeaveClassroom } from '@/hooks/useLeaveClassroom';
 import { useMyClassrooms } from '@/hooks/useMyClassrooms';
+import { darkTheme } from '@/theme';
 import { renderWithProviders } from '../helpers/render';
+import { ThemeSwitcher } from '../helpers/theme';
 
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
@@ -124,7 +127,12 @@ describe('classroom details route', () => {
   it('orders classroom context, announcement section, cards, and final contextual action', async () => {
     setDetailsContext('owner-1', [classroom], [announcement]);
 
-    const view = await renderWithProviders(<ClassroomDetailsScreen />);
+    const view = await renderWithProviders(
+      <>
+        <ClassroomDetailsScreen />
+        <ThemeSwitcher />
+      </>,
+    );
     const text = collectText(view.toJSON());
 
     expect(text.indexOf(classroom.name)).toBeLessThan(text.indexOf('Comunicados'));
@@ -132,6 +140,11 @@ describe('classroom details route', () => {
     expect(text.indexOf('+ Novo')).toBeLessThan(text.indexOf(announcement.title));
     expect(text.indexOf(announcement.title)).toBeLessThan(text.indexOf('Excluir turma'));
     expect(view.getByRole('button', { name: 'Criar comunicado' })).toBeTruthy();
+
+    await fireEvent.press(view.getByText('Select Escuro'));
+    expect(StyleSheet.flatten(view.getByText(classroom.name).props.style).color).toBe(
+      darkTheme.colors.text,
+    );
 
     await fireEvent.press(view.getByRole('button', { name: 'Criar comunicado' }));
 

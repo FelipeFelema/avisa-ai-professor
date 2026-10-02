@@ -1,5 +1,6 @@
 import { fireEvent } from '@testing-library/react-native';
 import { useRouter } from 'expo-router';
+import { StyleSheet } from 'react-native';
 
 import ClassroomsScreen from '../../app/(app)/(tabs)/classrooms';
 import { useAvailableClassrooms } from '@/hooks/useAvailableClassrooms';
@@ -8,7 +9,9 @@ import { useDeleteClassroom } from '@/hooks/useDeleteClassroom';
 import { useJoinClassroom } from '@/hooks/useJoinClassroom';
 import { useLeaveClassroom } from '@/hooks/useLeaveClassroom';
 import { useMyClassrooms } from '@/hooks/useMyClassrooms';
+import { darkTheme, lightTheme } from '@/theme';
 import { renderWithProviders } from '../helpers/render';
+import { ThemeSwitcher } from '../helpers/theme';
 
 const mockDeleteClassroom = jest.fn();
 const mockLeaveClassroom = jest.fn();
@@ -163,6 +166,32 @@ describe('classrooms list route', () => {
 
     expect(mockUseAvailableClassrooms).toHaveBeenLastCalledWith('matemática');
     expect(input.props.value).toBe('matemática');
+  });
+
+  it('keeps a filled search and its filter stable during a live theme switch', async () => {
+    const view = await renderWithProviders(
+      <>
+        <ClassroomsScreen />
+        <ThemeSwitcher />
+      </>,
+    );
+
+    await fireEvent.changeText(view.getByLabelText('Buscar turmas'), 'matemática');
+    expect(
+      StyleSheet.flatten(view.getByLabelText('Buscar turmas').parent?.props.style).backgroundColor,
+    ).toBe(lightTheme.colors.surface);
+
+    await fireEvent.press(view.getByText('Select Escuro'));
+
+    expect(view.getByLabelText('Buscar turmas').props.value).toBe('matemática');
+    expect(
+      StyleSheet.flatten(view.getByLabelText('Buscar turmas').parent?.props.style).backgroundColor,
+    ).toBe(darkTheme.colors.surface);
+    expect(mockUseAvailableClassrooms).toHaveBeenLastCalledWith('matemática');
+    expect(mockPush).not.toHaveBeenCalled();
+    expect(mockJoinClassroom).not.toHaveBeenCalled();
+    expect(mockLeaveClassroom).not.toHaveBeenCalled();
+    expect(mockDeleteClassroom).not.toHaveBeenCalled();
   });
 
   it('keeps shared card order and contextual empty meaning with variable content', async () => {

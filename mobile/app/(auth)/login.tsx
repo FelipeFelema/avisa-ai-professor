@@ -7,13 +7,17 @@ import { isAxiosError } from 'axios';
 import { useMutation } from '@tanstack/react-query';
 
 import { AuthButton, AuthField, AuthScreen } from '@/components/auth';
-import { Button } from '@/components/ui';
+import { Button, ThemeSelector } from '@/components/ui';
 import { HTTP_STATUS } from '@/constants/http-status';
 import { useAuth } from '@/hooks/useAuth';
-import { theme } from '@/theme';
+import { useTheme } from '@/hooks/useTheme';
+import type { Theme } from '@/theme';
 import { loginSchema, type LoginFormData } from '@/validations/login.schema';
 
 export default function LoginScreen() {
+  const { palette: theme } = useTheme();
+  const styles = createStyles(theme);
+
   const router = useRouter();
   const { login } = useAuth();
   const [loginError, setLoginError] = useState('');
@@ -54,7 +58,7 @@ export default function LoginScreen() {
 
   const onSubmit = async (data: LoginFormData) => {
     setLoginError('');
-    await loginMutation.mutateAsync(data);
+    await loginMutation.mutateAsync(data).catch(() => undefined);
   };
 
   return (
@@ -62,6 +66,7 @@ export default function LoginScreen() {
       eyebrow="Avisa Aí Professor"
       title="Bem-vindo de volta"
       subtitle="Entre com sua conta para acompanhar avisos, turmas e mensagens com clareza."
+      headerAccessory={<ThemeSelector />}
       footer={
         <View style={styles.footer}>
           <Text style={styles.footerText}>Não possui uma conta?</Text>
@@ -129,29 +134,31 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  form: {
-    gap: theme.spacing.lg,
-  },
-  footer: {
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-  },
-  footerText: {
-    color: theme.colors.textMuted,
-    ...theme.typography.caption,
-  },
-  footerLink: {
-    minWidth: theme.targets.android,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.xs,
-    borderRadius: theme.radius.pill,
-    borderWidth: 1,
-    borderColor: theme.colors.borderStrong,
-    backgroundColor: theme.colors.surface,
-  },
-  feedbackError: {
-    color: theme.colors.danger,
-    ...theme.typography.caption,
-  },
-});
+function createStyles(theme: Theme) {
+  return StyleSheet.create({
+    form: {
+      gap: theme.spacing.lg,
+    },
+    footer: {
+      alignItems: 'center',
+      gap: theme.spacing.sm,
+    },
+    footerText: {
+      color: theme.colors.textMuted,
+      ...theme.typography.caption,
+    },
+    footerLink: {
+      minWidth: theme.targets.android,
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.xs,
+      borderRadius: theme.radius.pill,
+      borderWidth: 1,
+      borderColor: theme.colors.borderStrong,
+      backgroundColor: theme.colors.surface,
+    },
+    feedbackError: {
+      color: theme.colors.danger,
+      ...theme.typography.caption,
+    },
+  });
+}

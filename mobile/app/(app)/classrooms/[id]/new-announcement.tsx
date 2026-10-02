@@ -10,11 +10,15 @@ import {
 } from '@/validations/createAnnouncementSchema';
 import { ANNOUNCEMENT_DURATIONS } from '@/types/announcement';
 
-import { AUTH_THEME } from '@/theme/auth';
-import { theme } from '@/theme';
+import { getAuthTheme } from '@/theme/auth';
+import { useTheme } from '@/hooks/useTheme';
 import { SecondaryScreen } from '@/components/ui';
 
 export default function NewAnnouncementScreen() {
+  const { palette: theme } = useTheme();
+  const AUTH_THEME = getAuthTheme(theme);
+  const styles = createStyles(AUTH_THEME);
+
   const { id } = useLocalSearchParams<{ id: string }>();
 
   const {
@@ -157,105 +161,107 @@ export default function NewAnnouncementScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  content: {
-    padding: AUTH_THEME.spacing.xl,
-    gap: AUTH_THEME.spacing.xl,
-  },
+function createStyles(AUTH_THEME: ReturnType<typeof getAuthTheme>) {
+  return StyleSheet.create({
+    content: {
+      padding: AUTH_THEME.spacing.xl,
+      gap: AUTH_THEME.spacing.xl,
+    },
 
-  title: {
-    fontSize: AUTH_THEME.typography.title,
-    fontWeight: '800',
-    color: AUTH_THEME.colors.text,
-    textAlign: 'center',
-  },
+    title: {
+      fontSize: AUTH_THEME.typography.title,
+      fontWeight: '800',
+      color: AUTH_THEME.colors.text,
+      textAlign: 'center',
+    },
 
-  subtitle: {
-    textAlign: 'center',
-    color: AUTH_THEME.colors.muted,
-    fontSize: AUTH_THEME.typography.body,
-    lineHeight: 22,
-  },
+    subtitle: {
+      textAlign: 'center',
+      color: AUTH_THEME.colors.muted,
+      fontSize: AUTH_THEME.typography.body,
+      lineHeight: 22,
+    },
 
-  field: {
-    gap: AUTH_THEME.spacing.sm,
-  },
+    field: {
+      gap: AUTH_THEME.spacing.sm,
+    },
 
-  label: {
-    color: AUTH_THEME.colors.text,
-    fontWeight: '700',
-    fontSize: AUTH_THEME.typography.body,
-  },
+    label: {
+      color: AUTH_THEME.colors.text,
+      fontWeight: '700',
+      fontSize: AUTH_THEME.typography.body,
+    },
 
-  input: {
-    backgroundColor: AUTH_THEME.colors.surface,
-    borderRadius: AUTH_THEME.radius.md,
-    borderWidth: 1,
-    borderColor: AUTH_THEME.colors.border,
-    padding: AUTH_THEME.spacing.md,
-    color: AUTH_THEME.colors.text,
-  },
+    input: {
+      backgroundColor: AUTH_THEME.colors.surface,
+      borderRadius: AUTH_THEME.radius.md,
+      borderWidth: 1,
+      borderColor: AUTH_THEME.colors.border,
+      padding: AUTH_THEME.spacing.md,
+      color: AUTH_THEME.colors.text,
+    },
 
-  textArea: {
-    minHeight: 180,
-    backgroundColor: AUTH_THEME.colors.surface,
-    borderRadius: AUTH_THEME.radius.md,
-    borderWidth: 1,
-    borderColor: AUTH_THEME.colors.border,
-    padding: AUTH_THEME.spacing.md,
-    color: AUTH_THEME.colors.text,
-  },
+    textArea: {
+      minHeight: 180,
+      backgroundColor: AUTH_THEME.colors.surface,
+      borderRadius: AUTH_THEME.radius.md,
+      borderWidth: 1,
+      borderColor: AUTH_THEME.colors.border,
+      padding: AUTH_THEME.spacing.md,
+      color: AUTH_THEME.colors.text,
+    },
 
-  durationContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: AUTH_THEME.spacing.sm,
-  },
+    durationContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: AUTH_THEME.spacing.sm,
+    },
 
-  durationChip: {
-    minHeight: theme.targets.android,
-    minWidth: theme.targets.android,
-    paddingHorizontal: AUTH_THEME.spacing.lg,
-    paddingVertical: AUTH_THEME.spacing.sm,
-    borderRadius: AUTH_THEME.radius.pill,
-    borderWidth: 1,
-    borderColor: AUTH_THEME.colors.border,
-    backgroundColor: AUTH_THEME.colors.surface,
-  },
+    durationChip: {
+      minHeight: AUTH_THEME.targets.android,
+      minWidth: AUTH_THEME.targets.android,
+      paddingHorizontal: AUTH_THEME.spacing.lg,
+      paddingVertical: AUTH_THEME.spacing.sm,
+      borderRadius: AUTH_THEME.radius.pill,
+      borderWidth: 1,
+      borderColor: AUTH_THEME.colors.border,
+      backgroundColor: AUTH_THEME.colors.surface,
+    },
 
-  durationText: {
-    color: AUTH_THEME.colors.text,
-    fontWeight: '600',
-  },
+    durationText: {
+      color: AUTH_THEME.colors.text,
+      fontWeight: '600',
+    },
 
-  submitButton: {
-    minHeight: theme.targets.android,
-    minWidth: theme.targets.android,
-    backgroundColor: AUTH_THEME.colors.primary,
-    borderRadius: AUTH_THEME.radius.md,
-    paddingVertical: AUTH_THEME.spacing.md,
-    alignItems: 'center',
-    marginTop: AUTH_THEME.spacing.xl,
-  },
+    submitButton: {
+      minHeight: AUTH_THEME.targets.android,
+      minWidth: AUTH_THEME.targets.android,
+      backgroundColor: AUTH_THEME.colors.primary,
+      borderRadius: AUTH_THEME.radius.md,
+      paddingVertical: AUTH_THEME.spacing.md,
+      alignItems: 'center',
+      marginTop: AUTH_THEME.spacing.xl,
+    },
 
-  submitText: {
-    color: theme.colors.onPrimary,
-    fontWeight: '700',
-    fontSize: AUTH_THEME.typography.body,
-  },
+    submitText: {
+      color: AUTH_THEME.colors.onPrimary,
+      fontWeight: '700',
+      fontSize: AUTH_THEME.typography.body,
+    },
 
-  selectedDurationChip: {
-    backgroundColor: AUTH_THEME.colors.primary,
-    borderColor: AUTH_THEME.colors.primary,
-  },
+    selectedDurationChip: {
+      backgroundColor: AUTH_THEME.colors.primary,
+      borderColor: AUTH_THEME.colors.primary,
+    },
 
-  selectedDurationText: {
-    color: theme.colors.onPrimary,
-  },
+    selectedDurationText: {
+      color: AUTH_THEME.colors.onPrimary,
+    },
 
-  error: {
-    color: theme.colors.danger,
-    fontSize: AUTH_THEME.typography.caption,
-    marginTop: AUTH_THEME.spacing.xs,
-  },
-});
+    error: {
+      color: AUTH_THEME.colors.danger,
+      fontSize: AUTH_THEME.typography.caption,
+      marginTop: AUTH_THEME.spacing.xs,
+    },
+  });
+}

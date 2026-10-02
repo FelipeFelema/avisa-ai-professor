@@ -3,6 +3,7 @@ import { render, RenderOptions } from '@testing-library/react-native';
 import { PropsWithChildren, ReactElement } from 'react';
 import { AuthContext } from '@/contexts/AuthContext';
 import type { AuthContextData } from '@/types/auth';
+import { ThemeProvider } from '@/providers/ThemeProvider';
 
 export function createTestQueryClient() {
   return new QueryClient({
@@ -28,9 +29,11 @@ export function renderWithProviders(
   const { queryClient = createTestQueryClient(), auth, ...renderOptions } = options;
   const Wrapper = ({ children }: PropsWithChildren) => (
     <QueryClientProvider client={queryClient}>
-      <AuthContext.Provider value={{ ...defaultAuthContext, ...auth }}>
-        {children}
-      </AuthContext.Provider>
+      <ThemeProvider>
+        <AuthContext.Provider value={{ ...defaultAuthContext, ...auth }}>
+          {children}
+        </AuthContext.Provider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 

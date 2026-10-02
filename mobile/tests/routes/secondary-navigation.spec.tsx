@@ -26,6 +26,7 @@ import { useAvailableClassrooms } from '@/hooks/useAvailableClassrooms';
 import { useUpdateAnnouncement } from '@/hooks/useUpdateAnnouncement';
 import { useUpdateProfile } from '@/hooks/useUpdateProfile';
 import { renderWithProviders } from '../helpers/render';
+import { ThemeSwitcher } from '../helpers/theme';
 
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(),
@@ -184,7 +185,13 @@ describe('secondary route navigation matrix', () => {
     for (const route of cases) {
       resetRouterCalls();
       configureRouter(false);
-      const view = await renderWithProviders(route.element);
+      const view = await renderWithProviders(
+        <>
+          {route.element}
+          <ThemeSwitcher />
+        </>,
+      );
+      await fireEvent.press(view.getByText('Select Escuro'));
       const controls = view.getAllByRole('button', { name: 'Voltar' });
 
       expect(controls).toHaveLength(1);

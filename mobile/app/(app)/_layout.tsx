@@ -1,9 +1,11 @@
 import { Redirect, Stack } from 'expo-router';
 
 import { SplashScreen } from '@/components/SplashScreen';
+import { useTheme } from '@/hooks/useTheme';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function AppLayout() {
+  const { palette } = useTheme();
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
@@ -15,7 +17,12 @@ export default function AppLayout() {
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: palette.colors.background },
+      }}
+    >
       <Stack.Screen name="(tabs)" />
     </Stack>
   );

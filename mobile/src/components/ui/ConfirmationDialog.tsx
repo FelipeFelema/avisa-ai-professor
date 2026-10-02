@@ -1,5 +1,6 @@
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
-import { theme } from '@/theme';
+import { useTheme } from '@/hooks/useTheme';
+import type { Theme } from '@/theme';
 
 export type ConfirmationSummaryRow = { label: string; value: string };
 
@@ -32,6 +33,9 @@ export function ConfirmationDialog({
   pending = false,
   errorMessage,
 }: ConfirmationDialogProps) {
+  const { palette: theme } = useTheme();
+  const styles = createStyles(theme);
+
   return (
     <Modal
       visible={visible}
@@ -85,43 +89,45 @@ export function ConfirmationDialog({
   );
 }
 
-const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: theme.colors.backdrop,
-    justifyContent: 'center',
-    padding: theme.spacing.xl,
-  },
-  card: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.lg,
-    padding: theme.spacing.xl,
-    gap: theme.spacing.sm,
-  },
-  title: { ...theme.typography.sectionTitle, color: theme.colors.text },
-  target: { ...theme.typography.body, color: theme.colors.text, fontWeight: '700' },
-  row: { ...theme.typography.body, color: theme.colors.textMuted },
-  consequence: { ...theme.typography.body, color: theme.colors.danger },
-  error: { ...theme.typography.caption, color: theme.colors.danger },
-  actions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: theme.spacing.sm,
-    marginTop: theme.spacing.sm,
-  },
-  cancel: {
-    minHeight: theme.targets.android,
-    justifyContent: 'center',
-    paddingHorizontal: theme.spacing.md,
-  },
-  cancelText: { ...theme.typography.body, color: theme.colors.primary, fontWeight: '700' },
-  confirm: {
-    minHeight: theme.targets.android,
-    justifyContent: 'center',
-    borderRadius: theme.radius.md,
-    backgroundColor: theme.colors.primary,
-    paddingHorizontal: theme.spacing.md,
-  },
-  destructive: { backgroundColor: theme.colors.danger },
-  confirmText: { ...theme.typography.body, color: theme.colors.onPrimary, fontWeight: '700' },
-});
+function createStyles(theme: Theme) {
+  return StyleSheet.create({
+    backdrop: {
+      flex: 1,
+      backgroundColor: theme.colors.backdrop,
+      justifyContent: 'center',
+      padding: theme.spacing.xl,
+    },
+    card: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.radius.lg,
+      padding: theme.spacing.xl,
+      gap: theme.spacing.sm,
+    },
+    title: { ...theme.typography.sectionTitle, color: theme.colors.text },
+    target: { ...theme.typography.body, color: theme.colors.text, fontWeight: '700' },
+    row: { ...theme.typography.body, color: theme.colors.textMuted },
+    consequence: { ...theme.typography.body, color: theme.colors.danger },
+    error: { ...theme.typography.caption, color: theme.colors.danger },
+    actions: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      gap: theme.spacing.sm,
+      marginTop: theme.spacing.sm,
+    },
+    cancel: {
+      minHeight: theme.targets.android,
+      justifyContent: 'center',
+      paddingHorizontal: theme.spacing.md,
+    },
+    cancelText: { ...theme.typography.body, color: theme.colors.primary, fontWeight: '700' },
+    confirm: {
+      minHeight: theme.targets.android,
+      justifyContent: 'center',
+      borderRadius: theme.radius.md,
+      backgroundColor: theme.colors.primary,
+      paddingHorizontal: theme.spacing.md,
+    },
+    destructive: { backgroundColor: theme.colors.danger },
+    confirmText: { ...theme.typography.body, color: theme.colors.onPrimary, fontWeight: '700' },
+  });
+}

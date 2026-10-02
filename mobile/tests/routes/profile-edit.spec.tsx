@@ -1,12 +1,14 @@
 import { act, fireEvent, waitFor } from '@testing-library/react-native';
 import { useRouter } from 'expo-router';
 import type { ReactNode } from 'react';
-import { Pressable as MockPressable, Text as MockText } from 'react-native';
+import { Pressable as MockPressable, StyleSheet, Text as MockText } from 'react-native';
 
 import ProfileEditScreen from '../../app/(app)/profile/edit';
 import { useAuth } from '@/hooks/useAuth';
 import { useUpdateProfile } from '@/hooks/useUpdateProfile';
+import { darkTheme } from '@/theme';
 import { renderWithProviders } from '../helpers/render';
+import { ThemeSwitcher } from '../helpers/theme';
 
 const replace = jest.fn();
 const mutateAsync = jest.fn();
@@ -67,11 +69,22 @@ beforeEach(() => {
 describe('profile edit route', () => {
   it('shows only changed values, keeps the form on cancel and submits after confirmation', async () => {
     const { getByDisplayValue, getByText, getAllByText, getByRole, queryByText } =
-      await renderWithProviders(<ProfileEditScreen />);
+      await renderWithProviders(
+        <>
+          <ProfileEditScreen />
+          <ThemeSwitcher />
+        </>,
+      );
 
     await act(async () => {
       fireEvent.changeText(getByDisplayValue('Nome Atual'), 'Nome Novo');
     });
+
+    await fireEvent.press(getByText('Select Escuro'));
+    expect(getByDisplayValue('Nome Novo')).toBeTruthy();
+    expect(StyleSheet.flatten(getByText('Editar perfil').props.style).color).toBe(
+      darkTheme.colors.text,
+    );
     await act(async () => {
       fireEvent.press(getByRole('button', { name: 'Salvar alterações' }));
     });

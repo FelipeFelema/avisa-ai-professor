@@ -1,10 +1,13 @@
 import { fireEvent, waitFor } from '@testing-library/react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { StyleSheet } from 'react-native';
 
 import AnnouncementDetailsScreen from '../../app/(app)/announcements/[id]';
 import { useAnnouncement } from '@/hooks/useAnnouncement';
 import { useAuth } from '@/hooks/useAuth';
+import { darkTheme, lightTheme } from '@/theme';
 import { renderWithProviders } from '../helpers/render';
+import { ThemeSwitcher } from '../helpers/theme';
 
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(),
@@ -81,7 +84,12 @@ beforeEach(() => {
 
 describe('announcement detail route', () => {
   it('renders the complete reading hierarchy, line breaks, dates, and author actions', async () => {
-    const view = await renderWithProviders(<AnnouncementDetailsScreen />);
+    const view = await renderWithProviders(
+      <>
+        <AnnouncementDetailsScreen />
+        <ThemeSwitcher />
+      </>,
+    );
     const text = collectText(view.toJSON());
     const publishedDate = new Date(announcement.createdAt).toLocaleDateString('pt-BR');
     const expirationDate = new Date(announcement.expiresAt).toLocaleDateString('pt-BR');
@@ -99,11 +107,20 @@ describe('announcement detail route', () => {
     expect(text.indexOf(expirationDate)).toBeLessThan(text.indexOf(announcement.content));
 
     const body = view.getByText(announcement.content);
+    expect(
+      StyleSheet.flatten(view.getByRole('header', { name: announcement.title }).props.style).color,
+    ).toBe(lightTheme.colors.text);
     expect(body.props.numberOfLines).toBeUndefined();
     expect(view.getByText(publishedDate)).toBeTruthy();
     expect(view.getByText(expirationDate)).toBeTruthy();
     expect(view.getByRole('button', { name: 'Editar comunicado' })).toBeTruthy();
     expect(view.getByRole('button', { name: 'Excluir comunicado' })).toBeTruthy();
+
+    await fireEvent.press(view.getByText('Select Escuro'));
+    expect(
+      StyleSheet.flatten(view.getByRole('header', { name: announcement.title }).props.style).color,
+    ).toBe(darkTheme.colors.text);
+    expect(view.getByText(announcement.content)).toBeTruthy();
 
     await fireEvent.press(view.getByRole('button', { name: 'Editar comunicado' }));
     expect(router.push).toHaveBeenCalledWith('/announcements/announcement-1/edit');

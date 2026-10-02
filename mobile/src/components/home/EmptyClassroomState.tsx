@@ -2,7 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/ui';
-import { theme } from '@/theme';
+import { useTheme } from '@/hooks/useTheme';
+import type { Theme } from '@/theme';
 
 type EmptyClassroomStateProps = {
   title?: string;
@@ -15,6 +16,9 @@ export function EmptyClassroomState({
   description = 'Entre em uma turma para acompanhar comunicados e avisos dos professores.',
   onPress,
 }: EmptyClassroomStateProps) {
+  const { palette: theme } = useTheme();
+  const styles = createStyles(theme);
+
   return (
     <View accessibilityRole="summary" style={styles.container}>
       <Ionicons name="school-outline" size={64} color={theme.colors.primary} accessible={false} />
@@ -32,33 +36,35 @@ export function EmptyClassroomState({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    alignItems: 'center',
-    gap: theme.spacing.lg,
-    paddingVertical: theme.spacing.xxxl,
-  },
+function createStyles(theme: Theme) {
+  return StyleSheet.create({
+    container: {
+      width: '100%',
+      alignItems: 'center',
+      gap: theme.spacing.lg,
+      paddingVertical: theme.spacing.xxxl,
+    },
 
-  textContainer: {
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-    width: '100%',
-  },
+    textContainer: {
+      alignItems: 'center',
+      gap: theme.spacing.sm,
+      width: '100%',
+    },
 
-  title: {
-    ...theme.typography.body,
-    color: theme.colors.text,
-    width: '100%',
-    flexShrink: 1,
-    textAlign: 'center',
-  },
+    title: {
+      ...theme.typography.body,
+      color: theme.colors.text,
+      width: '100%',
+      flexShrink: 1,
+      textAlign: 'center',
+    },
 
-  description: {
-    ...theme.typography.caption,
-    color: theme.colors.textMuted,
-    width: '100%',
-    flexShrink: 1,
-    textAlign: 'center',
-  },
-});
+    description: {
+      ...theme.typography.caption,
+      color: theme.colors.textMuted,
+      width: '100%',
+      flexShrink: 1,
+      textAlign: 'center',
+    },
+  });
+}

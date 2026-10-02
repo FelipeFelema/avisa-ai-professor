@@ -2,7 +2,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/ui';
 import { getClassroomAnnouncementExpirationLabel } from '@/lib/classroom-expiration';
-import { theme } from '@/theme';
+import { useTheme } from '@/hooks/useTheme';
+import type { Theme } from '@/theme';
 
 type ClassroomCardProps = {
   name: string;
@@ -28,6 +29,9 @@ export function ClassroomCard({
   onActionPress,
   onPress,
 }: ClassroomCardProps) {
+  const { palette: theme } = useTheme();
+  const styles = createStyles(theme);
+
   const expirationLabel = lastAnnouncement
     ? getClassroomAnnouncementExpirationLabel(announcementExpiresAt)
     : null;
@@ -79,86 +83,88 @@ export function ClassroomCard({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    width: '100%',
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.lg,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    padding: theme.spacing.lg,
-    gap: theme.spacing.sm,
+function createStyles(theme: Theme) {
+  return StyleSheet.create({
+    card: {
+      width: '100%',
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.radius.lg,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      padding: theme.spacing.lg,
+      gap: theme.spacing.sm,
 
-    shadowColor: theme.colors.text,
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    shadowOffset: {
-      width: 0,
-      height: 6,
+      shadowColor: theme.colors.text,
+      shadowOpacity: 0.06,
+      shadowRadius: 12,
+      shadowOffset: {
+        width: 0,
+        height: 6,
+      },
+      elevation: 2,
     },
-    elevation: 2,
-  },
 
-  cardContent: {
-    alignSelf: 'stretch',
-    width: '100%',
-    minHeight: theme.targets.android,
-    minWidth: theme.targets.android,
-    gap: theme.spacing.sm,
-  },
+    cardContent: {
+      alignSelf: 'stretch',
+      width: '100%',
+      minHeight: theme.targets.android,
+      minWidth: theme.targets.android,
+      gap: theme.spacing.sm,
+    },
 
-  cardPressed: {
-    opacity: 0.9,
-  },
+    cardPressed: {
+      opacity: 0.9,
+    },
 
-  name: {
-    ...theme.typography.sectionTitle,
-    color: theme.colors.text,
-    width: '100%',
-    flexShrink: 1,
-  },
+    name: {
+      ...theme.typography.sectionTitle,
+      color: theme.colors.text,
+      width: '100%',
+      flexShrink: 1,
+    },
 
-  teacher: {
-    ...theme.typography.body,
-    color: theme.colors.textMuted,
-    width: '100%',
-    flexShrink: 1,
-  },
+    teacher: {
+      ...theme.typography.body,
+      color: theme.colors.textMuted,
+      width: '100%',
+      flexShrink: 1,
+    },
 
-  separator: {
-    height: 1,
-    backgroundColor: theme.colors.border,
-    marginVertical: theme.spacing.xs,
-  },
+    separator: {
+      height: 1,
+      backgroundColor: theme.colors.border,
+      marginVertical: theme.spacing.xs,
+    },
 
-  label: {
-    ...theme.typography.label,
-    color: theme.colors.text,
-    width: '100%',
-    flexShrink: 1,
-  },
+    label: {
+      ...theme.typography.label,
+      color: theme.colors.text,
+      width: '100%',
+      flexShrink: 1,
+    },
 
-  announcement: {
-    ...theme.typography.body,
-    color: theme.colors.textMuted,
-    width: '100%',
-    flexShrink: 1,
-  },
+    announcement: {
+      ...theme.typography.body,
+      color: theme.colors.textMuted,
+      width: '100%',
+      flexShrink: 1,
+    },
 
-  expiration: {
-    ...theme.typography.caption,
-    color: theme.colors.textMuted,
-    width: '100%',
-    flexShrink: 1,
-  },
+    expiration: {
+      ...theme.typography.caption,
+      color: theme.colors.textMuted,
+      width: '100%',
+      flexShrink: 1,
+    },
 
-  actionContainer: {
-    width: '100%',
-    alignItems: 'flex-end',
-    marginTop: theme.spacing.md,
-  },
+    actionContainer: {
+      width: '100%',
+      alignItems: 'flex-end',
+      marginTop: theme.spacing.md,
+    },
 
-  actionButton: {
-    maxWidth: '100%',
-  },
-});
+    actionButton: {
+      maxWidth: '100%',
+    },
+  });
+}

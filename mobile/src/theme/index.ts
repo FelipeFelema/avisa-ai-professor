@@ -1,3 +1,3 @@
-export { theme } from './tokens';
-export type { Theme } from './tokens';
-export { AUTH_THEME } from './auth';
+export { darkTheme, lightTheme, theme } from './tokens';
+export type { Theme, ThemeColors } from './tokens';
+export { getAuthTheme } from './auth';
