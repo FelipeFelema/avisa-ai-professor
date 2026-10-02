@@ -135,12 +135,14 @@ export class ClassroomsService {
     userId: string,
     search?: string,
   ): Promise<ClassroomSummaryDto[]> {
+    const normalizedSearch = search?.trim();
+    const literalSearch = normalizedSearch?.replace(/[\\%_]/g, '\\$&');
     const classrooms = await this.prisma.classroom.findMany({
       where: {
-        ...(search
+        ...(literalSearch
           ? {
               name: {
-                contains: search,
+                contains: literalSearch,
                 mode: 'insensitive',
               },
             }

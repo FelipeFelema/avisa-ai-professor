@@ -11,12 +11,19 @@ export async function getMyClassrooms(): Promise<ClassroomSummary[]> {
   return response.data;
 }
 
-export async function getAvailableClassrooms(search?: string): Promise<ClassroomSummary[]> {
-  const response = await api.get<ClassroomSummary[]>('/classrooms', {
-    params: {
-      search,
-    },
-  });
+export async function getAvailableClassrooms(
+  search?: string,
+  signal?: AbortSignal,
+): Promise<ClassroomSummary[]> {
+  const normalizedSearch = search?.trim();
+  const config = {
+    ...(normalizedSearch ? { params: { search: normalizedSearch } } : {}),
+    ...(signal ? { signal } : {}),
+  };
+  const response =
+    Object.keys(config).length > 0
+      ? await api.get<ClassroomSummary[]>('/classrooms', config)
+      : await api.get<ClassroomSummary[]>('/classrooms');
 
   return response.data;
 }

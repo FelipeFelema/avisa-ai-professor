@@ -13,8 +13,13 @@ export function useDeleteClassroom() {
     retry: false,
     onSuccess: async (_, classroomId) => {
       await Promise.all([
+        queryClient.cancelQueries({ queryKey: classroomKeys.my() }),
+        queryClient.cancelQueries({ queryKey: classroomKeys.availableRoot() }),
+      ]);
+
+      await Promise.all([
         queryClient.invalidateQueries({ queryKey: classroomKeys.my() }),
-        queryClient.invalidateQueries({ queryKey: classroomKeys.available() }),
+        queryClient.invalidateQueries({ queryKey: classroomKeys.availableRoot() }),
         queryClient.invalidateQueries({
           queryKey: announcementKeys.byClassroom(classroomId),
         }),

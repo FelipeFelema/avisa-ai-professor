@@ -12,11 +12,16 @@ export function useLeaveClassroom() {
 
     onSuccess: async () => {
       await Promise.all([
+        queryClient.cancelQueries({ queryKey: classroomKeys.my() }),
+        queryClient.cancelQueries({ queryKey: classroomKeys.availableRoot() }),
+      ]);
+
+      await Promise.all([
         queryClient.invalidateQueries({
           queryKey: classroomKeys.my(),
         }),
         queryClient.invalidateQueries({
-          queryKey: classroomKeys.available(),
+          queryKey: classroomKeys.availableRoot(),
         }),
         queryClient.invalidateQueries({
           queryKey: announcementKeys.all,

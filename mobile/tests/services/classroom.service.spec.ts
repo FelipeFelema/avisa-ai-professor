@@ -63,13 +63,38 @@ describe('classroom summary services', () => {
     expect(mockedApi.get).toHaveBeenCalledWith('/classrooms/my');
   });
 
-  it('keeps the search query while passing through expiresAt for available classrooms', async () => {
+  it('normalizes the available search and passes through expiresAt', async () => {
     mockedApi.get.mockResolvedValue({ data: [classroom] } as never);
 
-    await expect(getAvailableClassrooms('mat')).resolves.toEqual([classroom]);
+    await expect(getAvailableClassrooms('  mat  ')).resolves.toEqual([classroom]);
 
     expect(mockedApi.get).toHaveBeenCalledWith('/classrooms', {
       params: { search: 'mat' },
     });
   });
+
+  it('forwards the query AbortSignal to Axios with the normalized search', async () => {
+    const controller = new AbortController();
+    mockedApi.get.mockResolvedValue({ data: [classroom] } as never);
+
+    await expect(getAvailableClassrooms('  mat  ', controller.signal)).resolves.toEqual([
+      classroom,
+    ]);
+
+    expect(mockedApi.get).toHaveBeenCalledWith('/classrooms', {
+      params: { search: 'mat' },
+      signal: controller.signal,
+    });
+  });
+
+  it.each([undefined, '', '  \t  '])(
+    'omits an absent or normalized-empty available search: %s',
+    async (search) => {
+      mockedApi.get.mockResolvedValue({ data: [classroom] } as never);
+
+      await expect(getAvailableClassrooms(search)).resolves.toEqual([classroom]);
+
+      expect(mockedApi.get).toHaveBeenCalledWith('/classrooms');
+    },
+  );
 });

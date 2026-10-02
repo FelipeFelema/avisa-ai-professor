@@ -9,14 +9,16 @@ export function useJoinClassroom() {
   return useMutation({
     mutationFn: joinClassroom,
 
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: classroomKeys.my(),
-      });
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.cancelQueries({ queryKey: classroomKeys.my() }),
+        queryClient.cancelQueries({ queryKey: classroomKeys.availableRoot() }),
+      ]);
 
-      queryClient.invalidateQueries({
-        queryKey: classroomKeys.available(),
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: classroomKeys.my() }),
+        queryClient.invalidateQueries({ queryKey: classroomKeys.availableRoot() }),
+      ]);
     },
   });
 }

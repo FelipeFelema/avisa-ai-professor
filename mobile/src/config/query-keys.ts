@@ -6,7 +6,8 @@ export const authKeys = {
 export const classroomKeys = {
   all: ['classrooms'] as const,
   my: () => [...classroomKeys.all, 'my'] as const,
-  available: (search?: string) => [...classroomKeys.all, 'available', search ?? ''] as const,
+  availableRoot: () => [...classroomKeys.all, 'available'] as const,
+  available: (search?: string) => [...classroomKeys.availableRoot(), search?.trim() ?? ''] as const,
   detail: (id: string) => [...classroomKeys.all, 'detail', id] as const,
 };
 

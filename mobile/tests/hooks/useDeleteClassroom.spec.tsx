@@ -5,6 +5,16 @@ import { PropsWithChildren } from 'react';
 import { announcementKeys, classroomKeys } from '@/config';
 import * as classroomService from '@/services/classes/classroom.service';
 import { useDeleteClassroom } from '@/hooks/useDeleteClassroom';
+import type { ClassroomSummary } from '@/types/classroom';
+import {
+  cacheAvailableClassroomVariants,
+  cleanupClassroomSearchState,
+  createClassroomSearchQueryClient,
+  createControlledAvailableClassroomService,
+  createControlledMyClassroomService,
+  observeAvailableClassroomVariants,
+  observeMyClassrooms,
+} from '../helpers/classroom-search';
 
 jest.mock('@/services/classes/classroom.service', () => ({
   deleteClassroom: jest.fn(),
@@ -17,6 +27,14 @@ const deleteClassroomMock = jest.mocked(
     }
   ).deleteClassroom,
 );
+
+const classroom: ClassroomSummary = {
+  id: 'classroom-mat',
+  name: 'Matemática',
+  ownerId: 'teacher-1',
+  teacher: { id: 'teacher-1', name: 'Prof. Ana' },
+  lastAnnouncement: null,
+};
 
 function createWrapper(queryClient: QueryClient) {
   return function TestQueryClientProvider({ children }: PropsWithChildren) {
@@ -48,10 +66,120 @@ describe('useDeleteClassroom', () => {
 
     expect(invalidateQueries).toHaveBeenCalledTimes(3);
     expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: classroomKeys.my() });
-    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: classroomKeys.available() });
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: classroomKeys.availableRoot() });
     expect(invalidateQueries).toHaveBeenCalledWith({
       queryKey: announcementKeys.byClassroom('classroom-1'),
     });
+  });
+
+  it('prevents old snapshots from restoring a deleted classroom across cached terms', async () => {
+    deleteClassroomMock.mockResolvedValue(undefined);
+    const queryClient = createClassroomSearchQueryClient();
+    const available = createControlledAvailableClassroomService();
+    const my = createControlledMyClassroomService();
+    cacheAvailableClassroomVariants(queryClient, [
+      { search: '', data: [classroom] },
+      { search: 'mat', data: [classroom] },
+      { search: 'hist', data: [classroom] },
+    ]);
+    queryClient.setQueryData(classroomKeys.my(), [classroom]);
+    queryClient.setQueryData(announcementKeys.byClassroom(classroom.id), []);
+    const variants = observeAvailableClassroomVariants(
+      queryClient,
+      [
+        { search: 'mat', active: true },
+        { search: '', active: false },
+        { search: 'hist', active: false },
+      ],
+      available.getAvailableClassrooms,
+    );
+    const myObserver = observeMyClassrooms(queryClient, my.getMyClassrooms, { active: true });
+    let oldRefresh!: Promise<void[]>;
+    await act(async () => {
+      oldRefresh = Promise.all([
+        queryClient.refetchQueries({ queryKey: classroomKeys.my(), type: 'active' }),
+        queryClient.refetchQueries({ queryKey: classroomKeys.available('mat'), type: 'active' }),
+      ]);
+      await waitFor(() => {
+        expect(my.requests).toHaveLength(1);
+        expect(available.requests).toHaveLength(1);
+      });
+    });
+
+    const { result, unmount } = await renderHook(() => useDeleteClassroom(), {
+      wrapper: createWrapper(queryClient),
+    });
+    let mutationPromise!: Promise<void>;
+    await act(async () => {
+      mutationPromise = result.current.mutateAsync(classroom.id);
+      await waitFor(() => {
+        expect(my.requests).toHaveLength(2);
+        expect(available.requests).toHaveLength(2);
+      });
+    });
+
+    expect(my.requests[0]?.signal.aborted).toBe(true);
+    expect(available.requests[0]?.signal?.aborted).toBe(true);
+    expect(queryClient.getQueryState(classroomKeys.available())?.isInvalidated).toBe(true);
+    expect(queryClient.getQueryState(classroomKeys.available('hist'))?.isInvalidated).toBe(true);
+    expect(
+      queryClient.getQueryState(announcementKeys.byClassroom(classroom.id))?.isInvalidated,
+    ).toBe(true);
+    expect(available.requests).toHaveLength(2);
+
+    await act(async () => {
+      available.requests[1]!.deferred.resolve([]);
+      my.requests[1]!.deferred.resolve([]);
+      await mutationPromise;
+    });
+    await waitFor(() => {
+      expect(queryClient.getQueryData(classroomKeys.available('mat'))).toEqual([]);
+      expect(queryClient.getQueryData(classroomKeys.my())).toEqual([]);
+    });
+    await act(async () => {
+      available.requests[0]!.deferred.resolve([classroom]);
+      my.requests[0]!.deferred.resolve([classroom]);
+      await oldRefresh;
+    });
+    expect(queryClient.getQueryData(classroomKeys.available('mat'))).toEqual([]);
+    expect(queryClient.getQueryData(classroomKeys.my())).toEqual([]);
+
+    unmount();
+    myObserver.dispose();
+    await variants.dispose();
+    await cleanupClassroomSearchState(queryClient);
+  });
+
+  it('keeps a confirmed deletion successful when the active list refresh fails', async () => {
+    deleteClassroomMock.mockResolvedValue(undefined);
+    const queryClient = createClassroomSearchQueryClient();
+    const available = createControlledAvailableClassroomService();
+    cacheAvailableClassroomVariants(queryClient, [{ search: 'mat', data: [classroom] }]);
+    const variants = observeAvailableClassroomVariants(
+      queryClient,
+      [{ search: 'mat', active: true }],
+      available.getAvailableClassrooms,
+    );
+    const { result, unmount } = await renderHook(() => useDeleteClassroom(), {
+      wrapper: createWrapper(queryClient),
+    });
+    let mutationPromise!: Promise<void>;
+
+    await act(async () => {
+      mutationPromise = result.current.mutateAsync(classroom.id);
+      await waitFor(() => expect(available.requests).toHaveLength(1));
+    });
+    await act(async () => {
+      available.requests[0]!.deferred.reject(new Error('list refresh failed'));
+      await mutationPromise;
+    });
+
+    expect(result.current.isError).toBe(false);
+    expect(variants.observers[0]!.observer.getCurrentResult().isError).toBe(true);
+
+    unmount();
+    await variants.dispose();
+    await cleanupClassroomSearchState(queryClient);
   });
 
   it('ignores a second deletion while the first request is in flight', async () => {
@@ -129,7 +257,7 @@ describe('useDeleteClassroom', () => {
 
     expect(deleteClassroomMock).toHaveBeenCalledTimes(2);
     expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: classroomKeys.my() });
-    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: classroomKeys.available() });
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: classroomKeys.availableRoot() });
     expect(invalidateQueries).toHaveBeenCalledWith({
       queryKey: announcementKeys.byClassroom('classroom-1'),
     });

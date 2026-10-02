@@ -10,6 +10,7 @@ import { useJoinClassroom } from '@/hooks/useJoinClassroom';
 import { useLeaveClassroom } from '@/hooks/useLeaveClassroom';
 import { useMyClassrooms } from '@/hooks/useMyClassrooms';
 import { useDeleteClassroom } from '@/hooks/useDeleteClassroom';
+import { useClassroomSearch } from '@/hooks/useClassroomSearch';
 import { getHttpErrorMessage, isUnauthorizedError } from '@/lib';
 import { useTheme } from '@/hooks/useTheme';
 import type { Theme } from '@/theme';
@@ -24,16 +25,29 @@ export default function ClassroomsScreen() {
   const { palette: theme } = useTheme();
   const styles = createStyles(theme);
 
-  const [search, setSearch] = useState('');
+  const {
+    rawText: search,
+    validationError: searchError,
+    settledTerm,
+    waiting: searchWaiting,
+    canRetry: canRetrySearch,
+    setRawText: setSearch,
+    clear: clearSearch,
+  } = useClassroomSearch();
   const [action, setAction] = useState<ClassroomAction | null>(null);
   const [actionError, setActionError] = useState<string>();
   const actionInFlight = useRef(false);
   const {
-    data: availableClassrooms = [],
+    data: availableData,
     isLoading: availableLoading,
     isError: availableError,
+    isFetching: availableFetching,
+    isStale: availableStale,
     refetch: refetchAvailableClassrooms,
-  } = useAvailableClassrooms(search);
+  } = useAvailableClassrooms(settledTerm, {
+    enabled: canRetrySearch,
+  });
+  const availableClassrooms = availableData ?? [];
   const {
     data: classrooms,
     isLoading: classroomsLoading,
@@ -114,14 +128,6 @@ export default function ClassroomsScreen() {
           ) : null}
         </View>
 
-        <FormField
-          label="Buscar turmas"
-          leadingIcon="search-outline"
-          placeholder="Buscar turmas..."
-          value={search}
-          onChangeText={setSearch}
-        />
-
         <View style={styles.section}>
           <Text accessibilityRole="header" style={styles.sectionTitle}>
             Minhas turmas
@@ -170,18 +176,46 @@ export default function ClassroomsScreen() {
             Turmas disponíveis
           </Text>
 
-          {availableLoading ? (
-            <ScreenState kind="loading" title="Buscando turmas" />
+          <FormField
+            label="Buscar turma pelo nome"
+            leadingIcon="search-outline"
+            placeholder="Buscar turma pelo nome..."
+            value={search}
+            onChangeText={setSearch}
+            error={searchError ?? undefined}
+          />
+
+          {search ? (
+            <Button
+              label="Limpar pesquisa"
+              accessibilityLabel="Limpar pesquisa"
+              variant="ghost"
+              onPress={clearSearch}
+            />
+          ) : null}
+
+          {searchError ? null : searchWaiting ? (
+            <ScreenState
+              kind="loading"
+              title="Aguardando pesquisa"
+              message="Os resultados serão atualizados após uma breve pausa."
+            />
           ) : availableError ? (
             <ScreenState
               kind="error"
               title="Não foi possível buscar turmas"
               message="Verifique sua conexão e tente novamente."
-              actionLabel="Tentar novamente"
-              onAction={() => {
-                void refetchAvailableClassrooms();
-              }}
+              actionLabel={canRetrySearch ? 'Tentar novamente' : undefined}
+              onAction={
+                canRetrySearch
+                  ? () => {
+                      void refetchAvailableClassrooms();
+                    }
+                  : undefined
+              }
             />
+          ) : availableLoading || availableFetching || (availableStale && availableData) ? (
+            <ScreenState kind="loading" title="Buscando turmas" />
           ) : availableClassrooms.length > 0 ? (
             availableClassrooms.map((classroom) => (
               <ClassroomCard
@@ -198,8 +232,16 @@ export default function ClassroomsScreen() {
             ))
           ) : (
             <EmptyClassroomState
-              title="Nenhuma turma disponível"
-              description="Quando houver novas turmas, elas aparecerão aqui."
+              title={
+                settledTerm
+                  ? `Nenhuma turma encontrada para «${settledTerm}»`
+                  : 'Nenhuma turma disponível'
+              }
+              description={
+                settledTerm
+                  ? 'Limpe a pesquisa para ver todas as turmas disponíveis.'
+                  : 'Quando houver novas turmas, elas aparecerão aqui.'
+              }
             />
           )}
         </View>

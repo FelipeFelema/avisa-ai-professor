@@ -395,6 +395,36 @@ describe('ClassroomsService', () => {
         },
       ]);
     });
+
+    it.each([undefined, '', '  \t  '])(
+      'omits the name criterion when the search normalizes to empty: %s',
+      async (search) => {
+        mockPrisma.classroom.findMany.mockResolvedValue([]);
+
+        await service.findAvailableClassrooms('user-id', search);
+
+        expect(mockPrisma.classroom.findMany).toHaveBeenCalledWith(
+          expect.objectContaining({
+            where: { userClassrooms: { none: { userId: 'user-id' } } },
+          }),
+        );
+      },
+    );
+
+    it('trims and escapes pattern characters for a literal case-insensitive substring', async () => {
+      mockPrisma.classroom.findMany.mockResolvedValue([]);
+
+      await service.findAvailableClassrooms('user-id', '  mat%_\\  ');
+
+      expect(mockPrisma.classroom.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            name: { contains: 'mat\\%\\_\\\\', mode: 'insensitive' },
+            userClassrooms: { none: { userId: 'user-id' } },
+          },
+        }),
+      );
+    });
   });
 
   describe('delete', () => {

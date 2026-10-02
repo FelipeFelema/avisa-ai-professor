@@ -490,6 +490,92 @@ describe('confirmation matrix', () => {
     expect(availableView.queryByText('Confirmar')).toBeNull();
   });
 
+  it('keeps search, clear and retry usable while classroom actions retain their behavior', async () => {
+    jest.useFakeTimers();
+    const available = { ...classroom, id: 'classroom-2', name: 'Matematica' };
+    const refetchAvailable = jest.fn().mockResolvedValue({ data: [available] });
+    const joinMutation = jest.fn();
+    const leaveMutation = jest.fn();
+    setClassroomContext({
+      userId: 'member-1',
+      role: 'PARENT',
+      myClassrooms: [classroom],
+      availableClassrooms: [available],
+    });
+    mockUseAvailableClassrooms.mockImplementation(
+      (search) =>
+        (search === 'matematica'
+          ? {
+              data: undefined,
+              isLoading: false,
+              isError: true,
+              isFetching: false,
+              isStale: false,
+              refetch: refetchAvailable,
+            }
+          : {
+              data: [available],
+              isLoading: false,
+              isError: false,
+              isFetching: false,
+              isStale: false,
+              refetch: refetchAvailable,
+            }) as unknown as ReturnType<typeof useAvailableClassrooms>,
+    );
+    mockUseJoinClassroom.mockReturnValue({
+      mutate: joinMutation,
+      isPending: false,
+    } as unknown as ReturnType<typeof useJoinClassroom>);
+    mockUseLeaveClassroom.mockReturnValue({
+      mutate: leaveMutation,
+      isPending: false,
+    } as unknown as ReturnType<typeof useLeaveClassroom>);
+
+    const view = await renderWithProviders(<ClassroomsScreen />);
+
+    try {
+      const search = view.getByLabelText('Buscar turma pelo nome');
+      expect(search.props.accessibilityLabel).toBe('Buscar turma pelo nome');
+      expect(view.getByRole('button', { name: 'Sair: Historia do Brasil' })).toBeTruthy();
+      await fireEvent.press(view.getByRole('button', { name: 'Abrir turma Historia do Brasil' }));
+      expect(router.push).toHaveBeenCalledWith('/classrooms/classroom-1');
+
+      await fireEvent.changeText(search, '  matematica  ');
+      expect(view.getByRole('button', { name: 'Limpar pesquisa' })).toBeTruthy();
+      expect(view.getByText('Aguardando pesquisa')).toBeTruthy();
+      expect(view.getByRole('button', { name: 'Sair: Historia do Brasil' })).toBeTruthy();
+
+      await act(async () => {
+        jest.advanceTimersByTime(300);
+      });
+      expect(view.getByRole('button', { name: 'Tentar novamente' })).toBeTruthy();
+      expect(view.getByLabelText('Buscar turma pelo nome').props.value).toBe('  matematica  ');
+      await fireEvent.press(view.getByRole('button', { name: 'Tentar novamente' }));
+      expect(refetchAvailable).toHaveBeenCalledTimes(1);
+
+      await fireEvent.press(view.getByRole('button', { name: 'Limpar pesquisa' }));
+      expect(view.getByLabelText('Buscar turma pelo nome').props.value).toBe('');
+      expect(view.queryByText('Não foi possível buscar turmas')).toBeNull();
+      expect(view.getByText('Aguardando pesquisa')).toBeTruthy();
+      expect(view.getByRole('button', { name: 'Sair: Historia do Brasil' })).toBeTruthy();
+
+      await act(async () => {
+        jest.advanceTimersByTime(300);
+      });
+      await fireEvent.press(view.getByRole('button', { name: 'Entrar: Matematica' }));
+      expect(joinMutation).toHaveBeenCalledWith('classroom-2');
+
+      await fireEvent.press(view.getByRole('button', { name: 'Sair: Historia do Brasil' }));
+      expect(view.getByRole('button', { name: 'Sair da turma' })).toBeTruthy();
+      await fireEvent.press(view.getByRole('button', { name: 'Cancelar' }));
+      expect(leaveMutation).not.toHaveBeenCalled();
+    } finally {
+      await view.unmount();
+      jest.runOnlyPendingTimers();
+      jest.useRealTimers();
+    }
+  });
+
   it('offers leave rather than delete on classroom details for a non-owner', async () => {
     setClassroomContext({ userId: 'member-1', role: 'PARENT' });
     const leaveMutation = jest.fn();
