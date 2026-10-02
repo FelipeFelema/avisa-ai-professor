@@ -44,10 +44,6 @@ export default function ProfileScreen() {
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.headerCard}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{user.name.charAt(0).toUpperCase()}</Text>
-          </View>
-
           <View style={styles.headerCopy}>
             <Text accessibilityRole="header" style={styles.title}>
               Meu perfil
@@ -56,12 +52,22 @@ export default function ProfileScreen() {
               Confira suas informações de conta e saia quando precisar.
             </Text>
           </View>
+
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>{user.name.charAt(0).toUpperCase()}</Text>
+          </View>
         </View>
 
         <View style={styles.infoCard}>
           <View style={styles.infoRow}>
             <View style={styles.infoIconWrap}>
-              <Ionicons name="person-outline" size={18} color={AUTH_THEME.colors.primary} />
+              <Ionicons
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+                name="person-outline"
+                size={18}
+                color={AUTH_THEME.colors.primary}
+              />
             </View>
             <View style={styles.infoTextBlock}>
               <Text style={styles.infoLabel}>Nome</Text>
@@ -73,7 +79,13 @@ export default function ProfileScreen() {
 
           <View style={styles.infoRow}>
             <View style={styles.infoIconWrap}>
-              <Ionicons name="mail-outline" size={18} color={AUTH_THEME.colors.primary} />
+              <Ionicons
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+                name="mail-outline"
+                size={18}
+                color={AUTH_THEME.colors.primary}
+              />
             </View>
             <View style={styles.infoTextBlock}>
               <Text style={styles.infoLabel}>E-mail</Text>
@@ -86,6 +98,8 @@ export default function ProfileScreen() {
           <View style={styles.infoRow}>
             <View style={styles.infoIconWrap}>
               <Ionicons
+                accessibilityElementsHidden
+                importantForAccessibility="no"
                 name="shield-checkmark-outline"
                 size={18}
                 color={AUTH_THEME.colors.primary}
@@ -177,11 +191,12 @@ const styles = StyleSheet.create({
 
   infoRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: AUTH_THEME.spacing.md,
   },
 
   infoIconWrap: {
+    flexShrink: 0,
     width: 40,
     height: 40,
     borderRadius: AUTH_THEME.radius.pill,
@@ -192,6 +207,7 @@ const styles = StyleSheet.create({
 
   infoTextBlock: {
     flex: 1,
+    minWidth: 0,
     gap: 2,
   },
 
@@ -207,6 +223,8 @@ const styles = StyleSheet.create({
     color: AUTH_THEME.colors.text,
     fontSize: AUTH_THEME.typography.body,
     fontWeight: '700',
+    flexShrink: 1,
+    lineHeight: 22,
   },
 
   separator: {
