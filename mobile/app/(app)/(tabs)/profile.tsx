@@ -4,14 +4,18 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Button, ScreenState } from '@/components/ui';
+import { Button, ScreenState, ThemeSelector } from '@/components/ui';
 import { useAuth } from '@/hooks/useAuth';
-import { AUTH_THEME } from '@/theme/auth';
+import { useTheme } from '@/hooks/useTheme';
+
+import type { Theme } from '@/theme';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, logout, isLoading } = useAuth();
+  const { palette } = useTheme();
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const styles = createStyles(palette);
 
   const handleLogout = async () => {
     setIsSigningOut(true);
@@ -41,8 +45,12 @@ export default function ProfileScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+    <SafeAreaView testID="profile-screen" style={styles.safeArea}>
+      <ScrollView
+        testID="profile-scroll-view"
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.headerCard}>
           <View style={styles.headerCopy}>
             <Text accessibilityRole="header" style={styles.title}>
@@ -66,7 +74,7 @@ export default function ProfileScreen() {
                 importantForAccessibility="no"
                 name="person-outline"
                 size={18}
-                color={AUTH_THEME.colors.primary}
+                color={palette.colors.primary}
               />
             </View>
             <View style={styles.infoTextBlock}>
@@ -84,7 +92,7 @@ export default function ProfileScreen() {
                 importantForAccessibility="no"
                 name="mail-outline"
                 size={18}
-                color={AUTH_THEME.colors.primary}
+                color={palette.colors.primary}
               />
             </View>
             <View style={styles.infoTextBlock}>
@@ -102,7 +110,7 @@ export default function ProfileScreen() {
                 importantForAccessibility="no"
                 name="shield-checkmark-outline"
                 size={18}
-                color={AUTH_THEME.colors.primary}
+                color={palette.colors.primary}
               />
             </View>
             <View style={styles.infoTextBlock}>
@@ -110,6 +118,15 @@ export default function ProfileScreen() {
               <Text style={styles.infoValue}>{user.role}</Text>
             </View>
           </View>
+        </View>
+
+        <View style={styles.appearanceCard}>
+          <View style={styles.appearanceHeader}>
+            <Text accessibilityRole="header" style={styles.appearanceTitle}>
+              Aparência
+            </Text>
+          </View>
+          <ThemeSelector />
         </View>
 
         <Button
@@ -129,107 +146,128 @@ export default function ProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: AUTH_THEME.colors.background,
-  },
+function createStyles(palette: Theme) {
+  return StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: palette.colors.background,
+    },
 
-  content: {
-    flexGrow: 1,
-    padding: AUTH_THEME.spacing.xl,
-    gap: AUTH_THEME.spacing.xl,
-  },
+    content: {
+      flexGrow: 1,
+      padding: palette.spacing.xl,
+      gap: palette.spacing.xl,
+    },
 
-  headerCard: {
-    backgroundColor: AUTH_THEME.colors.surface,
-    borderRadius: AUTH_THEME.radius.xl,
-    padding: AUTH_THEME.spacing.xl,
-    borderWidth: 1,
-    borderColor: AUTH_THEME.colors.border,
-    gap: AUTH_THEME.spacing.lg,
-  },
+    headerCard: {
+      backgroundColor: palette.colors.surface,
+      borderRadius: palette.radius.xl,
+      padding: palette.spacing.xl,
+      borderWidth: 1,
+      borderColor: palette.colors.border,
+      gap: palette.spacing.lg,
+    },
 
-  avatar: {
-    width: 72,
-    height: 72,
-    borderRadius: 999,
-    backgroundColor: AUTH_THEME.colors.primarySoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+    avatar: {
+      width: 72,
+      height: 72,
+      borderRadius: palette.radius.pill,
+      backgroundColor: palette.colors.primarySubtle,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
 
-  avatarText: {
-    color: AUTH_THEME.colors.primaryDark,
-    fontSize: 28,
-    fontWeight: '800',
-  },
+    avatarText: {
+      color: palette.colors.primaryPressed,
+      fontSize: 28,
+      fontWeight: '800',
+    },
 
-  headerCopy: {
-    gap: AUTH_THEME.spacing.xs,
-  },
+    headerCopy: {
+      gap: palette.spacing.xs,
+    },
 
-  title: {
-    fontSize: AUTH_THEME.typography.title,
-    fontWeight: '800',
-    color: AUTH_THEME.colors.text,
-  },
+    title: {
+      fontSize: palette.typography.title.fontSize,
+      fontWeight: '800',
+      color: palette.colors.text,
+    },
 
-  subtitle: {
-    color: AUTH_THEME.colors.muted,
-    fontSize: AUTH_THEME.typography.body,
-    lineHeight: 22,
-  },
+    subtitle: {
+      color: palette.colors.textMuted,
+      fontSize: palette.typography.body.fontSize,
+      lineHeight: palette.typography.body.lineHeight,
+    },
 
-  infoCard: {
-    backgroundColor: AUTH_THEME.colors.surface,
-    borderRadius: AUTH_THEME.radius.xl,
-    padding: AUTH_THEME.spacing.xl,
-    borderWidth: 1,
-    borderColor: AUTH_THEME.colors.border,
-  },
+    infoCard: {
+      backgroundColor: palette.colors.surface,
+      borderRadius: palette.radius.xl,
+      padding: palette.spacing.xl,
+      borderWidth: 1,
+      borderColor: palette.colors.border,
+    },
 
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: AUTH_THEME.spacing.md,
-  },
+    infoRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: palette.spacing.md,
+    },
 
-  infoIconWrap: {
-    flexShrink: 0,
-    width: 40,
-    height: 40,
-    borderRadius: AUTH_THEME.radius.pill,
-    backgroundColor: AUTH_THEME.colors.primarySoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+    infoIconWrap: {
+      flexShrink: 0,
+      width: 40,
+      height: 40,
+      borderRadius: palette.radius.pill,
+      backgroundColor: palette.colors.primarySubtle,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
 
-  infoTextBlock: {
-    flex: 1,
-    minWidth: 0,
-    gap: 2,
-  },
+    infoTextBlock: {
+      flex: 1,
+      minWidth: 0,
+      gap: 2,
+    },
 
-  infoLabel: {
-    color: AUTH_THEME.colors.muted,
-    fontSize: AUTH_THEME.typography.caption,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-  },
+    infoLabel: {
+      color: palette.colors.textMuted,
+      fontSize: palette.typography.caption.fontSize,
+      fontWeight: '700',
+      textTransform: 'uppercase',
+      letterSpacing: 0.6,
+    },
 
-  infoValue: {
-    color: AUTH_THEME.colors.text,
-    fontSize: AUTH_THEME.typography.body,
-    fontWeight: '700',
-    flexShrink: 1,
-    lineHeight: 22,
-  },
+    infoValue: {
+      color: palette.colors.text,
+      fontSize: palette.typography.body.fontSize,
+      fontWeight: '700',
+      flexShrink: 1,
+      lineHeight: palette.typography.body.lineHeight,
+    },
 
-  separator: {
-    height: 1,
-    backgroundColor: AUTH_THEME.colors.border,
-    marginVertical: AUTH_THEME.spacing.lg,
-  },
-});
+    separator: {
+      height: 1,
+      backgroundColor: palette.colors.border,
+      marginVertical: palette.spacing.lg,
+    },
+
+    appearanceCard: {
+      backgroundColor: palette.colors.surface,
+      borderRadius: palette.radius.xl,
+      padding: palette.spacing.xl,
+      borderWidth: 1,
+      borderColor: palette.colors.border,
+      gap: palette.spacing.lg,
+    },
+
+    appearanceHeader: {
+      gap: palette.spacing.xs,
+    },
+
+    appearanceTitle: {
+      color: palette.colors.text,
+      fontSize: palette.typography.sectionTitle.fontSize,
+      fontWeight: '700',
+    },
+  });
+}

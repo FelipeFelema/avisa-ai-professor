@@ -1,22 +1,24 @@
-import { theme } from './tokens';
+import type { Theme } from './tokens';
 
-export const AUTH_THEME = {
-  ...theme,
-  colors: {
-    ...theme.colors,
-    surfaceSoft: theme.colors.surfaceMuted,
-    primaryDark: theme.colors.primaryPressed,
-    primarySoft: theme.colors.primarySubtle,
-    primaryBorder: theme.colors.borderStrong,
-    muted: theme.colors.textMuted,
-    error: theme.colors.danger,
-    errorSoft: theme.colors.dangerSubtle,
-  },
-  typography: {
-    title: theme.typography.title.fontSize,
-    sectionTitle: theme.typography.sectionTitle.fontSize,
-    body: theme.typography.body.fontSize,
-    label: theme.typography.label.fontSize,
-    caption: theme.typography.caption.fontSize,
-  },
-} as const;
+export function getAuthTheme(palette: Theme) {
+  return {
+    ...palette,
+    colors: {
+      ...palette.colors,
+      surfaceSoft: palette.colors.surfaceMuted,
+      primaryDark: palette.colors.primaryPressed,
+      primarySoft: palette.colors.primarySubtle,
+      primaryBorder: palette.colors.borderStrong,
+      muted: palette.colors.textMuted,
+      error: palette.colors.danger,
+      errorSoft: palette.colors.dangerSubtle,
+    },
+    typography: {
+      title: palette.typography.title.fontSize,
+      sectionTitle: palette.typography.sectionTitle.fontSize,
+      body: palette.typography.body.fontSize,
+      label: palette.typography.label.fontSize,
+      caption: palette.typography.caption.fontSize,
+    },
+  } as const;
+}
