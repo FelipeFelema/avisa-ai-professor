@@ -1,6 +1,7 @@
 import { StyleSheet } from 'react-native';
 import { render } from '@testing-library/react-native';
 
+import { AnnouncementCard } from '@/components/announcements';
 import { AuthRolePicker } from '@/components/auth';
 import { ClassroomCard, EmptyClassroomState, HomeHeader } from '@/components/home';
 import { BackButton, Button, FormField, ScreenState } from '@/components/ui';
@@ -32,6 +33,7 @@ function flattenPressableStyle(control: { props: { style?: unknown } }, pressed 
     minHeight?: number;
     minWidth?: number;
     opacity?: number;
+    backgroundColor?: string;
   };
 }
 
@@ -39,6 +41,24 @@ function expectMinimumTarget(control: { props: { style?: unknown } }, minimum: n
   const style = flattenPressableStyle(control);
   expect(style.minHeight ?? 0).toBeGreaterThanOrEqual(minimum);
   expect(style.minWidth ?? 0).toBeGreaterThanOrEqual(minimum);
+}
+
+function collectText(node: unknown, result: string[] = []): string[] {
+  if (typeof node === 'string') {
+    result.push(node);
+    return result;
+  }
+
+  if (Array.isArray(node)) {
+    node.forEach((child) => collectText(child, result));
+    return result;
+  }
+
+  if (node && typeof node === 'object' && 'children' in node) {
+    collectText((node as { children?: unknown }).children, result);
+  }
+
+  return result;
 }
 
 describe.each(platformTargets)('$name touch targets', ({ minimum }) => {
@@ -72,6 +92,101 @@ describe.each(platformTargets)('$name touch targets', ({ minimum }) => {
     const roleView = await render(<AuthRolePicker value={null} onChange={jest.fn()} />);
     for (const control of roleView.getAllByRole('button')) {
       expectMinimumTarget(control, minimum);
+    }
+  });
+
+  it('covers detail-card semantics, reading order, pressed feedback, and route action meaning', async () => {
+    const announcementView = await render(
+      <AnnouncementCard
+        title="Aviso da turma"
+        content="Conteúdo completo do aviso"
+        author="Professora Ana"
+        expiresAt={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()}
+        onPress={jest.fn()}
+      />,
+    );
+    const announcementControl = announcementView.getByRole('button', {
+      name: 'Abrir comunicado Aviso da turma',
+    });
+    const announcementText = collectText(announcementView.toJSON());
+
+    expect(announcementControl.props.accessible).toBe(true);
+    expect(announcementControl.props.accessibilityRole).toBe('button');
+    expect(announcementControl.props.accessibilityHint).toBe('Abre o comunicado completo.');
+    expect(announcementControl.props.focusable ?? true).toBe(true);
+    expectMinimumTarget(announcementControl, minimum);
+    expect(announcementText.indexOf('Aviso da turma')).toBeLessThan(
+      announcementText.findIndex((value) => value.includes('Professor')),
+    );
+    expect(announcementText.findIndex((value) => value.includes('Professor'))).toBeLessThan(
+      announcementText.indexOf('Conteúdo completo do aviso'),
+    );
+    expect(announcementText.indexOf('Conteúdo completo do aviso')).toBeLessThan(
+      announcementText.indexOf('Expira em 1 dia'),
+    );
+
+    const announcementElement = AnnouncementCard({
+      title: 'Aviso da turma',
+      content: 'Conteúdo completo do aviso',
+      author: 'Professora Ana',
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      onPress: jest.fn(),
+    }) as unknown as { props: { style?: unknown } };
+    const announcementStyle = flattenPressableStyle(announcementElement);
+    expect(flattenPressableStyle(announcementElement, true).opacity).toBeLessThan(
+      announcementStyle.opacity ?? 1,
+    );
+
+    const routeControls = [
+      { label: '+ Novo', accessibilityLabel: 'Criar comunicado', variant: 'primary' as const },
+      { label: 'Editar', accessibilityLabel: 'Editar comunicado', variant: 'secondary' as const },
+      {
+        label: 'Excluir',
+        accessibilityLabel: 'Excluir comunicado',
+        variant: 'destructive' as const,
+      },
+      {
+        label: 'Sair da turma',
+        accessibilityLabel: 'Sair da turma',
+        variant: 'destructive' as const,
+      },
+      {
+        label: 'Sair da conta',
+        accessibilityLabel: 'Sair da conta',
+        variant: 'destructive' as const,
+      },
+    ];
+
+    for (const routeControl of routeControls) {
+      const routeView = await render(
+        <Button
+          label={routeControl.label}
+          accessibilityLabel={routeControl.accessibilityLabel}
+          variant={routeControl.variant}
+          onPress={jest.fn()}
+        />,
+      );
+      const control = routeView.getByRole('button', { name: routeControl.accessibilityLabel });
+
+      expect(control.props.accessibilityRole).toBe('button');
+      expect(control.props.accessibilityLabel).toBe(routeControl.accessibilityLabel);
+      expect(control.props.focusable ?? true).toBe(true);
+      expectMinimumTarget(control, minimum);
+
+      const buttonElement = Button({
+        label: routeControl.label,
+        accessibilityLabel: routeControl.accessibilityLabel,
+        variant: routeControl.variant,
+        onPress: jest.fn(),
+      }) as unknown as { props: { style?: unknown } };
+      const style = flattenPressableStyle(buttonElement);
+      if (routeControl.variant === 'destructive') {
+        expect(routeControl.accessibilityLabel).toMatch(/Excluir|Sair/);
+        expect(style.backgroundColor).toBe(theme.colors.danger);
+      }
+      expect(flattenPressableStyle(buttonElement, true).opacity).toBeLessThan(style.opacity ?? 1);
+
+      await routeView.unmount();
     }
   });
 
