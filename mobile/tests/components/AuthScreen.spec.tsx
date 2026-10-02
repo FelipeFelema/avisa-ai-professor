@@ -3,7 +3,9 @@ import { useRouter } from 'expo-router';
 import { Platform, StyleSheet, Text } from 'react-native';
 
 import { AuthScreen } from '@/components/auth/AuthScreen';
-import { theme } from '@/theme';
+import { ThemeProvider } from '@/providers/ThemeProvider';
+import { darkTheme, theme } from '@/theme';
+import { ThemeSwitcher } from '../helpers/theme';
 
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(),
@@ -20,15 +22,17 @@ const router = {
 
 async function renderAuthScreen(backButton?: { fallbackHref: '/login' }) {
   return render(
-    <AuthScreen
-      eyebrow="Avisa Aí Professor"
-      title="Título"
-      subtitle="Subtítulo"
-      backButton={backButton}
-      footer={<Text>Rodapé</Text>}
-    >
-      <Text>Conteúdo</Text>
-    </AuthScreen>,
+    <ThemeProvider>
+      <AuthScreen
+        eyebrow="Avisa Aí Professor"
+        title="Título"
+        subtitle="Subtítulo"
+        backButton={backButton}
+        footer={<Text>Rodapé</Text>}
+      >
+        <Text>Conteúdo</Text>
+      </AuthScreen>
+    </ThemeProvider>,
   );
 }
 
@@ -93,5 +97,23 @@ describe('AuthScreen', () => {
     const view = await renderAuthScreen();
 
     expect(view.queryByRole('button', { name: 'Voltar' })).toBeNull();
+  });
+
+  it('updates the public auth surface colors when the active theme changes', async () => {
+    const view = await render(
+      <ThemeProvider>
+        <ThemeSwitcher />
+        <AuthScreen eyebrow="Avisa" title="Entrar" subtitle="Acesse sua conta">
+          <Text>Campos</Text>
+        </AuthScreen>
+      </ThemeProvider>,
+    );
+
+    expect(StyleSheet.flatten(view.getByText('Entrar').props.style).color).toBe(theme.colors.text);
+    await fireEvent.press(view.getByText('Select Escuro'));
+    expect(view.getByTestId('active-theme').props.children).toBe('dark');
+    expect(StyleSheet.flatten(view.getByText('Entrar').props.style).color).toBe(
+      darkTheme.colors.text,
+    );
   });
 });
