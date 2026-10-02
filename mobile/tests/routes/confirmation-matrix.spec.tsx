@@ -1,4 +1,5 @@
-import { fireEvent, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, waitFor } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import AnnouncementDetailsScreen from '../../app/(app)/announcements/[id]';
@@ -15,6 +16,7 @@ import { useJoinClassroom } from '@/hooks/useJoinClassroom';
 import { useLeaveClassroom } from '@/hooks/useLeaveClassroom';
 import { useMyClassrooms } from '@/hooks/useMyClassrooms';
 import { useUpdateAnnouncement } from '@/hooks/useUpdateAnnouncement';
+import { theme } from '@/theme';
 import { renderWithProviders } from '../helpers/render';
 
 jest.mock('expo-router', () => ({
@@ -156,6 +158,141 @@ beforeEach(() => {
 });
 
 describe('confirmation matrix', () => {
+  it.each([
+    ['populated', [announcement]],
+    ['empty', []],
+  ])(
+    'keeps owner deletion destructive and recoverable after a %s announcement list',
+    async (_state, announcements) => {
+      setClassroomContext({ userId: 'owner-1', role: 'PROFESSOR' });
+      mockUseClassroomAnnouncements.mockReturnValue({
+        data: announcements,
+        isLoading: false,
+        isError: false,
+      } as never);
+
+      type ActionOptions = {
+        onSuccess?: () => void;
+        onError?: (error: unknown) => void;
+      };
+      let latestOptions: ActionOptions | undefined;
+      let actionPending = false;
+      const deleteMutation = jest.fn((_classroomId: string, options?: ActionOptions) => {
+        latestOptions = options;
+      });
+      const deleteHook = {
+        mutate: deleteMutation,
+        get isPending() {
+          return actionPending;
+        },
+      };
+      mockUseDeleteClassroom.mockReturnValue(deleteHook as never);
+
+      const view = await renderWithProviders(<ClassroomDetailsScreen />);
+      const action = view.getByRole('button', { name: 'Excluir turma' });
+      const actionStyle = StyleSheet.flatten(
+        typeof action.props.style === 'function'
+          ? action.props.style({ pressed: false })
+          : action.props.style,
+      ) as { backgroundColor?: string };
+      expect(actionStyle.backgroundColor).toBe(theme.colors.danger);
+
+      await fireEvent.press(action);
+      expect(view.getByText('Historia do Brasil')).toBeTruthy();
+      expect(
+        view.getByText('Participantes e comunicados serão removidos permanentemente.'),
+      ).toBeTruthy();
+
+      await act(async () => {
+        actionPending = true;
+        view.rerender(<ClassroomDetailsScreen />);
+      });
+      expect(view.getByRole('button', { name: 'Aguarde...' })).toBeTruthy();
+      expect(view.getByRole('button', { name: 'Cancelar' }).props.accessibilityState.disabled).toBe(
+        true,
+      );
+
+      await act(async () => {
+        actionPending = false;
+        view.rerender(<ClassroomDetailsScreen />);
+      });
+      await fireEvent.press(view.getByRole('button', { name: 'Cancelar' }));
+      expect(deleteMutation).not.toHaveBeenCalled();
+
+      await fireEvent.press(action);
+      const confirmButton = view.getAllByRole('button', { name: 'Excluir turma' }).at(-1);
+      if (!confirmButton) throw new Error('Botão de confirmação da turma não encontrado');
+      await fireEvent.press(confirmButton);
+      await fireEvent.press(confirmButton);
+
+      expect(deleteMutation).toHaveBeenCalledTimes(1);
+      expect(deleteMutation).toHaveBeenCalledWith('classroom-1', expect.anything());
+      expect(router.replace).not.toHaveBeenCalled();
+
+      await act(async () => {
+        latestOptions?.onError?.(new Error('network timeout'));
+      });
+      expect(
+        view.getByText('Não foi possível concluir. Verifique sua conexão e tente novamente.'),
+      ).toBeTruthy();
+
+      const retryConfirmButton = view.getAllByRole('button', { name: 'Excluir turma' }).at(-1);
+      if (!retryConfirmButton) throw new Error('Botão de repetição da turma não encontrado');
+      await fireEvent.press(retryConfirmButton);
+      await act(async () => {
+        latestOptions?.onSuccess?.();
+      });
+      expect(router.replace).toHaveBeenCalledWith('/classrooms');
+    },
+  );
+
+  it.each([
+    ['populated', [announcement]],
+    ['empty', []],
+  ])('keeps member leave after a %s announcement list', async (_state, announcements) => {
+    setClassroomContext({ userId: 'member-1', role: 'PARENT' });
+    mockUseClassroomAnnouncements.mockReturnValue({
+      data: announcements,
+      isLoading: false,
+      isError: false,
+    } as never);
+    const leaveMutation = jest.fn();
+    mockUseLeaveClassroom.mockReturnValue({
+      mutate: leaveMutation,
+      isPending: false,
+    } as never);
+
+    const view = await renderWithProviders(<ClassroomDetailsScreen />);
+    const action = view.getByRole('button', { name: 'Sair da turma' });
+    const actionStyle = StyleSheet.flatten(
+      typeof action.props.style === 'function'
+        ? action.props.style({ pressed: false })
+        : action.props.style,
+    ) as { backgroundColor?: string };
+    expect(actionStyle.backgroundColor).toBe(theme.colors.danger);
+
+    await fireEvent.press(action);
+    expect(view.getByText('Historia do Brasil')).toBeTruthy();
+    expect(view.getByText('Seu acesso e sua participação serão removidos.')).toBeTruthy();
+    await fireEvent.press(view.getByRole('button', { name: 'Cancelar' }));
+    expect(leaveMutation).not.toHaveBeenCalled();
+
+    await fireEvent.press(action);
+    const confirmButton = view.getAllByRole('button', { name: 'Sair da turma' }).at(-1);
+    if (!confirmButton) throw new Error('Botão de confirmação de saída não encontrado');
+    await fireEvent.press(confirmButton);
+    await fireEvent.press(confirmButton);
+
+    expect(leaveMutation).toHaveBeenCalledTimes(1);
+    expect(leaveMutation).toHaveBeenCalledWith('classroom-1', expect.anything());
+
+    const options = leaveMutation.mock.calls[0]?.[1] as { onSuccess?: () => void } | undefined;
+    await act(async () => {
+      options?.onSuccess?.();
+    });
+    expect(router.replace).toHaveBeenCalledWith('/classrooms');
+  });
+
   it('confirms announcement updates with a diff, preserves values on cancel, and blocks a double tap', async () => {
     setAnnouncementContext();
     let resolveUpdate!: (value: typeof announcement) => void;
@@ -242,6 +379,10 @@ describe('confirmation matrix', () => {
     const confirmButton = view.getAllByRole('button', { name: 'Excluir comunicado' }).at(-1);
     if (!confirmButton) throw new Error('Botão de confirmação da exclusão não encontrado');
     await fireEvent.press(confirmButton);
+    await waitFor(() => expect(view.getByRole('button', { name: 'Aguarde...' })).toBeTruthy());
+    expect(view.getByRole('button', { name: 'Cancelar' }).props.accessibilityState.disabled).toBe(
+      true,
+    );
     await fireEvent.press(confirmButton);
 
     expect(mutateAsync).toHaveBeenCalledTimes(1);
@@ -252,6 +393,26 @@ describe('confirmation matrix', () => {
 
     resolveDelete();
     await waitFor(() => expect(router.back).toHaveBeenCalledTimes(1));
+  });
+
+  it('keeps announcement deletion exclusive to the author', async () => {
+    setAnnouncementContext();
+    const authorView = await renderWithProviders(<AnnouncementDetailsScreen />);
+    expect(authorView.getByRole('button', { name: 'Excluir comunicado' })).toBeTruthy();
+    await authorView.unmount();
+
+    mockUseAuth.mockReturnValue({
+      user: {
+        id: 'member-1',
+        name: 'Pessoa leitora',
+        email: 'member@example.com',
+        role: 'PARENT',
+      },
+    } as never);
+    const memberView = await renderWithProviders(<AnnouncementDetailsScreen />);
+
+    expect(memberView.queryByRole('button', { name: 'Editar comunicado' })).toBeNull();
+    expect(memberView.queryByRole('button', { name: 'Excluir comunicado' })).toBeNull();
   });
 
   it('keeps announcement detail context after a failed deletion', async () => {

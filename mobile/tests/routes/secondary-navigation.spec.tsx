@@ -259,6 +259,35 @@ describe('secondary route navigation matrix', () => {
     expect(view.getAllByRole('button', { name: 'Voltar' }).length).toBeGreaterThanOrEqual(1);
   });
 
+  it('uses the classroom-list fallback for announcement error and absent-item states', async () => {
+    configureRouter(false);
+    mockUseAnnouncement.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+      error: new Error('network timeout'),
+      refetch: jest.fn(),
+    } as never);
+    let view = await renderWithProviders(<AnnouncementDetailsScreen />);
+
+    await fireEvent.press(view.getAllByRole('button', { name: 'Voltar' })[0]);
+    expect(router.replace).toHaveBeenCalledWith('/classrooms');
+    await view.unmount();
+
+    configureRouter(false);
+    mockUseAnnouncement.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: false,
+      error: undefined,
+      refetch: jest.fn(),
+    } as never);
+    view = await renderWithProviders(<AnnouncementDetailsScreen />);
+
+    await fireEvent.press(view.getAllByRole('button', { name: 'Voltar' })[0]);
+    expect(router.replace).toHaveBeenCalledWith('/classrooms');
+  });
+
   it('does not add the control to Login, Home, Classrooms, or Profile roots', async () => {
     const roots = [
       <LoginScreen key="login" />,

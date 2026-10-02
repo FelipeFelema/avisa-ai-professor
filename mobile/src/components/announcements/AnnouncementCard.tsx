@@ -1,70 +1,15 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { getClassroomAnnouncementExpirationLabel } from '@/lib/classroom-expiration';
 import { theme } from '@/theme';
 
 type AnnouncementCardProps = {
   title: string;
   content: string;
   author: string;
-  expiresAt?: string;
+  expiresAt?: string | null;
   onPress?: () => void;
 };
-
-type ExpirationBadge = {
-  label: string;
-  backgroundColor: string;
-  textColor: string;
-};
-
-function getExpirationBadge(expiresAt?: string): ExpirationBadge {
-  if (!expiresAt) {
-    return {
-      label: 'Comunicado ativo',
-      backgroundColor: theme.colors.primarySubtle,
-      textColor: theme.colors.primaryPressed,
-    };
-  }
-
-  const today = new Date();
-  const expiration = new Date(expiresAt);
-
-  today.setHours(0, 0, 0, 0);
-  expiration.setHours(0, 0, 0, 0);
-
-  const differenceInDays = Math.ceil(
-    (expiration.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
-  );
-
-  if (differenceInDays <= 1) {
-    return {
-      label: differenceInDays <= 0 ? '🕒 Expira hoje' : '🕒 Expira amanhã',
-      backgroundColor: theme.colors.dangerSubtle,
-      textColor: theme.colors.danger,
-    };
-  }
-
-  if (differenceInDays <= 3) {
-    return {
-      label: `🕒 Expira em ${differenceInDays} dias`,
-      backgroundColor: theme.colors.surfaceMuted,
-      textColor: theme.colors.warning,
-    };
-  }
-
-  if (differenceInDays <= 7) {
-    return {
-      label: `🕒 Expira em ${differenceInDays} dias`,
-      backgroundColor: theme.colors.surfaceMuted,
-      textColor: theme.colors.warning,
-    };
-  }
-
-  return {
-    label: `🕒 Expira em ${differenceInDays} dias`,
-    backgroundColor: theme.colors.primarySubtle,
-    textColor: theme.colors.primaryPressed,
-  };
-}
 
 export function AnnouncementCard({
   title,
@@ -73,7 +18,8 @@ export function AnnouncementCard({
   expiresAt,
   onPress,
 }: AnnouncementCardProps) {
-  const expirationBadge = getExpirationBadge(expiresAt);
+  const expirationLabel = getClassroomAnnouncementExpirationLabel(expiresAt);
+
   return (
     <Pressable
       onPress={onPress}
@@ -94,33 +40,18 @@ export function AnnouncementCard({
         {content}
       </Text>
 
-      <View style={styles.footer}>
-        <View
-          style={[
-            styles.badge,
-            {
-              backgroundColor: expirationBadge.backgroundColor,
-            },
-          ]}
-        >
-          <Text
-            style={[
-              styles.badgeText,
-              {
-                color: expirationBadge.textColor,
-              },
-            ]}
-          >
-            {expirationBadge.label}
-          </Text>
+      {expirationLabel ? (
+        <View style={styles.footer}>
+          <Text style={styles.expirationLabel}>{expirationLabel}</Text>
         </View>
-      </View>
+      ) : null}
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
+    minWidth: theme.targets.android,
     minHeight: theme.targets.android,
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.lg,
@@ -168,13 +99,8 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
 
-  badge: {
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: theme.spacing.xs,
-    borderRadius: theme.radius.pill,
-  },
-
-  badgeText: {
+  expirationLabel: {
+    color: theme.colors.textMuted,
     ...theme.typography.caption,
     fontWeight: '700',
   },

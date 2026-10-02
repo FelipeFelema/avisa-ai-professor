@@ -115,35 +115,21 @@ export default function ClassroomDetailsScreen() {
     );
   }
 
-  if (announcementsLoading) {
-    return (
-      <SecondaryScreen fallbackHref="/classrooms">
-        <ScreenState kind="loading" title="Carregando comunicados" message="Aguarde um momento." />
-      </SecondaryScreen>
-    );
-  }
+  const announcementsNotFound =
+    announcementsError &&
+    isAxiosError(announcementsErrorValue) &&
+    announcementsErrorValue.response?.status === 404;
 
-  if (announcementsError) {
-    const notFound =
-      isAxiosError(announcementsErrorValue) && announcementsErrorValue.response?.status === 404;
-
+  if (announcementsNotFound) {
     return (
       <SecondaryScreen fallbackHref="/classrooms">
         <ScreenState
-          kind={notFound ? 'not-found' : 'error'}
-          title={notFound ? 'Turma não encontrada' : 'Não foi possível carregar os comunicados'}
-          message={
-            notFound
-              ? 'Esta turma não está mais disponível.'
-              : getHttpErrorMessage(announcementsErrorValue)
-          }
-          actionLabel={notFound ? 'Ver turmas' : 'Tentar novamente'}
+          kind="not-found"
+          title="Turma não encontrada"
+          message="Esta turma não está mais disponível."
+          actionLabel="Ver turmas"
           onAction={() => {
-            if (notFound) {
-              router.replace('/classrooms');
-            } else {
-              void refetchAnnouncements();
-            }
+            router.replace('/classrooms');
           }}
         />
       </SecondaryScreen>
@@ -151,6 +137,7 @@ export default function ClassroomDetailsScreen() {
   }
 
   const isOwner = user?.id === classroom.ownerId;
+  const canShowClassroomAction = Boolean(user?.id);
 
   return (
     <>
@@ -162,10 +149,12 @@ export default function ClassroomDetailsScreen() {
         >
           <View style={styles.header}>
             <View style={styles.headerText}>
+              <Text accessibilityRole="header" style={styles.classroomName}>
+                {classroom.name}
+              </Text>
               <Text accessibilityRole="header" style={styles.title}>
                 Comunicados
               </Text>
-              <Text style={styles.classroomName}>{classroom.name}</Text>
             </View>
 
             {user?.role === 'PROFESSOR' ? (
@@ -178,15 +167,23 @@ export default function ClassroomDetailsScreen() {
             ) : null}
           </View>
 
-          <Button
-            label={isOwner ? 'Excluir turma' : 'Sair'}
-            accessibilityLabel={isOwner ? 'Excluir turma' : 'Sair da turma'}
-            variant={isOwner ? 'destructive' : 'primary'}
-            style={styles.actionButton}
-            onPress={() => openAction(isOwner ? 'delete' : 'leave')}
-          />
-
-          {announcements?.length === 0 ? (
+          {announcementsLoading ? (
+            <ScreenState
+              kind="loading"
+              title="Carregando comunicados"
+              message="Aguarde um momento."
+            />
+          ) : announcementsError ? (
+            <ScreenState
+              kind="error"
+              title="Não foi possível carregar os comunicados"
+              message={getHttpErrorMessage(announcementsErrorValue)}
+              actionLabel="Tentar novamente"
+              onAction={() => {
+                void refetchAnnouncements();
+              }}
+            />
+          ) : announcements?.length === 0 ? (
             <ScreenState
               kind="empty"
               title="Nenhum comunicado"
@@ -204,6 +201,16 @@ export default function ClassroomDetailsScreen() {
               />
             ))
           )}
+
+          {canShowClassroomAction ? (
+            <Button
+              label={isOwner ? 'Excluir turma' : 'Sair da turma'}
+              accessibilityLabel={isOwner ? 'Excluir turma' : 'Sair da turma'}
+              variant="destructive"
+              style={styles.actionButton}
+              onPress={() => openAction(isOwner ? 'delete' : 'leave')}
+            />
+          ) : null}
         </ScrollView>
       </SecondaryScreen>
 
@@ -244,21 +251,21 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: theme.spacing.md,
   },
-  headerText: { gap: theme.spacing.xs },
+  headerText: { flex: 1, gap: theme.spacing.xs },
   title: {
     ...theme.typography.sectionTitle,
     color: theme.colors.text,
-    textAlign: 'center',
   },
   classroomName: {
-    ...theme.typography.body,
-    color: theme.colors.textMuted,
+    ...theme.typography.title,
+    color: theme.colors.text,
   },
   createButton: {
     paddingHorizontal: theme.spacing.xs,
+    marginTop: theme.spacing.xs,
   },
   actionButton: {
     alignSelf: 'stretch',
