@@ -8,7 +8,7 @@ import { useAnnouncement } from '@/hooks/useAnnouncement';
 import { useAuth } from '@/hooks/useAuth';
 import { useDeleteAnnouncement } from '@/hooks/useDeleteAnnouncement';
 import { getHttpErrorMessage } from '@/lib';
-import { AUTH_THEME } from '@/theme/auth';
+import { theme } from '@/theme';
 
 export default function AnnouncementDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -136,33 +136,35 @@ export default function AnnouncementDetailsScreen() {
   return (
     <SecondaryScreen fallbackHref={`/classrooms/${announcement.classroomId}`}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Text accessibilityRole="header" style={styles.title}>
-          {announcement.title}
-        </Text>
-
-        <Text style={styles.author}>Professor • {announcement.author.name}</Text>
-
-        <View style={styles.separator} />
-
-        <View style={styles.infoContainer}>
-          <Text style={styles.infoLabel}>Publicado em</Text>
-
-          <Text style={styles.infoValue}>
-            {new Date(announcement.createdAt).toLocaleDateString('pt-BR')}
+        <View style={styles.headerGroup}>
+          <Text accessibilityRole="header" style={styles.title}>
+            {announcement.title}
           </Text>
+
+          <Text style={styles.author}>Professor • {announcement.author.name}</Text>
         </View>
 
-        <View style={styles.infoContainer}>
-          <Text style={styles.infoLabel}>Expira em</Text>
+        <View style={styles.metadataGroup}>
+          <View style={styles.infoContainer}>
+            <Text style={styles.infoLabel}>Publicado em</Text>
 
-          <Text style={styles.infoValue}>
-            {new Date(announcement.expiresAt).toLocaleDateString('pt-BR')}
-          </Text>
+            <Text style={styles.infoValue}>
+              {new Date(announcement.createdAt).toLocaleDateString('pt-BR')}
+            </Text>
+          </View>
+
+          <View style={styles.infoContainer}>
+            <Text style={styles.infoLabel}>Expira em</Text>
+
+            <Text style={styles.infoValue}>
+              {new Date(announcement.expiresAt).toLocaleDateString('pt-BR')}
+            </Text>
+          </View>
         </View>
 
-        <View style={styles.separator} />
-
-        <Text style={styles.contentText}>{announcement.content}</Text>
+        <View style={styles.bodyGroup}>
+          <Text style={styles.contentText}>{announcement.content}</Text>
+        </View>
 
         {isAuthor && (
           <View style={styles.actions}>
@@ -206,53 +208,69 @@ export default function AnnouncementDetailsScreen() {
 
 const styles = StyleSheet.create({
   content: {
-    padding: AUTH_THEME.spacing.xl,
-    gap: AUTH_THEME.spacing.lg,
+    padding: theme.spacing.xl,
+    gap: theme.spacing.lg,
+  },
+
+  headerGroup: {
+    gap: theme.spacing.xs,
+  },
+
+  bodyGroup: {
+    paddingTop: theme.spacing.xs,
   },
 
   title: {
-    color: AUTH_THEME.colors.text,
-    fontSize: AUTH_THEME.typography.title,
+    ...theme.typography.title,
+    color: theme.colors.text,
     fontWeight: '800',
   },
 
   author: {
-    color: AUTH_THEME.colors.muted,
-    fontSize: AUTH_THEME.typography.body,
+    ...theme.typography.body,
+    color: theme.colors.textMuted,
   },
 
-  separator: {
-    height: 1,
-    backgroundColor: AUTH_THEME.colors.border,
+  metadataGroup: {
+    gap: theme.spacing.md,
+    padding: theme.spacing.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radius.md,
+    backgroundColor: theme.colors.surfaceMuted,
   },
 
   infoContainer: {
-    gap: AUTH_THEME.spacing.xs,
+    gap: theme.spacing.xs,
   },
 
   infoLabel: {
-    color: AUTH_THEME.colors.muted,
+    ...theme.typography.label,
+    color: theme.colors.textMuted,
     fontWeight: '700',
   },
 
   infoValue: {
-    color: AUTH_THEME.colors.text,
-    fontSize: AUTH_THEME.typography.body,
+    ...theme.typography.body,
+    color: theme.colors.text,
+    flexShrink: 1,
   },
 
   contentText: {
-    color: AUTH_THEME.colors.text,
-    fontSize: AUTH_THEME.typography.body,
+    ...theme.typography.body,
+    color: theme.colors.text,
     lineHeight: 28,
   },
 
   actions: {
     flexDirection: 'row',
-    gap: AUTH_THEME.spacing.md,
-    marginTop: AUTH_THEME.spacing.xl,
+    flexWrap: 'wrap',
+    gap: theme.spacing.md,
+    marginTop: theme.spacing.xl,
   },
 
   actionButton: {
-    flex: 1,
+    flexGrow: 1,
+    flexBasis: 140,
   },
 });
