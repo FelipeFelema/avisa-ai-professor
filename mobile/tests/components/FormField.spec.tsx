@@ -1,5 +1,10 @@
+import { fireEvent } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
+
 import { FormField } from '@/components/ui';
+import { darkTheme, lightTheme } from '@/theme';
 import { renderWithProviders } from '../helpers/render';
+import { ThemeSwitcher } from '../helpers/theme';
 
 jest.mock('@expo/vector-icons', () => {
   const React = require('react');
@@ -57,5 +62,32 @@ describe('FormField', () => {
 
     expect(getByText('Use parte do nome da turma.')).toBeTruthy();
     expect(queryByRole('alert')).toBeNull();
+  });
+
+  it('updates empty, focused, and invalid field colors with the active palette', async () => {
+    const view = await renderWithProviders(
+      <>
+        <FormField label="Nome" placeholder="Seu nome" />
+        <FormField label="E-mail" error="E-mail inválido" />
+        <ThemeSwitcher />
+      </>,
+    );
+    const nameInput = view.getByLabelText('Nome');
+    const getContainerStyle = (label: string) =>
+      StyleSheet.flatten(view.getByLabelText(label).parent?.props.style);
+
+    expect(nameInput.props.placeholderTextColor).toBe(lightTheme.colors.textMuted);
+    expect(getContainerStyle('Nome').backgroundColor).toBe(lightTheme.colors.surface);
+    expect(getContainerStyle('E-mail').backgroundColor).toBe(lightTheme.colors.dangerSubtle);
+    await fireEvent(nameInput, 'focus');
+    expect(getContainerStyle('Nome').borderColor).toBe(lightTheme.colors.primary);
+
+    await fireEvent.press(view.getByText('Select Escuro'));
+
+    expect(view.getByLabelText('Nome').props.placeholderTextColor).toBe(darkTheme.colors.textMuted);
+    expect(getContainerStyle('Nome').backgroundColor).toBe(darkTheme.colors.surface);
+    expect(getContainerStyle('Nome').borderColor).toBe(darkTheme.colors.primary);
+    expect(getContainerStyle('E-mail').backgroundColor).toBe(darkTheme.colors.dangerSubtle);
+    expect(getContainerStyle('E-mail').borderColor).toBe(darkTheme.colors.danger);
   });
 });

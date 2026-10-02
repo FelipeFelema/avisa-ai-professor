@@ -1,8 +1,19 @@
-import { fireEvent } from '@testing-library/react-native';
+import { act, fireEvent } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
+
 import { ConfirmationDialog } from '@/components/ui';
+import { useTheme } from '@/hooks/useTheme';
+import { darkTheme, lightTheme } from '@/theme';
 import { renderWithProviders } from '../helpers/render';
 
 let mockOnRequestClose: (() => void) | undefined;
+let changeTheme: (preference: 'light' | 'dark') => void = () => undefined;
+
+function ThemeActuator() {
+  const { setTheme } = useTheme();
+  changeTheme = setTheme;
+  return null;
+}
 
 jest.mock('react-native', () => {
   const actual = jest.requireActual('react-native');
@@ -114,6 +125,45 @@ describe('ConfirmationDialog', () => {
     expect(mockOnRequestClose).toEqual(expect.any(Function));
     await mockOnRequestClose?.();
     expect(onCancel).not.toHaveBeenCalled();
+    expect(onConfirm).not.toHaveBeenCalled();
+  });
+
+  it('restyles an open dialog and backdrop without replacing the modal content', async () => {
+    const onConfirm = jest.fn();
+    const view = await renderWithProviders(
+      <>
+        <ConfirmationDialog
+          visible
+          title="Excluir turma?"
+          targetLabel="História"
+          variant="destructive"
+          onCancel={jest.fn()}
+          onConfirm={onConfirm}
+        />
+        <ThemeActuator />
+      </>,
+    );
+    const title = view.getByText('Excluir turma?');
+    const card = title.parent;
+    const activeCard = () => view.getByText('Excluir turma?').parent;
+
+    expect(StyleSheet.flatten(activeCard()?.props.style).backgroundColor).toBe(
+      lightTheme.colors.surface,
+    );
+    expect(StyleSheet.flatten(activeCard()?.parent?.props.style).backgroundColor).toBe(
+      lightTheme.colors.backdrop,
+    );
+
+    await act(async () => changeTheme('dark'));
+
+    expect(view.getByText('Excluir turma?').parent).toBe(card);
+    expect(StyleSheet.flatten(activeCard()?.props.style).backgroundColor).toBe(
+      darkTheme.colors.surface,
+    );
+    expect(StyleSheet.flatten(activeCard()?.parent?.props.style).backgroundColor).toBe(
+      darkTheme.colors.backdrop,
+    );
+    expect(view.getByText('Excluir turma?')).toBeTruthy();
     expect(onConfirm).not.toHaveBeenCalled();
   });
 });

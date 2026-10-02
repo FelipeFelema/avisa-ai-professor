@@ -8,9 +8,13 @@ import { useAnnouncement } from '@/hooks/useAnnouncement';
 import { useAuth } from '@/hooks/useAuth';
 import { useDeleteAnnouncement } from '@/hooks/useDeleteAnnouncement';
 import { getHttpErrorMessage } from '@/lib';
-import { theme } from '@/theme';
+import { useTheme } from '@/hooks/useTheme';
+import type { Theme } from '@/theme';
 
 export default function AnnouncementDetailsScreen() {
+  const { palette: theme } = useTheme();
+  const styles = createStyles(theme);
+
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
 
@@ -206,71 +210,73 @@ export default function AnnouncementDetailsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  content: {
-    padding: theme.spacing.xl,
-    gap: theme.spacing.lg,
-  },
+function createStyles(theme: Theme) {
+  return StyleSheet.create({
+    content: {
+      padding: theme.spacing.xl,
+      gap: theme.spacing.lg,
+    },
 
-  headerGroup: {
-    gap: theme.spacing.xs,
-  },
+    headerGroup: {
+      gap: theme.spacing.xs,
+    },
 
-  bodyGroup: {
-    paddingTop: theme.spacing.xs,
-  },
+    bodyGroup: {
+      paddingTop: theme.spacing.xs,
+    },
 
-  title: {
-    ...theme.typography.title,
-    color: theme.colors.text,
-    fontWeight: '800',
-  },
+    title: {
+      ...theme.typography.title,
+      color: theme.colors.text,
+      fontWeight: '800',
+    },
 
-  author: {
-    ...theme.typography.body,
-    color: theme.colors.textMuted,
-  },
+    author: {
+      ...theme.typography.body,
+      color: theme.colors.textMuted,
+    },
 
-  metadataGroup: {
-    gap: theme.spacing.md,
-    padding: theme.spacing.md,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radius.md,
-    backgroundColor: theme.colors.surfaceMuted,
-  },
+    metadataGroup: {
+      gap: theme.spacing.md,
+      padding: theme.spacing.md,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: theme.radius.md,
+      backgroundColor: theme.colors.surfaceMuted,
+    },
 
-  infoContainer: {
-    gap: theme.spacing.xs,
-  },
+    infoContainer: {
+      gap: theme.spacing.xs,
+    },
 
-  infoLabel: {
-    ...theme.typography.label,
-    color: theme.colors.textMuted,
-    fontWeight: '700',
-  },
+    infoLabel: {
+      ...theme.typography.label,
+      color: theme.colors.textMuted,
+      fontWeight: '700',
+    },
 
-  infoValue: {
-    ...theme.typography.body,
-    color: theme.colors.text,
-    flexShrink: 1,
-  },
+    infoValue: {
+      ...theme.typography.body,
+      color: theme.colors.text,
+      flexShrink: 1,
+    },
 
-  contentText: {
-    ...theme.typography.body,
-    color: theme.colors.text,
-    lineHeight: 28,
-  },
+    contentText: {
+      ...theme.typography.body,
+      color: theme.colors.text,
+      lineHeight: 28,
+    },
 
-  actions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: theme.spacing.md,
-    marginTop: theme.spacing.xl,
-  },
+    actions: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: theme.spacing.md,
+      marginTop: theme.spacing.xl,
+    },
 
-  actionButton: {
-    flexGrow: 1,
-    flexBasis: 140,
-  },
-});
+    actionButton: {
+      flexGrow: 1,
+      flexBasis: 140,
+    },
+  });
+}

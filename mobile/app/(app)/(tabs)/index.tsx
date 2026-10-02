@@ -5,9 +5,14 @@ import { ClassroomCard, EmptyClassroomState, HomeHeader } from '@/components/hom
 import { ScreenState } from '@/components/ui';
 import { useAuth } from '@/hooks/useAuth';
 import { useMyClassrooms } from '@/hooks/useMyClassrooms';
-import { AUTH_THEME } from '@/theme/auth';
+import { useTheme } from '@/hooks/useTheme';
+import { getAuthTheme } from '@/theme/auth';
 
 export default function HomeScreen() {
+  const { palette: theme } = useTheme();
+  const AUTH_THEME = getAuthTheme(theme);
+  const styles = createStyles(AUTH_THEME);
+
   const router = useRouter();
   const { user } = useAuth();
   const { data: classrooms, isLoading, isError, refetch } = useMyClassrooms();
@@ -46,12 +51,14 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  content: {
-    flexGrow: 1,
-    backgroundColor: AUTH_THEME.colors.background,
-    paddingHorizontal: AUTH_THEME.spacing.xl,
-    paddingTop: AUTH_THEME.spacing.xxl,
-    gap: AUTH_THEME.spacing.xxxl,
-  },
-});
+function createStyles(AUTH_THEME: ReturnType<typeof getAuthTheme>) {
+  return StyleSheet.create({
+    content: {
+      flexGrow: 1,
+      backgroundColor: AUTH_THEME.colors.background,
+      paddingHorizontal: AUTH_THEME.spacing.xl,
+      paddingTop: AUTH_THEME.spacing.xxl,
+      gap: AUTH_THEME.spacing.xxxl,
+    },
+  });
+}

@@ -3,7 +3,8 @@ import type { ReactNode } from 'react';
 import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { theme } from '@/theme';
+import { useTheme } from '@/hooks/useTheme';
+import type { Theme } from '@/theme';
 
 import { BackButton } from './BackButton';
 
@@ -14,6 +15,9 @@ export type SecondaryScreenProps = {
 };
 
 export function SecondaryScreen({ fallbackHref, children, contentStyle }: SecondaryScreenProps) {
+  const { palette: theme } = useTheme();
+  const styles = createStyles(theme);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.backBar}>
@@ -24,17 +28,19 @@ export function SecondaryScreen({ fallbackHref, children, contentStyle }: Second
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  backBar: {
-    paddingHorizontal: theme.spacing.xl,
-    paddingTop: theme.spacing.sm,
-    paddingBottom: theme.spacing.xs,
-  },
-  content: {
-    flex: 1,
-  },
-});
+function createStyles(theme: Theme) {
+  return StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+    backBar: {
+      paddingHorizontal: theme.spacing.xl,
+      paddingTop: theme.spacing.sm,
+      paddingBottom: theme.spacing.xs,
+    },
+    content: {
+      flex: 1,
+    },
+  });
+}

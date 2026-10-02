@@ -5,7 +5,9 @@ import { StyleSheet } from 'react-native';
 import HomeScreen from '../../app/(app)/(tabs)/index';
 import { useAuth } from '@/hooks/useAuth';
 import { useMyClassrooms } from '@/hooks/useMyClassrooms';
+import { darkTheme, lightTheme } from '@/theme';
 import { renderWithProviders } from '../helpers/render';
+import { ThemeSwitcher } from '../helpers/theme';
 
 jest.mock('expo-router', () => ({ useRouter: jest.fn() }));
 jest.mock('@/hooks/useAuth', () => ({ useAuth: jest.fn() }));
@@ -107,6 +109,37 @@ describe('home primary surface', () => {
     expect(StyleSheet.flatten(greeting.props.style).fontSize).toBeLessThan(
       StyleSheet.flatten(title.props.style).fontSize,
     );
+  });
+
+  it('updates Home colors without changing the classroom query or navigation', async () => {
+    setHomeState({
+      data: [
+        {
+          id: 'classroom-1',
+          name: 'História do Brasil',
+          ownerId: 'owner-1',
+          teacher: { id: 'teacher-1', name: 'Professora Ana' },
+          lastAnnouncement: null,
+        },
+      ],
+    });
+    const view = await renderWithProviders(
+      <>
+        <HomeScreen />
+        <ThemeSwitcher />
+      </>,
+    );
+
+    const title = view.getByText('Bem-vindo ao Avisa Aí Professor');
+    expect(StyleSheet.flatten(title.props.style).color).toBe(lightTheme.colors.text);
+    await fireEvent.press(view.getByText('Select Escuro'));
+
+    expect(
+      StyleSheet.flatten(view.getByText('Bem-vindo ao Avisa Aí Professor').props.style).color,
+    ).toBe(darkTheme.colors.text);
+    expect(view.getByText('História do Brasil')).toBeTruthy();
+    expect(mockUseMyClassrooms).toHaveBeenLastCalledWith();
+    expect(mockPush).not.toHaveBeenCalled();
   });
 
   it('renders classroom information and only shows the active announcement expiration label', async () => {

@@ -21,7 +21,8 @@ import {
   updateProfileSchema,
   type UpdateProfileFormData,
 } from '@/validations/updateProfile.schema';
-import { AUTH_THEME } from '@/theme/auth';
+import { useTheme } from '@/hooks/useTheme';
+import { getAuthTheme } from '@/theme/auth';
 
 type PendingProfileUpdate = {
   payload: UpdateProfileRequest;
@@ -29,6 +30,10 @@ type PendingProfileUpdate = {
 };
 
 export default function ProfileEditScreen() {
+  const { palette: theme } = useTheme();
+  const AUTH_THEME = getAuthTheme(theme);
+  const styles = createStyles(AUTH_THEME);
+
   const router = useRouter();
   const { user, isLoading } = useAuth();
   const updateProfile = useUpdateProfile();
@@ -208,23 +213,25 @@ export default function ProfileEditScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  content: {
-    padding: AUTH_THEME.spacing.xl,
-    gap: AUTH_THEME.spacing.xl,
-  },
-  title: {
-    color: AUTH_THEME.colors.text,
-    fontSize: AUTH_THEME.typography.title,
-    fontWeight: '800',
-  },
-  subtitle: {
-    color: AUTH_THEME.colors.muted,
-    fontSize: AUTH_THEME.typography.body,
-    lineHeight: 22,
-  },
-  feedback: {
-    color: AUTH_THEME.colors.muted,
-    fontSize: AUTH_THEME.typography.body,
-  },
-});
+function createStyles(AUTH_THEME: ReturnType<typeof getAuthTheme>) {
+  return StyleSheet.create({
+    content: {
+      padding: AUTH_THEME.spacing.xl,
+      gap: AUTH_THEME.spacing.xl,
+    },
+    title: {
+      color: AUTH_THEME.colors.text,
+      fontSize: AUTH_THEME.typography.title,
+      fontWeight: '800',
+    },
+    subtitle: {
+      color: AUTH_THEME.colors.muted,
+      fontSize: AUTH_THEME.typography.body,
+      lineHeight: 22,
+    },
+    feedback: {
+      color: AUTH_THEME.colors.muted,
+      fontSize: AUTH_THEME.typography.body,
+    },
+  });
+}

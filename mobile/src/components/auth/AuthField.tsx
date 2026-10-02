@@ -11,7 +11,8 @@ import {
   View,
 } from 'react-native';
 
-import { theme } from '@/theme';
+import { useTheme } from '@/hooks/useTheme';
+import type { Theme } from '@/theme';
 
 type AuthFieldProps = TextInputProps & {
   label: string;
@@ -28,6 +29,9 @@ export function AuthField({
   inputStyle,
   ...props
 }: AuthFieldProps) {
+  const { palette: theme } = useTheme();
+  const styles = createStyles(theme);
+
   const [isFocused, setIsFocused] = useState(false);
   const accessibilityHint = error ?? (typeof helperText === 'string' ? helperText : undefined);
 
@@ -78,38 +82,40 @@ export function AuthField({
   );
 }
 
-const styles = StyleSheet.create({
-  field: {
-    gap: theme.spacing.xs,
-  },
-  label: {
-    color: theme.colors.text,
-    ...theme.typography.label,
-  },
-  input: {
-    minHeight: theme.targets.android,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radius.md,
-    backgroundColor: theme.colors.surfaceMuted,
-    paddingHorizontal: theme.spacing.md,
-    color: theme.colors.text,
-    ...theme.typography.body,
-  },
-  inputFocused: {
-    borderColor: theme.colors.primary,
-    borderWidth: 2,
-  },
-  inputError: {
-    borderColor: theme.colors.danger,
-    backgroundColor: theme.colors.dangerSubtle,
-  },
-  helper: {
-    color: theme.colors.textMuted,
-    ...theme.typography.caption,
-  },
-  error: {
-    color: theme.colors.danger,
-    ...theme.typography.caption,
-  },
-});
+function createStyles(theme: Theme) {
+  return StyleSheet.create({
+    field: {
+      gap: theme.spacing.xs,
+    },
+    label: {
+      color: theme.colors.text,
+      ...theme.typography.label,
+    },
+    input: {
+      minHeight: theme.targets.android,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: theme.radius.md,
+      backgroundColor: theme.colors.surfaceMuted,
+      paddingHorizontal: theme.spacing.md,
+      color: theme.colors.text,
+      ...theme.typography.body,
+    },
+    inputFocused: {
+      borderColor: theme.colors.primary,
+      borderWidth: 2,
+    },
+    inputError: {
+      borderColor: theme.colors.danger,
+      backgroundColor: theme.colors.dangerSubtle,
+    },
+    helper: {
+      color: theme.colors.textMuted,
+      ...theme.typography.caption,
+    },
+    error: {
+      color: theme.colors.danger,
+      ...theme.typography.caption,
+    },
+  });
+}

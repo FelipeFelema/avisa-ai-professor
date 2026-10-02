@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { theme } from '@/theme';
+import { useTheme } from '@/hooks/useTheme';
+import type { Theme } from '@/theme';
 import { Button } from './Button';
 
 export type ScreenStateKind = 'loading' | 'empty' | 'error' | 'success' | 'not-found';
@@ -13,6 +14,9 @@ export type ScreenStateProps = {
 };
 
 export function ScreenState({ kind, title, message, actionLabel, onAction }: ScreenStateProps) {
+  const { palette: theme } = useTheme();
+  const styles = createStyles(theme);
+
   return (
     <View accessibilityRole="summary" style={styles.container}>
       <Text accessibilityRole="header" style={styles.title}>
@@ -29,20 +33,22 @@ export function ScreenState({ kind, title, message, actionLabel, onAction }: Scr
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: theme.spacing.sm,
-    padding: theme.spacing.xl,
-  },
-  title: { ...theme.typography.sectionTitle, color: theme.colors.text, textAlign: 'center' },
-  message: { ...theme.typography.body, color: theme.colors.textMuted, textAlign: 'center' },
-  action: {
-    minHeight: theme.targets.android,
-    minWidth: theme.targets.android,
-    justifyContent: 'center',
-    paddingHorizontal: theme.spacing.md,
-  },
-  kind: { position: 'absolute', width: 1, height: 1, opacity: 0 },
-});
+function createStyles(theme: Theme) {
+  return StyleSheet.create({
+    container: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: theme.spacing.sm,
+      padding: theme.spacing.xl,
+    },
+    title: { ...theme.typography.sectionTitle, color: theme.colors.text, textAlign: 'center' },
+    message: { ...theme.typography.body, color: theme.colors.textMuted, textAlign: 'center' },
+    action: {
+      minHeight: theme.targets.android,
+      minWidth: theme.targets.android,
+      justifyContent: 'center',
+      paddingHorizontal: theme.spacing.md,
+    },
+    kind: { position: 'absolute', width: 1, height: 1, opacity: 0 },
+  });
+}

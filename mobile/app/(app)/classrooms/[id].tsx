@@ -11,11 +11,15 @@ import { useDeleteClassroom } from '@/hooks/useDeleteClassroom';
 import { useLeaveClassroom } from '@/hooks/useLeaveClassroom';
 import { useMyClassrooms } from '@/hooks/useMyClassrooms';
 import { getHttpErrorMessage } from '@/lib';
-import { theme } from '@/theme';
+import { useTheme } from '@/hooks/useTheme';
+import type { Theme } from '@/theme';
 
 type ClassroomAction = 'delete' | 'leave';
 
 export default function ClassroomDetailsScreen() {
+  const { palette: theme } = useTheme();
+  const styles = createStyles(theme);
+
   const { id } = useLocalSearchParams<{ id: string | string[] }>();
   const classroomId = Array.isArray(id) ? id[0] : id;
   const router = useRouter();
@@ -236,38 +240,40 @@ export default function ClassroomDetailsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  content: {
-    flexGrow: 1,
-    paddingHorizontal: theme.spacing.xl,
-    paddingTop: theme.spacing.xl,
-    paddingBottom: theme.spacing.xxxl,
-    gap: theme.spacing.lg,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: theme.spacing.md,
-  },
-  headerText: { flex: 1, gap: theme.spacing.xs },
-  title: {
-    ...theme.typography.sectionTitle,
-    color: theme.colors.text,
-  },
-  classroomName: {
-    ...theme.typography.title,
-    color: theme.colors.text,
-  },
-  createButton: {
-    paddingHorizontal: theme.spacing.xs,
-    marginTop: theme.spacing.xs,
-  },
-  actionButton: {
-    alignSelf: 'stretch',
-  },
-});
+function createStyles(theme: Theme) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+    content: {
+      flexGrow: 1,
+      paddingHorizontal: theme.spacing.xl,
+      paddingTop: theme.spacing.xl,
+      paddingBottom: theme.spacing.xxxl,
+      gap: theme.spacing.lg,
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: theme.spacing.md,
+    },
+    headerText: { flex: 1, gap: theme.spacing.xs },
+    title: {
+      ...theme.typography.sectionTitle,
+      color: theme.colors.text,
+    },
+    classroomName: {
+      ...theme.typography.title,
+      color: theme.colors.text,
+    },
+    createButton: {
+      paddingHorizontal: theme.spacing.xs,
+      marginTop: theme.spacing.xs,
+    },
+    actionButton: {
+      alignSelf: 'stretch',
+    },
+  });
+}

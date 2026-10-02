@@ -1,7 +1,8 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { getClassroomAnnouncementExpirationLabel } from '@/lib/classroom-expiration';
-import { theme } from '@/theme';
+import { useTheme } from '@/hooks/useTheme';
+import type { Theme } from '@/theme';
 
 type AnnouncementCardProps = {
   title: string;
@@ -18,6 +19,9 @@ export function AnnouncementCard({
   expiresAt,
   onPress,
 }: AnnouncementCardProps) {
+  const { palette: theme } = useTheme();
+  const styles = createStyles(theme);
+
   const expirationLabel = getClassroomAnnouncementExpirationLabel(expiresAt);
 
   return (
@@ -49,59 +53,61 @@ export function AnnouncementCard({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    minWidth: theme.targets.android,
-    minHeight: theme.targets.android,
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.lg,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    padding: theme.spacing.xl,
-    gap: theme.spacing.lg,
+function createStyles(theme: Theme) {
+  return StyleSheet.create({
+    card: {
+      minWidth: theme.targets.android,
+      minHeight: theme.targets.android,
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.radius.lg,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      padding: theme.spacing.xl,
+      gap: theme.spacing.lg,
 
-    shadowColor: theme.colors.text,
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    shadowOffset: {
-      width: 0,
-      height: 4,
+      shadowColor: theme.colors.text,
+      shadowOpacity: 0.08,
+      shadowRadius: 10,
+      shadowOffset: {
+        width: 0,
+        height: 4,
+      },
+      elevation: 3,
     },
-    elevation: 3,
-  },
 
-  cardPressed: {
-    opacity: 0.92,
-  },
+    cardPressed: {
+      opacity: 0.92,
+    },
 
-  header: {
-    gap: theme.spacing.xs,
-  },
+    header: {
+      gap: theme.spacing.xs,
+    },
 
-  title: {
-    ...theme.typography.sectionTitle,
-    color: theme.colors.text,
-  },
+    title: {
+      ...theme.typography.sectionTitle,
+      color: theme.colors.text,
+    },
 
-  author: {
-    color: theme.colors.textMuted,
-    ...theme.typography.caption,
-  },
+    author: {
+      color: theme.colors.textMuted,
+      ...theme.typography.caption,
+    },
 
-  content: {
-    color: theme.colors.text,
-    ...theme.typography.body,
-    lineHeight: 24,
-  },
+    content: {
+      color: theme.colors.text,
+      ...theme.typography.body,
+      lineHeight: 24,
+    },
 
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-  },
+    footer: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+    },
 
-  expirationLabel: {
-    color: theme.colors.textMuted,
-    ...theme.typography.caption,
-    fontWeight: '700',
-  },
-});
+    expirationLabel: {
+      color: theme.colors.textMuted,
+      ...theme.typography.caption,
+      fontWeight: '700',
+    },
+  });
+}

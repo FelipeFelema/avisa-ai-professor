@@ -11,7 +11,8 @@ import { useLeaveClassroom } from '@/hooks/useLeaveClassroom';
 import { useMyClassrooms } from '@/hooks/useMyClassrooms';
 import { useDeleteClassroom } from '@/hooks/useDeleteClassroom';
 import { getHttpErrorMessage, isUnauthorizedError } from '@/lib';
-import { theme } from '@/theme';
+import { useTheme } from '@/hooks/useTheme';
+import type { Theme } from '@/theme';
 import type { ClassroomSummary } from '@/types/classroom';
 
 type ClassroomAction = {
@@ -20,6 +21,9 @@ type ClassroomAction = {
 };
 
 export default function ClassroomsScreen() {
+  const { palette: theme } = useTheme();
+  const styles = createStyles(theme);
+
   const [search, setSearch] = useState('');
   const [action, setAction] = useState<ClassroomAction | null>(null);
   const [actionError, setActionError] = useState<string>();
@@ -223,30 +227,32 @@ export default function ClassroomsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  content: {
-    padding: theme.spacing.xl,
-    gap: theme.spacing.lg,
-    backgroundColor: theme.colors.background,
-    flexGrow: 1,
-  },
-  header: { gap: theme.spacing.sm },
-  headerContent: { gap: theme.spacing.sm },
-  title: {
-    ...theme.typography.title,
-    color: theme.colors.text,
-  },
-  subtitle: {
-    ...theme.typography.body,
-    color: theme.colors.textMuted,
-  },
-  createButton: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 0,
-  },
-  sectionTitle: {
-    ...theme.typography.sectionTitle,
-    color: theme.colors.text,
-  },
-  section: { gap: theme.spacing.md },
-});
+function createStyles(theme: Theme) {
+  return StyleSheet.create({
+    content: {
+      padding: theme.spacing.xl,
+      gap: theme.spacing.lg,
+      backgroundColor: theme.colors.background,
+      flexGrow: 1,
+    },
+    header: { gap: theme.spacing.sm },
+    headerContent: { gap: theme.spacing.sm },
+    title: {
+      ...theme.typography.title,
+      color: theme.colors.text,
+    },
+    subtitle: {
+      ...theme.typography.body,
+      color: theme.colors.textMuted,
+    },
+    createButton: {
+      alignSelf: 'flex-start',
+      paddingHorizontal: 0,
+    },
+    sectionTitle: {
+      ...theme.typography.sectionTitle,
+      color: theme.colors.text,
+    },
+    section: { gap: theme.spacing.md },
+  });
+}
