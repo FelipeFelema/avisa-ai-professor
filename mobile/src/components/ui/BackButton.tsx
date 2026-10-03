@@ -18,19 +18,30 @@ export type BackButtonProps = Omit<
   'accessibilityLabel' | 'accessibilityRole' | 'onPress' | 'style'
 > & {
   fallbackHref: Href;
+  pending?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
-export function BackButton({ fallbackHref, style, ...pressableProps }: BackButtonProps) {
+export function BackButton({
+  fallbackHref,
+  style,
+  disabled = false,
+  pending = false,
+  accessibilityState,
+  ...pressableProps
+}: BackButtonProps) {
   const { palette: theme } = useTheme();
   const styles = createStyles(theme);
 
   const router = useRouter();
   const navigationLocked = useRef(false);
   const [isNavigationLocked, setIsNavigationLocked] = useState(false);
+  const isPending = pending || Boolean(accessibilityState?.busy);
+  const isExternallyDisabled = disabled || Boolean(accessibilityState?.disabled) || isPending;
+  const isDisabled = isExternallyDisabled || isNavigationLocked;
 
   function handlePress() {
-    if (navigationLocked.current) {
+    if (isExternallyDisabled || navigationLocked.current) {
       return;
     }
 
@@ -48,10 +59,14 @@ export function BackButton({ fallbackHref, style, ...pressableProps }: BackButto
   return (
     <Pressable
       {...pressableProps}
-      disabled={isNavigationLocked}
+      disabled={isDisabled}
       accessibilityRole="button"
       accessibilityLabel="Voltar"
-      accessibilityState={{ disabled: isNavigationLocked }}
+      accessibilityState={{
+        ...accessibilityState,
+        disabled: isDisabled,
+        ...(isPending ? { busy: true } : {}),
+      }}
       onPress={handlePress}
       style={({ pressed }) => [styles.button, pressed ? styles.pressed : null, style]}
     >
