@@ -3,15 +3,17 @@ import { UsersService } from './users.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { InviteCodeService } from '../invites-code/invite-code.service';
 import { Prisma } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
+import * as passwordHasher from '../common/security/password-hasher';
 import {
   BadRequestException,
   ConflictException,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 
-jest.mock('bcrypt', () => ({
-  hash: jest.fn(),
+jest.mock('../common/security/password-hasher', () => ({
+  hashPassword: jest.fn(),
+  verifyPassword: jest.fn(),
 }));
 
 const mockPrisma = {
@@ -138,7 +140,9 @@ describe('UsersService', () => {
         email: 'test@example.com',
         password: 'password123',
       };
-      (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
+      (passwordHasher.hashPassword as jest.Mock).mockResolvedValue(
+        'scrypt-hash',
+      );
       mockPrisma.user.findUnique.mockResolvedValue(null);
       mockPrisma.user.create.mockResolvedValue({
         id: 'user-id',
@@ -151,15 +155,17 @@ describe('UsersService', () => {
 
       const result = await service.createUser(createUserDto);
 
-      expect(bcrypt.hash).toHaveBeenCalledTimes(1);
-      expect(bcrypt.hash).toHaveBeenCalledWith(createUserDto.password, 10);
+      expect(passwordHasher.hashPassword).toHaveBeenCalledTimes(1);
+      const hashCalls = (passwordHasher.hashPassword as jest.Mock).mock
+        .calls as unknown as Array<[string]>;
+      expect(hashCalls[0]?.[0] === createUserDto.password).toBe(true);
       expect(mockPrisma.user.create).toHaveBeenCalledTimes(1);
       expect(mockPrisma.user.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: {
             name: createUserDto.name,
             email: createUserDto.email,
-            password: 'hashedPassword',
+            password: 'scrypt-hash',
             role: 'PARENT',
           },
         }),
@@ -190,7 +196,7 @@ describe('UsersService', () => {
         ConflictException,
       );
 
-      expect(bcrypt.hash).not.toHaveBeenCalled();
+      expect(passwordHasher.hashPassword).not.toHaveBeenCalled();
       expect(mockPrisma.user.create).not.toHaveBeenCalled();
     });
 
@@ -202,7 +208,9 @@ describe('UsersService', () => {
         teacherCode: 'valid-code',
       };
 
-      (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
+      (passwordHasher.hashPassword as jest.Mock).mockResolvedValue(
+        'scrypt-hash',
+      );
 
       mockPrisma.user.findUnique.mockResolvedValue(null);
       mockInviteCodeService.validateInviteCode.mockResolvedValue('PROFESSOR');
@@ -221,15 +229,17 @@ describe('UsersService', () => {
       expect(mockInviteCodeService.validateInviteCode).toHaveBeenCalledWith(
         createUserDto.teacherCode,
       );
-      expect(bcrypt.hash).toHaveBeenCalledTimes(1);
-      expect(bcrypt.hash).toHaveBeenCalledWith(createUserDto.password, 10);
+      expect(passwordHasher.hashPassword).toHaveBeenCalledTimes(1);
+      const hashCalls = (passwordHasher.hashPassword as jest.Mock).mock
+        .calls as unknown as Array<[string]>;
+      expect(hashCalls[0]?.[0] === createUserDto.password).toBe(true);
       expect(mockPrisma.user.create).toHaveBeenCalledTimes(1);
       expect(mockPrisma.user.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: {
             name: createUserDto.name,
             email: createUserDto.email,
-            password: 'hashedPassword',
+            password: 'scrypt-hash',
             role: 'PROFESSOR',
           },
         }),
@@ -252,7 +262,9 @@ describe('UsersService', () => {
         teacherCode: 'invalid-code',
       };
 
-      (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
+      (passwordHasher.hashPassword as jest.Mock).mockResolvedValue(
+        'scrypt-hash',
+      );
 
       mockPrisma.user.findUnique.mockResolvedValue(null);
       mockInviteCodeService.validateInviteCode.mockRejectedValue(
@@ -301,7 +313,11 @@ describe('UsersService', () => {
       };
       const updatedUser = { ...currentUser, name: 'Updated User' };
       const tx = {
-        user: { update: jest.fn().mockResolvedValue(updatedUser) },
+        $queryRaw: jest.fn().mockResolvedValue([{ id: userId }]),
+        user: {
+          findUnique: jest.fn().mockResolvedValue(currentUser),
+          update: jest.fn().mockResolvedValue(updatedUser),
+        },
         authSession: { updateMany: jest.fn() },
       };
 
@@ -366,7 +382,11 @@ describe('UsersService profile self-service contract', () => {
 
   const createTransaction = (updatedUser: Record<string, unknown>) => {
     const tx = {
-      user: { update: jest.fn().mockResolvedValue(updatedUser) },
+      $queryRaw: jest.fn().mockResolvedValue([{ id: 'user-id' }]),
+      user: {
+        findUnique: jest.fn().mockResolvedValue(currentUser),
+        update: jest.fn().mockResolvedValue(updatedUser),
+      },
       authSession: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
     };
 
@@ -404,6 +424,17 @@ describe('UsersService profile self-service contract', () => {
     ).resolves.toEqual(updatedUser);
 
     expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1);
+    expect(tx.$queryRaw).toHaveBeenNthCalledWith(
+      1,
+      expect.any(Array),
+      'user-id',
+    );
+    expect(tx.$queryRaw).toHaveBeenNthCalledWith(
+      2,
+      expect.any(Array),
+      'current-session-id',
+      'user-id',
+    );
     expect(tx.user.update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 'user-id' },
@@ -418,6 +449,12 @@ describe('UsersService profile self-service contract', () => {
       },
       data: { revokedAt: expect.any(Date) as unknown as Date },
     });
+    expect(tx.$queryRaw.mock.invocationCallOrder[0]).toBeLessThan(
+      tx.$queryRaw.mock.invocationCallOrder[1],
+    );
+    expect(tx.$queryRaw.mock.invocationCallOrder[1]).toBeLessThan(
+      tx.user.update.mock.invocationCallOrder[0],
+    );
   });
 
   it.each(['password', 'role', 'id', 'unknownField'])(
@@ -474,6 +511,40 @@ describe('UsersService profile self-service contract', () => {
     expect(tx.user.update).toHaveBeenCalledWith(
       expect.objectContaining({ data: { name: 'Novo Nome' } }),
     );
+    expect(tx.authSession.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('rejects an update when the initiating sid is no longer active for the account', async () => {
+    mockPrisma.user.findUnique.mockResolvedValue(currentUser);
+    const tx = createTransaction({ ...currentUser, email: 'novo@example.com' });
+    tx.$queryRaw.mockImplementationOnce(() =>
+      Promise.resolve([{ id: 'user-id' }]),
+    );
+    tx.$queryRaw.mockResolvedValueOnce([]);
+
+    await expect(
+      callUpdateProfile({ email: 'novo@example.com' }),
+    ).rejects.toThrow(UnauthorizedException);
+
+    expect(tx.user.update).not.toHaveBeenCalled();
+    expect(tx.authSession.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('recomputes changes from the locked profile before writing', async () => {
+    mockPrisma.user.findUnique.mockResolvedValue(currentUser);
+    const tx = createTransaction(currentUser);
+    const concurrentProfile = {
+      ...currentUser,
+      name: 'Nome Concorrente',
+      updatedAt: new Date('2026-09-03T10:00:00.000Z'),
+    };
+    tx.user.findUnique.mockResolvedValue(concurrentProfile);
+
+    await expect(
+      callUpdateProfile({ name: ' Nome Concorrente ' }),
+    ).resolves.toEqual(concurrentProfile);
+
+    expect(tx.user.update).not.toHaveBeenCalled();
     expect(tx.authSession.updateMany).not.toHaveBeenCalled();
   });
 });

@@ -7,6 +7,10 @@ import { BackButton } from '@/components/ui/BackButton';
 import { darkTheme, theme } from '@/theme';
 import { renderWithProviders } from '../helpers/render';
 import { ThemeSwitcher } from '../helpers/theme';
+import {
+  createDeferredNavigation,
+  renderWithProfilePasswordSupport,
+} from '../helpers/profile-password';
 
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(),
@@ -83,6 +87,27 @@ describe('BackButton', () => {
     expect(router.canGoBack).toHaveBeenCalledTimes(1);
     expect(router.back).toHaveBeenCalledTimes(1);
     expect(router.replace).not.toHaveBeenCalled();
+  });
+
+  it('merges caller pending state and accessibility state and ignores disabled presses', async () => {
+    const navigation = createDeferredNavigation();
+    mockUseRouter.mockReturnValue(navigation.router as unknown as ReturnType<typeof useRouter>);
+    const view = await renderWithProfilePasswordSupport(
+      <BackButton fallbackHref="/login" pending accessibilityState={{ selected: true }} />,
+    );
+    const button = view.getByRole('button', { name: 'Voltar', disabled: true });
+
+    expect(button.props.accessibilityState).toEqual({
+      selected: true,
+      busy: true,
+      disabled: true,
+    });
+    button.props.onPress?.(undefined as never);
+    expect(navigation.router.canGoBack).not.toHaveBeenCalled();
+    expect(navigation.router.back).not.toHaveBeenCalled();
+    expect(navigation.router.replace).not.toHaveBeenCalled();
+
+    await view.dispose();
   });
 
   it('does not depend on a native listener or network request', async () => {

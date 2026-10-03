@@ -65,7 +65,7 @@ export class UpdateProfileDto {
   })
   @Transform(({ value }) => transformUserEmail(value as unknown))
   @IsOptional()
-  @IsEmail({}, { message: 'E-mail inválido' })
+  @IsEmail({ ignore_max_length: true }, { message: 'E-mail inválido' })
   @MaxLength(255, { message: 'O e-mail deve ter no máximo 255 caracteres' })
   email?: string;
 }

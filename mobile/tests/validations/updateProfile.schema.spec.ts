@@ -61,6 +61,16 @@ describe('update profile schema', () => {
     ).toBe(false);
   });
 
+  it('keeps a valid hyphenated name under the existing character rules', () => {
+    expect(
+      updateProfileSchema.safeParse({ name: 'Ana-Maria', email: 'user@example.com' }).success,
+    ).toBe(true);
+  });
+
+  it.each(['Ana. Maria', 'Ana 2'])('rejects a name outside the current pattern: %s', (name) => {
+    expect(updateProfileSchema.safeParse({ name, email: 'user@example.com' }).success).toBe(false);
+  });
+
   describe('changed-only payload', () => {
     const currentProfile = {
       name: "João D'Ávila",
@@ -85,6 +95,17 @@ describe('update profile schema', () => {
           email: ' JOAO@EXAMPLE.COM ',
         }),
       ).toEqual({});
+    });
+
+    it('never includes a role or id in the differential payload', () => {
+      const payload = buildUpdateProfilePayload(currentProfile, {
+        name: 'Nome Novo',
+        email: currentProfile.email,
+      });
+
+      expect(payload).toEqual({ name: 'Nome Novo' });
+      expect(payload).not.toHaveProperty('role');
+      expect(payload).not.toHaveProperty('id');
     });
   });
 });

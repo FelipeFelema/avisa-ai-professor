@@ -41,6 +41,22 @@ beforeEach(() => {
 });
 
 describe('profile route', () => {
+  it.each(['PARENT', 'PROFESSOR', 'ADMIN'] as const)(
+    'offers a separate password action for %s preserving profile and theme',
+    async (role) => {
+      mockUseAuth.mockReturnValue({
+        user: { id: 'u', name: 'Nome Atual', email: 'atual@example.com', role },
+        logout: jest.fn(),
+      } as never);
+      const view = await renderProfile();
+      await fireEvent.press(view.getByRole('button', { name: 'Alterar senha' }));
+      expect(push).toHaveBeenCalledWith('/profile/change-password');
+      expect(view.getByText(role)).toBeTruthy();
+      expect(view.getByTestId('theme-selector')).toBeTruthy();
+      expect(view.getByRole('button', { name: 'Editar perfil' })).toBeTruthy();
+      expect(view.getByRole('button', { name: 'Sair da conta' })).toBeTruthy();
+    },
+  );
   it('keeps header, avatar, identity values, and actions in reading order', async () => {
     const view = await renderProfile();
     const text = collectText(view.toJSON());

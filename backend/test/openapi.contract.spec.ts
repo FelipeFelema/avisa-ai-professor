@@ -157,6 +157,49 @@ describe('OpenAPI runtime contract', () => {
     await app.close();
   });
 
+  it('documents the closed write-only password request, protected operation and empty success', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/api/v1/docs/openapi.json')
+      .expect(200);
+    const runtime = response.body as OpenApiDocument;
+    const operation = runtime.paths['/api/v1/auth/change-password']?.post;
+    expect(operation?.operationId).toBe('auth.changePassword');
+    expect(operation?.security).toEqual([{ bearerAuth: [] }]);
+    expect(Object.keys(operation?.responses ?? {}).sort()).toEqual([
+      '204',
+      '400',
+      '401',
+      '409',
+      '429',
+      '500',
+    ]);
+    expect(operation?.responses['204'].content).toBeUndefined();
+    const schema = runtime.components.schemas.ChangePasswordRequest;
+    expect(schema?.additionalProperties).toBe(false);
+    expect(schema?.required?.slice().sort()).toEqual([
+      'confirmNewPassword',
+      'currentPassword',
+      'newPassword',
+    ]);
+    for (const property of Object.values(schema?.properties ?? {}))
+      expect(property).toMatchObject({ type: 'string', writeOnly: true });
+    expect(schema?.properties?.newPassword).toMatchObject({
+      minLength: 6,
+      maxLength: 72,
+    });
+    expect(schema?.properties?.currentPassword?.maxLength).toBeUndefined();
+    for (const name of [
+      'UserProfile',
+      'RegisterResponse',
+      'AuthTokensResponse',
+    ]) {
+      const properties = Object.keys(
+        runtime.components.schemas[name]?.properties ?? {},
+      );
+      expect(properties.some((key) => /password/i.test(key))).toBe(false);
+    }
+  });
+
   it('publishes the exact operation inventory and required metadata', async () => {
     const response = await request(app.getHttpServer())
       .get('/api/v1/docs/openapi.json')

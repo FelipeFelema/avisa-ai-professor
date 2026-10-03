@@ -1,0 +1,319 @@
+# Profile and Password Management Validation Evidence
+
+**Date:** 2026-10-02
+**Updated:** 2026-10-03
+**Scope:** Spec 007 baseline and Phase 2–5 checkpoints. Baseline and earlier checkpoint sections are historical; the final Phase 5 matrix supersedes their pending statuses. Android/assistive-technology acceptance remains open until observed.
+
+## Environment and database safety
+
+- Windows workspace; Node.js `v22.14.0`, npm `11.10.1`, PostgreSQL client `18.2`.
+- Backend and mobile dependencies were already installed; no dependency installation or package change was needed.
+- The backend `.env` selects the development database `avisa_ai`. Its value was not used for destructive tests. Commands selected the local `avisa_ai_test` database, and `assertSafeTestDatabase()` returned `DATABASE_GUARD=PASS` before integration suites ran.
+- CI uses PostgreSQL 15 and `avisa_ai_test`. Local `prisma migrate status` found 11 existing migrations and an up-to-date schema. `prisma migrate deploy` against `avisa_ai_test` reported no pending migrations; no migration was added.
+- The repository `.dockerignore` exists and covers `.git`, `node_modules`, build output, coverage and environment files. It was not changed.
+- No physical-device, Android, keyboard, screen-reader or other assistive-technology observation was made in this baseline: `NOT MEASURED`.
+- Initial Git status contained only the new, untracked `specs/007-profile-and-password-management/` artifacts. The active `.dockerignore` was clean. No commit was created.
+
+## Baseline implementation findings
+
+- `configureApp` enables URI versioning, whitelist and rejection of extra DTO properties, transformation and implicit conversion. `UpdateProfileDto` and `UsersService.updateProfile` restrict self-service edits to name and e-mail.
+- Existing normalizers trim names and trim/lowercase e-mail. The mobile Zod schema applies the same policy, and `buildUpdateProfilePayload` omits normalized values that did not change.
+- The profile screen displays name, e-mail and role, with edit and logout actions. The edit screen currently shows a read-only Perfil field; it already builds a prior-to-new summary, supports cancel without losing form values, avoids no-op requests and maps an e-mail conflict to recoverable feedback.
+- `UsersService.updateProfile` writes identity and revokes other active sessions in one transaction for an effective e-mail change, excluding the initiating sid. Name-only and normalized no-op updates do not revoke sessions. The baseline has no User-row lock or in-transaction sid revalidation.
+- Registration and login currently use bcrypt cost 10. Refresh-token hashes use bcrypt over a SHA-256 digest with a legacy raw-token verification fallback. Session creation is not coordinated with a credential snapshot; session rotation does not write `revokedAt`; `revokeOthersInTransaction` already uses the caller transaction and excludes the initiating sid.
+- Axios retries a 401 once through the existing refresh flow and then expires the session if refresh fails. `AuthProvider.applyProfileUpdate` updates the public user and invalidates profile, classroom and announcement queries. Theme colors are derived from the active palette during render.
+- `BackButton` prevents duplicate internal transitions and maintains its touch target, but has no caller-controlled pending/disabled state. `SecondaryScreen` does not expose such a state.
+- No password-change endpoint, form, or password-change contract exists. Registration accepts 6–72 characters; bcrypt's legacy byte limit means the future password-change design must preserve complete-input semantics separately.
+- Adopted design decisions remain those recorded in `plan.md`: keep the existing profile endpoint; add password change as a separate protected route later; read bcrypt and write versioned scrypt using the full input; preserve refresh hashing, token claims/TTLs and current profile rules; use one transaction for credential write and other-session revocation; make no new package, table or migration. The contract sends `confirmNewPassword` for server validation per FR-016 while keeping it transient and write-only. Account deletion remains in Spec 008.
+
+## Baseline automated checks
+
+| Area | Command / check | Result |
+|---|---|---|
+| Database safety | `assertSafeTestDatabase()` with local `avisa_ai_test` selected | PASS |
+| Prisma | `prisma migrate status`, then `prisma migrate deploy` | PASS; 11 migrations present, no pending migrations |
+| Backend unit | `npm test -- --runInBand src/auth/auth.service.spec.ts src/auth/auth-session.service.spec.ts src/users/users.service.spec.ts src/users/users.controller.spec.ts` | PASS; 4 suites, 28 tests |
+| Backend integration | Jest integration config: `test/auth.integration.spec.ts`, `test/users.integration.spec.ts` | PASS; 2 suites, 23 tests. The existing injected profile-transaction failure emitted its expected error log while assertions passed. |
+| Backend profile e2e | Jest e2e config: `test/profile.e2e-spec.ts` | PASS; 1 suite, 2 tests |
+| OpenAPI | Jest integration config: `test/openapi.contract.spec.ts` | PASS; 1 suite, 7 tests |
+| Mobile baseline | Profile, profile editor, BackButton, secondary navigation, theme surface/bootstrap/storage suites | PASS; 7 suites, 42 tests. Jest reported one worker that did not exit gracefully and was force-exited. |
+| Device / accessibility walkthrough | Not run | NOT MEASURED |
+
+The npm wrapper printed argument-parsing warnings for `--runInBand` in the two baseline unit commands; they exited successfully. The test counts and results above are the observed results, not inferred from the planning notes.
+
+## FR evidence matrix at baseline
+
+`PENDING` means the feature acceptance matrix still requires the story implementation and its planned proof. Baseline regression results do not count as completion of a new acceptance criterion.
+
+| Requirement | Baseline evidence | Planned proof / status |
+|---|---|---|
+| FR-001 | Profile shows name, e-mail and role, edit and logout; no password action yet. | T015–T020 and later password UI; PENDING |
+| FR-002 | Edit form has a read-only Perfil value. | T015/T018 remove it; PENDING |
+| FR-003 | DTO/service accept only name/e-mail; global pipe rejects extra properties. | T013–T020 role and HTTP matrix; PENDING |
+| FR-004 | Closed DTO and service field check; baseline HTTP suites pass. | T013/T014/T017 forbidden-field tests; PENDING |
+| FR-005 | Current normalization and limits are shared between DTO and mobile schema. | T013/T016 regression boundaries; PENDING |
+| FR-006 | Mobile payload builder compares normalized values and omits unchanged fields. | T015/T016 no-op and differential payload tests; PENDING |
+| FR-007 | Edit screen presents a change summary and cancel path. | T015/T018 confirmation and retained-input tests; PENDING |
+| FR-008 | Name-only update skips session revocation in the service. | T013/T014/T017 session matrix; PENDING |
+| FR-009 | Email update transaction excludes current sid and revokes other active sessions. | T013/T014/T017 regression and rollback; PENDING |
+| FR-010 | P2002 is mapped to conflict; transaction and UI provide recoverable handling. | T014/T015/T017 rollback/conflict tests; PENDING |
+| FR-011 | No password-change action or route exists. | T024/T029/T033/T036; PENDING |
+| FR-012 | No password-change form exists. | T028/T036; PENDING |
+| FR-013 | Registration DTO validates a nonempty 6–72 character password; no change form exists. | T021/T027/T029/T033; PENDING |
+| FR-014 | No change-password flow exists; login currently verifies bcrypt credentials. | T004/T021/T027/T030/T033; PENDING |
+| FR-015 | Confirmation and same-password validation are absent. | T021/T027/T030/T033; PENDING |
+| FR-016 | Global HTTP validation is configured; no password-change DTO or server operation exists. | T021/T022/T027/T029/T030/T033; PENDING |
+| FR-017 | JWT supplies user id and sid to protected profile operations; no password operation exists. | T010/T022/T023/T030; PENDING |
+| FR-018 | Login verifies a stored bcrypt credential; no password-change validation exists. | T004/T022/T023/T030; PENDING |
+| FR-019 | No credential replacement operation exists. | T023/T030/T031; PENDING |
+| FR-020 | Existing profile revocation excludes the current sid; password change is absent. | T006/T023/T030/T031; PENDING |
+| FR-021 | Active-session lookup rejects revoked or expired sessions; auth/profile regression suites pass. | T006/T023/T031/T039; PENDING |
+| FR-022 | Login accepts bcrypt credentials under existing rules; no password replacement exists. | T004/T005/T023/T031/T039; PENDING |
+| FR-023 | Public profile projection omits password; no password-change flow/cache exists. | T021–T028/T032/T038; PENDING |
+| FR-024 | No password-change form exists. | T026/T028/T032/T036–T038; PENDING |
+| FR-025 | BackButton has only internal duplicate-navigation locking. | T007/T012 then T028/T037; PENDING |
+| FR-026 | Existing HTTP error mapping and profile conflict recovery are present. | T022/T023/T026/T030/T038; PENDING |
+| FR-027 | Runtime theme tests pass; no manual device or accessibility observation was made. | T007/T012/T015/T019/T028/T036–T037 plus separate walkthrough; PENDING / manual NOT MEASURED |
+| FR-028 | Baseline auth, profile, refresh, navigation and theme suites passed. | T005/T006/T016/T024/T032/T041/T044–T045/T048; PENDING final regression |
+| FR-029 | No password route or contract; no schema migration or dependency was added at baseline. | T022/T024/T039/T041; PENDING |
+
+## SC evidence matrix at baseline
+
+| Criterion | Baseline evidence | Planned proof / status |
+|---|---|---|
+| SC-001 | Role is visible on Profile and read-only on the editor. | T013–T020 all-role UI/API matrix; PENDING |
+| SC-002 | Existing unit, integration, e2e and mobile suites pass; not the full acceptance matrix. | T013–T020 normalized update/conflict matrix; PENDING |
+| SC-003 | Password change is not implemented. | T004/T023/T030/T031/T039; PENDING |
+| SC-004 | Password-change validation is not implemented. | T021/T022/T027/T029/T030/T033; PENDING |
+| SC-005 | Existing profile e-mail revocation is covered by baseline regressions; password-change flow absent. | T006/T023/T030/T031/T039; PENDING |
+| SC-006 | Existing profile integration suite includes an injected transaction failure and passes. | T003/T014/T023/T030 real credential/session rollback; PENDING |
+| SC-007 | No password submission exists; BackButton only blocks duplicate navigation. | T007/T028/T037; PENDING |
+| SC-008 | Profile projection omits password; change-password diagnostics/cache path absent. | T004/T021–T028/T032/T038; PENDING |
+| SC-009 | Automated theme/navigation suites pass; device, large text and assistive technology are NOT MEASURED. | T015/T019/T028/T036–T037 plus device walkthrough; PENDING |
+| SC-010 | Baseline auth/profile/OpenAPI and mobile profile/navigation/theme suites pass. | T005/T006/T016/T024/T032/T041/T044–T045/T048 final regressions; PENDING |
+
+## Phase 2 foundation checkpoint
+
+**Scope completed:** T003–T012. Phase 3 story tasks remain unchecked and untouched.
+
+- T003 adds synthetic PARENT/PROFESSOR/ADMIN account fixtures, an occupied-email owner, bcrypt legacy credentials, two active sessions plus expired/revoked sessions, post-write/post-revocation transaction faults and a participant-count barrier. The mobile helper provides deferred requests/navigation, a real QueryClient and cleanup. `createTestApp` keeps production `configureApp` and rejects an unsafe database before app initialization. The integration/e2e Jest setup now also calls `assertSafeTestDatabase()` before suites execute.
+- T004–T007 add hasher, credential/session coordination and opt-in navigation tests. T008–T012 implement the matching foundation: scrypt v1 full-input hashing with bcrypt reads; scrypt registration writes; locked, snapshot-checked login session creation; transaction-aware session helpers; and pending/disabled BackButton accessibility.
+- Backend source coverage: `npm run test:cov` PASS; 74.20% statements, 65.22% branches, 73.33% functions and 74.15% lines, above configured thresholds.
+- Backend gates: Prisma validate/generate, format, lint, typecheck and build PASS. `avisa_ai_test` guard PASS; 11 existing migrations are up to date and `migrate deploy` made no schema changes.
+- Backend test suites on the protected database: integration 7 suites/59 tests PASS, OpenAPI contract 1/7 PASS, e2e 3/11 PASS. Expected injected-transaction errors were logged by rollback tests; their assertions passed.
+- Mobile gates: typecheck, lint, format, Expo Doctor 21/21, complete `test:ci`, focused navigation/accessibility tests and `export:ci` PASS. The export directory created by validation was removed afterward.
+- No package, lockfile, Prisma schema or migration changed. No device, Android, keyboard, screen-reader or assistive-technology observation was made: `NOT MEASURED`.
+
+### Database selection incident and correction
+
+An initial full integration command was launched as a separate process after setting `DATABASE_URL` only for the preceding migration command. It therefore inherited the development `.env` value `avisa_ai`. The classrooms search test failed because the development database had additional available classrooms; the OpenAPI helper's database guard refused `avisa_ai` before its app connected. No database-wide cleanup helper was invoked. The existing integration suites use unique timestamped fixture prefixes and their scoped `afterAll` cleanup completed without a reported cleanup error. The validation was then rerun with `DATABASE_URL` held in the PowerShell process for the entire sequential suite chain; all backend integration, contract and e2e checks passed on `avisa_ai_test`. The global integration/e2e setup now fails closed on a database that does not satisfy `assertSafeTestDatabase()`.
+
+## Phase 3 user story 1 checkpoint
+
+**Scope completed:** T013–T020. Phase 4 / US2 tasks T021 onward remain unchecked and were not started.
+
+- Backend profile writes lock the user row and active initiating session in the transaction, reread the profile and recompute normalized changes before writing. A no-op returns the locked public profile without a write; name-only updates preserve sessions; an effective e-mail update writes identity and revokes other active sessions atomically while retaining the initiating sid.
+- The profile DTO now accepts a syntactically valid 255-character e-mail while `@MaxLength(255)` still rejects 256. The production-pipeline integration test covers both boundaries. This aligns class-validator's default e-mail length behavior with the existing API/data-model and mobile contract; registration validation was not changed.
+- The editor contains only Nome/E-mail, guards the pending request against duplicate submits and voluntary route removal, allows the authentication-expiry redirect, and uses keyboard avoidance plus scroll reachability. Its palette remains derived from the active theme at render time.
+- The transaction test helper can mutate the initiating sid inside the test transaction before the service's sensitive checks. The HTTP request is rejected and rollback leaves identity, `updatedAt`, and all session IDs/revocation states equal to their prior values.
+
+### Automated checks
+
+| Area | Command/check | Result |
+|---|---|---|
+| Backend users unit | `npx jest --runInBand src/users/users.service.spec.ts src/users/users.controller.spec.ts` | PASS; 2 suites, 24 tests |
+| Backend users HTTP integration | Jest integration config, `test/users.integration.spec.ts`, with process-only `DATABASE_URL` selecting `avisa_ai_test` | PASS; 1 suite, 27 tests. Covers production validation, all-role profile matrix, boundaries, atomic session behavior, two injected rollback points and transactional sid invalidation. The two injected rollback cases emit expected exception logs while their assertions pass. |
+| Backend profile e2e | Jest e2e config, `test/profile.e2e-spec.ts`, on `avisa_ai_test` | PASS; 1 suite, 6 tests |
+| OpenAPI regression | Jest integration config, `test/openapi.contract.spec.ts`, on `avisa_ai_test` | PASS; 1 suite, 7 tests |
+| Mobile profile/editor/navigation | Focused schema, hook, provider, profile/editor, secondary navigation, BackButton, theme-surface and touch-target suites | PASS; 9 suites, 75 tests. Jest left a worker open after assertions, so this run used the repository's established `--forceExit` protocol. |
+| Static checks | Backend and mobile typecheck; targeted ESLint and Prettier checks for changed files | PASS |
+| Whitespace | `git diff --check` plus trailing-whitespace check on task/evidence files | PASS after final edits |
+
+### Per-role acceptance matrix
+
+| Role | HTTP identity/validation matrix | Session matrix | UI matrix |
+|---|---|---|---|
+| PARENT | Normalized name/e-mail, normalized no-op, occupied e-mail conflict, forbidden password/role/id/unknown fields and name/e-mail limits PASS | Name-only and no-op preserve sessions; e-mail change retains initiating access/refresh and rejects the other access/refresh pair PASS | Profile editor exposes only Nome/E-mail PASS |
+| PROFESSOR | Same normalized update, no-op, conflict and forbidden-field checks PASS | Same name-only/no-op preservation and e-mail session rotation checks PASS | Profile editor exposes only Nome/E-mail PASS |
+| ADMIN | Same normalized update, no-op, conflict and forbidden-field checks PASS | Same name-only/no-op preservation and e-mail session rotation checks PASS | Profile editor exposes only Nome/E-mail PASS |
+
+Real-PostgreSQL rollback after identity write and after session revocation, plus pre-check sid invalidation/rollback, were exercised with the PARENT fixture. The shared transaction path and per-role behavior were also covered by unit and all-role integration/e2e checks. The first repeat exposed a fixed boundary e-mail that escaped prefix cleanup; the test now derives its 255-character local part from the run-specific prefix. The exact synthetic orphan from that earlier run was verified by its PARENT role and 100-character test name and removed from `avisa_ai_test`; the development database was not used.
+
+### Manual evidence
+
+Physical Android/emulator observation, keyboard behavior on device, hardware-back/gesture behavior on device, font scaling and TalkBack/other assistive-technology walkthrough: `NOT MEASURED`. Automated tests do not establish device usability.
+
+## Phase 4 / US2 password-flow checkpoint
+
+**Date:** 2026-10-03. **Authorized scope:** T021–T040 only; stop before Phase 5. Windows, Node.js `v22.14.0`, existing installed dependencies and local PostgreSQL `avisa_ai_test`. The previously modified Phase 2/3 files and untracked feature artifacts were preserved; no staging, commit, package, lockfile, schema or migration change was made.
+
+### Delivered behavior and boundaries
+
+- POST `/api/v1/auth/change-password` uses existing JWT and rate-limit guards and authenticated user/sid. The write-only request contains exactly `currentPassword`, `newPassword` and `confirmNewPassword`. The DTO restores original JSON types after production implicit conversion and rejects nontextual values and extras. Both DTO and mobile schema count 6–72 Unicode code points and compare complete strings exactly, including whitespace/case/combining sequences; current passwords have no new maximum. Confirmation is sent and validated per the explicit FR-016 reconciliation in the plan, without changing the original spec.
+- AuthService verifies the credential snapshot and derives the adopted scrypt hash outside the User lock. Within the supplied transaction it checks active sid ownership, checks the credential snapshot, updates the credential and revokes other sessions. The initiator's sid, refresh hash, expiry and existing tokens are untouched by the operation; success is 204 without body or replacement tokens. Wrong current password is 400, invalid sid is 401, stale credential is 409, and internal failures are replaced by a sanitized exception without a retained cause or raw-error logging.
+- Main Perfil has separate Editar perfil, Alterar senha and Sair actions for all roles, preserving identity, role and theme. `/profile/change-password` contains exactly three protected fields, existing themed primitives, keyboard avoidance/scroll, Portuguese field errors, focus refs and safe success feedback. `AuthField.inputRef` is an additive opt-in used to connect React Hook Form error focus to native inputs.
+- Password transport/hook is imperative, with an immediate in-flight ref, safe status/field/message feedback and no TanStack mutation or optimistic identity/token update. The service sends unchanged values, drops raw Axios config/body/cause and maps only allowlisted messages. An incorrect current password does not trigger refresh or retry; existing session-refresh behavior is preserved.
+- Pending fields/submission/header back are disabled and accessible busy state is exposed. `usePreventRemove` registers the shared route-removal guard for voluntary hardware/gesture/navigation removal; auth expiry releases it. Success, route blur/abandonment/unmount and expiry clear form values; reentry starts empty. Late completions after unmount/abandonment/expiry are ignored. Recoverable errors preserve correction; timeout/network feedback says the result could not be confirmed and performs no automatic domain retry or claimed remote cancellation.
+- Swagger and the canonical OpenAPI have the exact added operation/request schema, closed properties, three required/writeOnly strings, Unicode semantics and 204/400/401/409/429/500 metadata. Public profile/token response shapes and the global ErrorResponse are unchanged. Other canonical text/operations were preserved.
+
+### Fresh automated validation
+
+Commands below run inside their package. Integration/e2e commands select `avisa_ai_test` in the PowerShell process before running Jest; the production test helper/setup calls `assertSafeTestDatabase` before app initialization. No secret environment value is included here.
+
+| Area | Command / observed check | Result |
+|---|---|---|
+| Backend unit/coverage | `npm run test:cov` | PASS; 15 suites / 129 tests. Statements 75.77%, branches 68.33%, functions 74.84%, lines 75.84%; all configured thresholds pass. New DTO coverage is 100%. |
+| Backend HTTP integration and contract | `jest --config test/jest-integration.json --runInBand --runTestsByPath test/password-change.integration.spec.ts test/auth.integration.spec.ts test/users.integration.spec.ts test/openapi.contract.spec.ts` | PASS; 4 suites / 57 tests before the additional real-limit case. Includes production validation, legacy/new credentials, all three roles, rollback/races and exact runtime/canonical inventories. Existing profile rollback tests emitted expected injected-fault logs without secret values. |
+| Final password HTTP acceptance | `jest --config test/jest-integration.json --runInBand --runTestsByPath test/password-change.integration.spec.ts`; repeat with `--detectOpenHandles` | PASS; 1 suite / 16 tests in both runs, including the real ten-attempt rate limit. Both exit 0. The first run warned about delayed worker shutdown; the diagnostic repeat reported no open handles. |
+| Profile e2e regression | `jest --config test/jest-e2e.json --runInBand --runTestsByPath test/profile.e2e-spec.ts` | PASS; 1 suite / 6 tests. |
+| Backend static/build/schema | `npm run lint`, `npm run format:check`, `npm run typecheck`, `npm run build`, `npm run prisma:validate` | PASS. No schema changes; existing generated client and Phase 2 migration baseline are retained. |
+| Mobile story and shared regression | `jest --runInBand` with changePassword schema, useChangePassword, auth service, password/profile/profile-edit routes, updateProfile schema/hook, AuthProvider, secondary navigation, BackButton, theme surfaces, touch targets and API session suites; `--forceExit` | PASS; 14 suites / 119 tests. Used the existing mobile worker-shutdown protocol. Final run has no failed assertions. |
+| Mobile static checks | `npm run lint`, `npm run format:check`, `npm run typecheck` | PASS. |
+| Expo Doctor | `npm run doctor` | PASS; 21/21 after a network-enabled rerun. The first sandboxed attempt passed 19/21 and failed the two external Expo/React Native Directory queries due to blocked network access. |
+| Scope/whitespace | `git diff --check` and changed-file/artifact review | PASS. No changes to packages, migrations, account deletion or Phase 5 task state. |
+
+Tests were added before corresponding implementation. Initial DTO/schema tests failed because the new modules were missing; AuthService/controller tests failed because the operation did not exist; HTTP acceptance returned 404 and the OpenAPI operation was absent; mobile service/main-profile tests failed because the password operation/action was absent. Subsequent runs exposed and corrected test-harness issues (DTO exception-envelope assertions, a Jest dynamic import, typed generic mock bindings and RNTL async button handling) before the final passing checks. An initial test-URL substitution failed to select the test database: the global guard refused `avisa_ai` before any test/app initialization. Later commands explicitly set the parsed URI path to `avisa_ai_test` for the whole process and passed.
+
+### API/session/rollback/race evidence (T023/T039)
+
+| Scenario | Observed result |
+|---|---|
+| PARENT / PROFESSOR / ADMIN | All-role 204 with empty body; immutable role; initiating access and preexisting refresh remain usable; other access/refresh return 401; old-password login rejected and new-password login accepted. PARENT/PROFESSOR start with legacy bcrypt; ADMIN starts with scrypt. |
+| Full-input Unicode | HTTP accepts 6 and 72 emoji code points, including more than 72 bytes. A password differing after byte 72 fails verification of the new credential. DTO/schema tests also cover whitespace, case, combining sequences and unrestricted current-password length. |
+| Invalid request | All three fields: missing/null/empty/number/array/object; forbidden id/userId/role/sid/extras; 5/73 code points; incorrect current password, unchanged password and mismatch return 400 with no credential/timestamp/session changes or echoed values. |
+| Authentication / rate limiting | Missing, revoked and expired sessions return 401. Mid-preparation revoked/expired/foreign sid is revalidated before writes. The actual endpoint guard permits ten invalid attempts and returns 429 on the eleventh, with unchanged account/session state. |
+| Post-write / post-revocation fault | The real transaction reaches each injected fault after the underlying write/revoke. Both requests return sanitized 500; credential, timestamps and complete session state equal their prior snapshots. |
+| Concurrent password changes | A deterministic barrier releases two requests holding the same snapshot and initiating sid: one 204, one 409; exactly one credential replacement wins. |
+| Old-snapshot login | Login pauses after credential verification and before locked issuance. Password change commits first; the old login is rejected and no additional session is created. |
+| Concurrent refresh | Refresh pauses before rotation, password change revokes that sid, then rotation proceeds without clearing `revokedAt`. The returned token pair cannot access or refresh the revoked session. |
+
+Sensitive comparisons use boolean assertions; no password/hash/token snapshot is written to evidence or test snapshots.
+
+### Mobile and acceptance limits (T025–T028/T040)
+
+- PASS: client/server validation parity; exact three-value transport; safe field/status mapping (400/401/409/429/500/network); one effective request under immediate duplicate calls and repeated taps; current-password 400 triggers no refresh; pending/disabled fields, header and registered removal guard; expiry bypass; themes preserve edited values and errors; success without logout; clearing/reentry; no unsafe late completion.
+- PASS for inspected boundaries: real QueryClient query/mutation caches remain empty throughout password submission; identity callbacks and token-storage writes/clears are not triggered by a successful password change; inspected console calls and safe errors/feedback contain no credential values or raw HTTP body/config/cause. Phase 5's full exposure audit remains pending.
+- SC-003–SC-007 have directed automated acceptance proof above. SC-008 has the inspected-boundary proof above, with the broader audit retained in T043. SC-009 has structural/theme/focus tests; keyboard ergonomics, large text, narrow width, physical back/gestures and assistive technology are `NOT MEASURED`. SC-010 has focused auth/profile/navigation regression proof; Phase 5 broader domain regressions remain pending.
+- T041–T048 remain unchecked and unexecuted as tasks. No Phase 5 benchmark, full mobile export/coverage campaign, consolidated final matrix, Android walkthrough or TalkBack walkthrough was completed here. Device, iOS/VoiceOver and participant observations remain `NOT MEASURED`.
+
+## Phase 5 cross-cutting validation — 2026-10-03
+
+### Regressions (T041 / SC-010)
+
+- PASS: direct Jest integration invocation on `avisa_ai_test` with auth/users/classrooms/announcements paths: **4 suites / 56 tests**, exit 0. Profile e2e: **1 suite / 6 tests**, exit 0. Registration/invites/roles, login, refresh/logout, identity updates, domain permissions and classroom/announcement mutations retain their asserted results. Expected profile/classroom injected-fault logs are warnings about the test run, not failed assertions.
+- PASS: direct mobile Jest invocation (`--runInBand --forceExit`) covering API sessions, AuthProvider, ThemeProvider, theme surfaces/storage, confirmation matrix, shared navigation, home/classroom/search/announcement routes and domain mutation hooks: **19 suites / 128 tests**, exit 0. Existing React `act` notices and explicit force-exit protocol are WARN; no failed assertions. The complete package campaigns are recorded separately below.
+
+### Operational cost (T042)
+
+Command: `node -r ts-node/register test/profile-password.benchmark.ts`, exit 0. Production hasher, production HTTP configuration, JWT/session checks and PostgreSQL transaction; isolated `avisa_ai_test`. Windows, Node v22.14.0, AMD Ryzen 5 5600G, 12 logical CPUs, 32 GiB RAM, default libuv threadpool (4). Three waves per concurrency level; eight independent accounts, localhost. Setup/login/reset/cleanup excluded from measured durations. Rate limiting bypassed only in this cost probe; its actual ten-attempt cap is proven by the HTTP acceptance suite.
+
+All values below are milliseconds except RSS; percentiles use nearest rank. Small sample counts make p95 approximate and sometimes equal to the maximum.
+
+| Concurrency | Samples per operation | Hash median / p95 / max | Verify median / p95 / max | HTTP median / p95 / max | Locked callback median / max | Peak HTTP process RSS MiB |
+|---|---|---|---|---|---|---|
+| 1 | 3 | 424 / 433 / 433 | 412 / 416 / 416 | 840 / 1104 / 1104 | 4 / 8 | 335 |
+| 2 | 6 | 499 / 505 / 505 | 514 / 523 / 523 | 1039 / 1059 / 1059 | 4 / 7 | 367 |
+| 4 | 12 | 591 / 596 / 596 | 588 / 622 / 622 | 1107 / 1176 / 1176 | 4 / 6 | 433 |
+| 8 | 24 | 550 / 1084 / 1096 | 557 / 1095 / 1103 | 2186 / 2247 / 2248 | 4 / 14 | 437 |
+
+- PASS: **45/45 HTTP requests** returned 204 with empty bodies; none exceeded the existing Axios **10,000 ms** timeout. This comparison is a local observation, not an SLA. At concurrency eight, threadpool queuing is visible in the distribution. Production/network/sustained-load behavior is not measured.
+- PASS: inspection confirms verification/derivation occur before `withUserLock`. The instrumented callback begins after lock acquisition and measures **2–14 ms** across samples; it excludes acquisition wait, transaction commit and final lock release. Deterministic same-account races remain covered by `password-change.integration.spec.ts`; this benchmark measures independent accounts. Each account has a second session for the first wave; subsequent waves have that session already revoked.
+- PASS: native scrypt with unchanged N/r/p but a deliberately insufficient **1 MiB maxmem** rejects with the expected parameter error. Production remains N=32768/r=8/p=3/maxmem=64 MiB, without weaker fallback. RSS samples (10 ms interval) cover the entire Node/Nest/ts-node process and are not per-hash allocations; OS-level out-of-memory failure is **NOT MEASURED**.
+- PASS: added hasher tests inject both synchronous and callback derivation failures. Writes reject with a safe generic error and no retained cause; verification fails closed, bcrypt fallback and logging are absent. The synchronous-error test failed before the fix (boolean assertion only) and passed after adding the matching sanitization. A preliminary spy setup failed because an ES-module namespace property was read-only; the test now spies on the native/default module object and restores all mocks.
+
+### Credential exposure audit (T043 / SC-008)
+
+Audited AuthService, the password DTO/controller, UsersService public projections, the hasher, mobile types/transport/hook/form, Axios refresh boundary, storage/AuthProvider/QueryClient boundaries, secret-sensitive assertions and runtime/canonical contracts.
+
+- PASS: HTTP/OpenAPI audit campaign **2 suites / 24 tests**, exit 0. Real rollback faults after credential write and after session revocation now carry synthetic current/new credentials, stored hash and initiating access token inside the injected error. Boolean assertions inspect both HTTP response and captured Nest logger calls: none retain those values. Database snapshots still match after rollback. No raw error/cause reaches the public error path.
+- PASS: mobile service/hook/password/profile/API-session campaign **5 suites / 42 tests**, exit 0. Pending and resolved submissions keep real QueryClient query/mutation caches empty; successful submission triggers no identity callback or token write/clear/logout. Inspected console calls, feedback and sanitized errors exclude credentials and raw config/request/response/cause. Current-password 400 causes no refresh. Values clear on success/blur/unmount/expiry and reentry starts empty.
+- Public responses use the existing explicit user projection; write-only request fields never become AuthUser. Password data is transient in form/transport/server verification. The service allowlist emits only safe messages; unknown/timeout errors remain indeterminate and do not trigger domain retries. Token storage and refresh continue their existing authentication purpose; password requests are not persisted there.
+- Corrections are limited to generic synchronous derivation-error sanitization and stronger failure/logging assertions; profile response exclusion uses a boolean assertion so a failing check cannot dump a secret-bearing object. Password comparisons use boolean assertions and no credential snapshots are written to evidence. This audit covers inspected boundaries, not physical runtime memory erasure or unobserved third-party/device behavior.
+
+### Manual/device observations (T046 / T047)
+
+At automated closure, read-only environment probes found an Android SDK/ADB after access outside the sandbox was allowed. `adb devices -l` returned an empty device list, and `emulator -list-avds` returned no configured AVD. No connected device or configured emulator was available for the agent's walkthrough. Initial sandbox-only lookup could not inspect the SDK path; the later probe resolves that limitation. The table below preserves the observations unavailable at that checkpoint; the subsequent user verification is recorded separately.
+
+| Required observation | Role/form coverage | Status |
+|---|---|---|
+| Main identity/role/actions; editor normalization, confirmation/cancel, no-op and conflict | PARENT/PROFESSOR/ADMIN; Perfil and Editar perfil | NOT MEASURED on Android |
+| Password fields, correction, successful two-session change, old/new login | All three roles; Alterar senha | NOT MEASURED on Android |
+| Repeated taps, pending voluntary back/gesture, expiry, clearing/reentry | All three roles; both forms | NOT MEASURED on Android |
+| Claro/Escuro, keyboard open, narrow width and enlarged text | All three roles; both forms | NOT MEASURED on Android |
+| Preserved theme/logout/auth/classrooms/announcements | All three roles | NOT MEASURED on Android |
+| Protected purpose, labels, reading/focus order, error announcements, busy/disabled controls and reachable targets | TalkBack; Perfil and both forms | NOT MEASURED |
+| iOS/VoiceOver and participant observations | Separate actual environment/participants required | NOT MEASURED |
+
+#### User-reported Android verification — 2026-10-03
+
+- **PASS (user-reported): T046.** The user reported: “realizei a verificação manual do android e tudo está funcionando corretamente, pode marcar como concluída”. T046 is closed based on this manual verification and explicit completion request.
+- Device model, Android version, font scale and a per-role/per-scenario observation breakdown were not supplied. The report is an overall successful Android verification; the agent did not independently repeat it or infer those environment details.
+- **T047 remains open / NOT MEASURED.** The report does not explicitly include a TalkBack walkthrough. iOS/VoiceOver observations also remain `NOT MEASURED`.
+
+Automated tests, Doctor and export remain separate evidence from this user-reported manual verification. The remaining Phase 5 manual acceptance work is the assistive-technology walkthrough.
+
+### Final gates and acceptance matrix (T044 / T045 / T048)
+
+Detailed commands, observed exit statuses, thresholds and warnings: [backend-gates.md](./backend-gates.md) and [mobile-gates.md](./mobile-gates.md).
+
+- Backend PASS: Prisma validation/generation, 11 existing migrations up to date, format/lint/typecheck, unit coverage **15 suites / 131 tests**, integration **8 / 87**, contract **1 / 8**, e2e **3 / 15**, build. Coverage: **76.14 / 68.56 / 74.84 / 76.27%** (statements/branches/functions/lines), above configured thresholds.
+- Mobile PASS: typecheck/lint/format, Expo Doctor **21/21**, CI coverage **51 suites / 321 tests**, export **Android/iOS/web**. Coverage: **91.77 / 91.25 / 87.86 / 92.03%**, all configured per-file thresholds met. Jest force-exit and React `act` notices are recorded as WARN, not manual evidence. Generated export artifacts were removed after checking the exact workspace target.
+- The original specification's client-only confirmation wording is still inconsistent with FR-016. Implementation/runtime/canonical contracts follow the explicit plan reconciliation: server-side confirmation, transient/write-only. This is a recorded design interpretation, not an attributed user approval or a silently changed spec.
+
+`PASS` below refers to the inspected automated scenario matrix unless explicitly identified as user-reported Android verification, not a universal production guarantee. `PARTIAL` retains the missing assistive-technology observations; Android environment details and scenario breakdown remain undocumented as noted above.
+
+| Requirement | Code/contract and observed proof | Final status |
+|---|---|---|
+| FR-001 | Main profile actions/identity/role; all-role `profile.spec.tsx` | PASS |
+| FR-002 | Editor contains only Nome/E-mail; all-role `profile-edit.spec.tsx` | PASS |
+| FR-003 | Closed profile DTO, immutable role; users integration/profile e2e all-role manipulated requests | PASS |
+| FR-004 | DTO/service reject forbidden/unknown fields without writes; users integration/e2e | PASS |
+| FR-005 | Existing normalization/character rules/name/email boundaries; users service/integration and updateProfile schema | PASS |
+| FR-006 | Differential payload and normalized no-op; profile editor/hook/schema and users integration | PASS |
+| FR-007 | Prior/new summary, confirm/cancel preserving values; profile editor and confirmation matrix | PASS |
+| FR-008 | Name-only preserves session state; users integration/profile e2e | PASS |
+| FR-009 | Effective e-mail change keeps initiator and revokes others; users integration/e2e and AuthProvider updates | PASS |
+| FR-010 | Occupied-email conflict and real post-write/post-revoke rollback; users integration and editor feedback | PASS |
+| FR-011 | Separate `/profile/change-password` action/route, no deletion UI; profile/password route suites | PASS |
+| FR-012 | Exactly three protected fields and password/newPassword purpose; password route suite | PASS structurally; device AT unmeasured |
+| FR-013 | Required strings and 6–72 code points; DTO/schema/production HTTP boundary tests | PASS |
+| FR-014 | Significant spaces/case/Unicode/full input; hasher/DTO/schema/transport/HTTP tests | PASS |
+| FR-015 | Exact confirmation and difference; DTO/schema/HTTP, unchanged database state for invalid requests | PASS |
+| FR-016 | Local Zod and production DTO authority reject raw nontextual values/extras; confirmation reconciliation above | PASS under recorded interpretation |
+| FR-017 | JWT user/sid, transaction-owned active sid checks; invalid/foreign/revoked/expired/race HTTP tests | PASS |
+| FR-018 | Verified snapshot before writes; wrong-current 400 preserves credential/sessions and causes no mobile refresh | PASS |
+| FR-019 | Scrypt full-input representation and same-transaction write/revoke; real PostgreSQL rollback tests | PASS |
+| FR-020 | Initiating sid/expiry/refresh hash and original tokens preserved, other sessions revoked; all-role HTTP matrix | PASS |
+| FR-021 | Other access/refresh 401, concurrent refresh cannot clear revocation; password HTTP/session tests | PASS |
+| FR-022 | Old login rejected/new accepted; all-role HTTP plus legacy/new credential regression | PASS |
+| FR-023 | Public projection, writeOnly canonical/runtime contract, logger fault probes, sanitized errors and cache/storage checks | PASS for inspected boundaries |
+| FR-024 | Imperative form/hook lifecycle, clearing/reentry and late-completion tests; no persisted credentials | PASS for inspected lifecycle |
+| FR-025 | Immediate duplicate suppression, busy/disabled semantics and registered pending route guard; password/shared navigation tests; user-reported successful Android verification | PASS structurally; Android manual PASS by user report, without scenario breakdown |
+| FR-026 | Allowlisted errors/field correction, safe generic failures, indeterminate transport/no automatic domain retry | PASS |
+| FR-027 | Render-time palette, keyboard/scroll/focus/labels/accessibility structure and theme tests; user-reported successful Android verification | PARTIAL; T046 PASS by user report, without environment/scenario details; TalkBack NOT MEASURED |
+| FR-028 | Full auth/session/provider/theme/navigation/classroom/announcement campaigns and per-role permissions | PASS in automated regressions |
+| FR-029 | Canonical/runtime OpenAPI exact inventories and closed writeOnly request; no schema/migration/dependency change | PASS |
+
+| Acceptance criterion | Final observed proof | Status |
+|---|---|---|
+| SC-001 | Three-role editor/API immutable-role matrix | PASS |
+| SC-002 | Name/e-mail/conjoint/no-op/conflict plus rollback; users/editor tests | PASS |
+| SC-003 | All-role successful replacement, old/new login and empty 204 | PASS |
+| SC-004 | Invalid current/same/mismatch/5/73/type/extra matrix leaves state unchanged | PASS |
+| SC-005 | 2+ sessions, initiating original tokens retained, other access/refresh refused | PASS |
+| SC-006 | Actual post-write/post-revocation faults rollback full credential/timestamp/session state | PASS |
+| SC-007 | Immediate duplicate calls/repeated taps cause one operation | PASS |
+| SC-008 | Final inspected response/logger/error/public identity/QueryClient/storage boundaries; boolean sensitive assertions | PASS for inspected boundaries |
+| SC-009 | Automated structural/theme/focus proof; user-reported successful Android verification, without environment/scenario details | PARTIAL; Android manual T046 completed; AT walkthrough NOT MEASURED |
+| SC-010 | Complete backend/mobile auth/theme/domain regressions and preserved shared navigation | PASS in automated regressions |
+
+### Scope, checklist and final task state
+
+| Read-only checklist | Total | Checked | Unchecked | Status |
+|---|---|---|---|---|
+| `checklists/requirements.md` | 16 | 16 | 0 | PASS |
+
+- A SHA-256 inventory of dirty tracked files and feature untracked files was taken before Phase 5. Compared with that inventory, changes are limited to the hasher/error tests, password rollback/logging tests, the boolean profile-exclusion assertion and this feature's documentation/task state. The newly created benchmark and gate evidence are also in scope. Earlier backend/mobile/contract WIP remains present; no stage/commit/reset was performed.
+- No package/lockfile, Prisma schema/migration, Docker ignore, CI workflow or account-deletion implementation was changed. Public OpenAPI has no further Phase 5 changes; its complete earlier feature additions pass the runtime comparison. Repository ignore files and package-specific formatter/ESLint ignores were verified.
+- `git diff --check` and `git diff --no-index --check` against the feature's untracked text artifacts pass. `.specify/extensions.yml` is absent; no before/after implementation hooks are registered.
+- **Completed this phase: T041, T042, T043, T044, T045, T046, T048.** T046 was closed on 2026-10-03 based on the user's successful manual Android verification. **Open: T047.** Overall task state: **47/48 completed**. The automated/cost/audit/consolidation work and user-reported Android walkthrough are complete; the Phase 5 assistive-technology acceptance checkpoint remains open.
