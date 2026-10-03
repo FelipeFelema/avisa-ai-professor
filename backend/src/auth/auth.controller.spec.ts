@@ -1,7 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { HTTP_CODE_METADATA } from '@nestjs/common/constants';
+import { HTTP_CODE_METADATA, GUARDS_METADATA } from '@nestjs/common/constants';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { RateLimitGuard } from './guards/rate-limit.guard';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -17,6 +19,7 @@ describe('AuthController', () => {
             login: jest.fn(),
             register: jest.fn(),
             refreshToken: jest.fn(),
+            changePassword: jest.fn(),
           }),
         },
       ],
@@ -27,6 +30,32 @@ describe('AuthController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  it('forwards authenticated identity/sid and returns no tokens with JWT/rate-limit and 204', async () => {
+    const body = {
+      currentPassword: 'Synthetic old password',
+      newPassword: 'Synthetic new password',
+      confirmNewPassword: 'Synthetic new password',
+    };
+    const result = await controller.changePassword(
+      { user: { id: 'server-id', sid: 'server-sid' } } as never,
+      body,
+    );
+    expect(result).toBeUndefined();
+    const calls = authService.changePassword.mock.calls as unknown as Array<
+      [string, string, unknown]
+    >;
+    expect(calls[0][0]).toBe('server-id');
+    expect(calls[0][1]).toBe('server-sid');
+    expect(calls[0][2] === body).toBe(true);
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    const handler = AuthController.prototype.changePassword;
+    expect(Reflect.getMetadata(HTTP_CODE_METADATA, handler)).toBe(204);
+    expect(Reflect.getMetadata(GUARDS_METADATA, handler)).toEqual([
+      RateLimitGuard,
+      JwtAuthGuard,
+    ]);
   });
 
   it('returns only documented tokens while keeping sid internal to the JWT claim', async () => {

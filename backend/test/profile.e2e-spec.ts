@@ -22,17 +22,36 @@ describe('Profile self-service (e2e)', () => {
   const makeEmail = (label: string) => `${testPrefix}-${label}@example.com`;
 
   const deleteTestUsers = async () => {
+    await prisma.inviteCode.deleteMany({
+      where: { code: { startsWith: `PROFILE-${testPrefix}` } },
+    });
     await prisma.user.deleteMany({
       where: { email: { startsWith: testPrefix } },
     });
   };
 
-  const registerParent = async (label: string) => {
+  const registerAsRole = async (role: Role, label: string) => {
     const email = makeEmail(label);
+    const body: Record<string, string> = {
+      name: 'Perfil de Teste',
+      email,
+      password,
+    };
+    if (role !== Role.PARENT) {
+      const code = `PROFILE-${testPrefix}-${role}-${label}`;
+      await prisma.inviteCode.create({
+        data: {
+          code,
+          role,
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        },
+      });
+      body.teacherCode = code;
+    }
     const response = await request(app.getHttpServer())
       .post('/api/v1/auth/register')
       .set('X-Forwarded-For', `profile-e2e-register-${label}`)
-      .send({ name: 'Perfil de Teste', email, password })
+      .send(body)
       .expect(201);
 
     return response.body as AuthResponse;
@@ -56,72 +75,78 @@ describe('Profile self-service (e2e)', () => {
     await app.close();
   });
 
-  it('keeps the initiating session active while revoking the other device after normalized email change', async () => {
-    const first = await registerParent('device-a');
-    const secondResponse = await request(app.getHttpServer())
-      .post('/api/v1/auth/login')
-      .set('X-Forwarded-For', 'profile-e2e-login-device-b')
-      .send({ email: ` ${first.email.toUpperCase()} `, password })
-      .expect(200);
-    const second = secondResponse.body as AuthResponse;
-    const newEmail = makeEmail('device-a-updated').toUpperCase();
+  it.each([Role.PARENT, Role.PROFESSOR, Role.ADMIN])(
+    'keeps the initiating session active while revoking the other device for %s',
+    async (role) => {
+      const first = await registerAsRole(role, `device-a-${role}`);
+      const secondResponse = await request(app.getHttpServer())
+        .post('/api/v1/auth/login')
+        .set('X-Forwarded-For', `profile-e2e-login-device-b-${role}`)
+        .send({ email: ` ${first.email.toUpperCase()} `, password })
+        .expect(200);
+      const second = secondResponse.body as AuthResponse;
+      const newEmail = makeEmail(`device-a-updated-${role}`).toUpperCase();
 
-    const update = await request(app.getHttpServer())
-      .patch('/api/v1/users/profile')
-      .set('Authorization', `Bearer ${first.access_token}`)
-      .send({ name: '  Nome Atualizado ', email: ` ${newEmail} ` })
-      .expect(200);
-
-    expect(update.body).toEqual(
-      expect.objectContaining({
-        id: first.id,
-        name: 'Nome Atualizado',
-        email: newEmail.toLowerCase(),
-        role: Role.PARENT,
-      }),
-    );
-
-    await request(app.getHttpServer())
-      .get('/api/v1/users/profile')
-      .set('Authorization', `Bearer ${first.access_token}`)
-      .expect(200);
-    await request(app.getHttpServer())
-      .post('/api/v1/auth/refresh')
-      .set('X-Forwarded-For', 'profile-e2e-refresh-device-a')
-      .send({ refreshToken: first.refresh_token })
-      .expect(200);
-
-    await request(app.getHttpServer())
-      .get('/api/v1/users/profile')
-      .set('Authorization', `Bearer ${second.access_token}`)
-      .expect(401);
-    await request(app.getHttpServer())
-      .post('/api/v1/auth/refresh')
-      .set('X-Forwarded-For', 'profile-e2e-refresh-device-b')
-      .send({ refreshToken: second.refresh_token })
-      .expect(401);
-
-    await request(app.getHttpServer())
-      .post('/api/v1/auth/login')
-      .set('X-Forwarded-For', 'profile-e2e-login-new-email')
-      .send({ email: ` ${newEmail} `, password })
-      .expect(200);
-  });
-
-  it('rejects password, role, id and unknown fields through the production-like validation boundary', async () => {
-    const user = await registerParent('forbidden-fields');
-
-    for (const forbiddenField of [
-      { password: 'new-password' },
-      { role: Role.ADMIN },
-      { id: 'different-user-id' },
-      { displayName: 'unknown' },
-    ]) {
-      await request(app.getHttpServer())
+      const update = await request(app.getHttpServer())
         .patch('/api/v1/users/profile')
-        .set('Authorization', `Bearer ${user.access_token}`)
-        .send(forbiddenField)
-        .expect(400);
-    }
-  });
+        .set('Authorization', `Bearer ${first.access_token}`)
+        .send({ name: '  Nome Atualizado ', email: ` ${newEmail} ` })
+        .expect(200);
+
+      expect(update.body).toEqual(
+        expect.objectContaining({
+          id: first.id,
+          name: 'Nome Atualizado',
+          email: newEmail.toLowerCase(),
+          role,
+        }),
+      );
+
+      await request(app.getHttpServer())
+        .get('/api/v1/users/profile')
+        .set('Authorization', `Bearer ${first.access_token}`)
+        .expect(200);
+      await request(app.getHttpServer())
+        .post('/api/v1/auth/refresh')
+        .set('X-Forwarded-For', `profile-e2e-refresh-device-a-${role}`)
+        .send({ refreshToken: first.refresh_token })
+        .expect(200);
+
+      await request(app.getHttpServer())
+        .get('/api/v1/users/profile')
+        .set('Authorization', `Bearer ${second.access_token}`)
+        .expect(401);
+      await request(app.getHttpServer())
+        .post('/api/v1/auth/refresh')
+        .set('X-Forwarded-For', `profile-e2e-refresh-device-b-${role}`)
+        .send({ refreshToken: second.refresh_token })
+        .expect(401);
+
+      await request(app.getHttpServer())
+        .post('/api/v1/auth/login')
+        .set('X-Forwarded-For', `profile-e2e-login-new-email-${role}`)
+        .send({ email: ` ${newEmail} `, password })
+        .expect(200);
+    },
+  );
+
+  it.each([Role.PARENT, Role.PROFESSOR, Role.ADMIN])(
+    'rejects password, role, id and unknown fields for %s',
+    async (role) => {
+      const user = await registerAsRole(role, `forbidden-fields-${role}`);
+
+      for (const forbiddenField of [
+        { password: 'new-password' },
+        { role: Role.ADMIN },
+        { id: 'different-user-id' },
+        { displayName: 'unknown' },
+      ]) {
+        await request(app.getHttpServer())
+          .patch('/api/v1/users/profile')
+          .set('Authorization', `Bearer ${user.access_token}`)
+          .send(forbiddenField)
+          .expect(400);
+      }
+    },
+  );
 });

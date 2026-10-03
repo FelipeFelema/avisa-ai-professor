@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Post,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import {
   ApiBody,
@@ -12,6 +13,8 @@ import {
   ApiOperation,
   ApiTags,
   getSchemaPath,
+  ApiBearerAuth,
+  ApiResponse,
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
@@ -27,15 +30,68 @@ import {
   ApiValidationErrorResponse,
 } from '../openapi/api-responses.decorator';
 import { AuthTokensResponseDto } from '../common/dto/auth-response.dto';
+import { ErrorResponseDto } from '../common/dto/error-response.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+
+interface PasswordRequest extends Express.Request {
+  user: { id: string; sid: string };
+}
 
 @Controller({
   path: 'auth',
   version: '1',
 })
 @ApiTags('auth')
-@ApiExtraModels(LoginDto, CreateUserDto, RefreshTokenDto, AuthTokensResponseDto)
+@ApiExtraModels(
+  LoginDto,
+  CreateUserDto,
+  RefreshTokenDto,
+  AuthTokensResponseDto,
+  ChangePasswordDto,
+  ErrorResponseDto,
+)
 export class AuthController {
   constructor(private authService: AuthService) {}
+
+  @UseGuards(RateLimitGuard, JwtAuthGuard)
+  @Post('change-password')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiBearerAuth('bearerAuth')
+  @ApiOperation({
+    operationId: 'auth.changePassword',
+    summary: 'Alterar a própria senha',
+    description:
+      'Usa user/sid autenticados. Valida strings exatas, nova senha de 6–72 pontos de código Unicode e confirmação. Grava credencial e revoga outras sessões atomicamente; os tokens iniciadores permanecem válidos. Limitado por IP.',
+  })
+  @ApiBody({ schema: { $ref: getSchemaPath(ChangePasswordDto) } })
+  @ApiResponse({
+    status: 204,
+    description: 'Senha alterada; sem corpo ou tokens novos',
+  })
+  @ApiResponseDto(
+    400,
+    ErrorResponseDto,
+    'Entrada inválida; CURRENT_PASSWORD_INVALID, PASSWORD_UNCHANGED ou PASSWORD_CONFIRMATION_MISMATCH',
+  )
+  @ApiUnauthorizedResponse()
+  @ApiResponseDto(
+    409,
+    ErrorResponseDto,
+    'CREDENTIAL_CHANGED; revise e reentre os dados',
+  )
+  @ApiTooManyRequestsResponse()
+  @ApiResponseDto(
+    500,
+    ErrorResponseDto,
+    'Falha interna sanitizada; transação revertida',
+  )
+  async changePassword(
+    @Request() req: PasswordRequest,
+    @Body() body: ChangePasswordDto,
+  ): Promise<void> {
+    await this.authService.changePassword(req.user.id, req.user.sid, body);
+  }
 
   @UseGuards(RateLimitGuard)
   @Post('login')
