@@ -7,6 +7,7 @@ import {
 
 import { api, authApi, setSessionExpiredHandler } from '@/lib';
 import * as storage from '@/storage';
+import { changePassword, ChangePasswordError } from '@/services/auth';
 
 jest.mock('@/storage', () => ({
   clearTokens: jest.fn(),
@@ -155,6 +156,45 @@ describe('API session bridge', () => {
 
     await expect(rejected?.(error)).rejects.toBe(error);
     expect(storage.getTokens).not.toHaveBeenCalled();
+  });
+
+  it('does not refresh/retry an incorrect current password and strips its raw request error', async () => {
+    const previousAdapter = api.defaults.adapter;
+    const refresh = jest.spyOn(authApi, 'post');
+    const body = {
+      currentPassword: 'Synthetic old password',
+      newPassword: 'Synthetic new password',
+      confirmNewPassword: 'Synthetic new password',
+    };
+    const adapter = jest.fn(async (request: InternalAxiosRequestConfig) => {
+      throw new AxiosError('untrusted', undefined, request, undefined, {
+        status: 400,
+        statusText: 'Bad Request',
+        config: request,
+        headers: {},
+        data: { message: 'CURRENT_PASSWORD_INVALID' },
+      });
+    });
+    api.defaults.adapter = adapter;
+    try {
+      let error: unknown;
+      try {
+        await changePassword(body);
+      } catch (caught) {
+        error = caught;
+      }
+      expect(error instanceof ChangePasswordError && error.field === 'currentPassword').toBe(true);
+      expect(adapter).toHaveBeenCalledTimes(1);
+      expect(refresh).not.toHaveBeenCalled();
+      expect(storage.saveTokens).not.toHaveBeenCalled();
+      expect(storage.clearTokens).not.toHaveBeenCalled();
+      expect(
+        !JSON.stringify(error).includes(body.currentPassword) &&
+          !JSON.stringify(error).includes(body.newPassword),
+      ).toBe(true);
+    } finally {
+      api.defaults.adapter = previousAdapter;
+    }
   });
 
   it('expires the session when refreshing a 401 fails', async () => {

@@ -7,6 +7,7 @@ import type { AuthUser } from '@/types/auth';
 jest.mock('@/lib', () => ({
   api: {
     patch: jest.fn(),
+    post: jest.fn(),
   },
   authApi: {
     post: jest.fn(),
@@ -72,4 +73,58 @@ describe('auth service profile update', () => {
       email: 'joao.silva@example.com',
     });
   });
+});
+
+describe('transient password service', () => {
+  const body = {
+    currentPassword: 'Synthetic old password',
+    newPassword: 'Synthetic new password',
+    confirmNewPassword: 'Synthetic new password',
+  };
+  beforeEach(() => jest.clearAllMocks());
+  it('posts the exact three unchanged strings and returns void without retries', async () => {
+    mockedApi.post.mockResolvedValue({ data: undefined });
+    expect(await authService.changePassword(body)).toBeUndefined();
+    expect(mockedApi.post).toHaveBeenCalledTimes(1);
+    const [path, data] = mockedApi.post.mock.calls[0];
+    expect(path).toBe('/auth/change-password');
+    expect(JSON.stringify(data) === JSON.stringify(body)).toBe(true);
+  });
+  it.each([
+    [400, 'CURRENT_PASSWORD_INVALID', 'currentPassword'],
+    [400, 'PASSWORD_UNCHANGED', 'newPassword'],
+    [400, 'PASSWORD_CONFIRMATION_MISMATCH', 'confirmNewPassword'],
+    [409, 'CREDENTIAL_CHANGED', undefined],
+    [401, 'untrusted', undefined],
+    [429, 'untrusted', undefined],
+    [500, 'untrusted', undefined],
+    [undefined, 'untrusted', undefined],
+  ])(
+    'sanitizes %s without retaining raw errors/config/body/cause',
+    async (status, message, field) => {
+      const raw = Object.assign(new Error(body.currentPassword), {
+        isAxiosError: true,
+        config: { data: body },
+        response: status ? { status, data: { message, password: body.newPassword } } : undefined,
+      });
+      mockedApi.post.mockRejectedValue(raw);
+      let caught: unknown;
+      try {
+        await authService.changePassword(body);
+      } catch (error) {
+        caught = error;
+      }
+      expect(caught instanceof authService.ChangePasswordError).toBe(true);
+      const safe = caught as authService.ChangePasswordError;
+      expect(safe.field).toBe(field);
+      expect(safe.status).toBe(status);
+      expect(['config', 'response', 'cause', 'request'].some((key) => key in safe)).toBe(false);
+      expect(
+        !JSON.stringify(safe).includes(body.currentPassword) &&
+          !JSON.stringify(safe).includes(body.newPassword) &&
+          !safe.message.includes('untrusted'),
+      ).toBe(true);
+      expect(mockedApi.post).toHaveBeenCalledTimes(1);
+    },
+  );
 });

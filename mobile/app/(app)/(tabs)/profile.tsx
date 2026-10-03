@@ -136,6 +136,12 @@ export default function ProfileScreen() {
         />
 
         <Button
+          label="Alterar senha"
+          variant="secondary"
+          onPress={() => router.push('/profile/change-password')}
+        />
+
+        <Button
           label="Sair da conta"
           variant="destructive"
           loading={isSigningOut}

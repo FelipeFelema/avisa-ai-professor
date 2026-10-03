@@ -24,6 +24,19 @@ export interface UpdateProfileRequest {
   email?: string;
 }
 
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+  confirmNewPassword: string;
+}
+
+export interface ChangePasswordFeedback {
+  status?: number;
+  message: string;
+  field?: keyof ChangePasswordRequest;
+  indeterminate?: boolean;
+}
+
 export interface AuthContextData {
   user: AuthUser | null;
   isAuthenticated: boolean;
