@@ -219,6 +219,9 @@ describe('AuthProvider profile/session boundaries', () => {
     await waitFor(() => expect(getByText(updatedUser.name)).toBeTruthy());
     expect(setQueryData).toHaveBeenCalledWith(['auth', 'profile'], updatedUser);
     expect(invalidateQueries).toHaveBeenCalled();
+    expect(queryClient.getQueryData(['auth', 'profile'])).toEqual(updatedUser);
+    expect(storage.clearTokens).not.toHaveBeenCalled();
+    expect(storage.saveTokens).not.toHaveBeenCalled();
   });
 
   it('clears tokens, cache and context together when the session expires', async () => {

@@ -1,5 +1,6 @@
 import { fireEvent } from '@testing-library/react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Text } from 'react-native';
 
 import LoginScreen from '../../app/(auth)/login';
 import RegisterScreen from '../../app/(auth)/register';
@@ -25,13 +26,19 @@ import { useMyClassrooms } from '@/hooks/useMyClassrooms';
 import { useAvailableClassrooms } from '@/hooks/useAvailableClassrooms';
 import { useUpdateAnnouncement } from '@/hooks/useUpdateAnnouncement';
 import { useUpdateProfile } from '@/hooks/useUpdateProfile';
+import { SecondaryScreen } from '@/components/ui';
 import { renderWithProviders } from '../helpers/render';
 import { ThemeSwitcher } from '../helpers/theme';
+import {
+  createDeferredNavigation,
+  renderWithProfilePasswordSupport,
+} from '../helpers/profile-password';
 
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(),
   useLocalSearchParams: jest.fn(),
 }));
+jest.mock('expo-router/react-navigation', () => ({ usePreventRemove: jest.fn() }));
 
 jest.mock('@/hooks/useAnnouncement', () => ({ useAnnouncement: jest.fn() }));
 jest.mock('@/hooks/useAuth', () => ({ useAuth: jest.fn() }));
@@ -211,6 +218,29 @@ describe('secondary route navigation matrix', () => {
 
     expect(router.back).toHaveBeenCalledTimes(1);
     expect(router.replace).not.toHaveBeenCalled();
+  });
+
+  it('lets a pending secondary screen expose and enforce a busy back control', async () => {
+    const navigation = createDeferredNavigation();
+    mockUseRouter.mockReturnValue(navigation.router as unknown as ReturnType<typeof useRouter>);
+    const view = await renderWithProfilePasswordSupport(
+      <SecondaryScreen fallbackHref="/profile" backPending>
+        <Text>Pending operation</Text>
+      </SecondaryScreen>,
+    );
+    const backButton = view.getByRole('button', { name: 'Voltar', disabled: true });
+
+    expect(backButton.props.accessibilityState).toEqual({
+      busy: true,
+      disabled: true,
+    });
+    backButton.props.onPress?.(undefined as never);
+    expect(navigation.router.canGoBack).not.toHaveBeenCalled();
+    expect(navigation.router.back).not.toHaveBeenCalled();
+    expect(navigation.router.replace).not.toHaveBeenCalled();
+    expect(view.queryClient.getQueryCache().getAll()).toHaveLength(0);
+
+    await view.dispose();
   });
 
   it('keeps the visual return control mounted through loading, error, and not-found states', async () => {

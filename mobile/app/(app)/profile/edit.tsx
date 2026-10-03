@@ -1,6 +1,7 @@
-import { useRef, useState } from 'react';
-import { ScrollView, StyleSheet, Text } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text } from 'react-native';
 import { useRouter } from 'expo-router';
+import { usePreventRemove } from 'expo-router/react-navigation';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { isAxiosError } from 'axios';
@@ -42,6 +43,18 @@ export default function ProfileEditScreen() {
   const [feedback, setFeedback] = useState<string>();
   const requestInFlight = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [navigateAfterSave, setNavigateAfterSave] = useState(false);
+  const requestPending = updateProfile.isPending || isSubmitting;
+
+  usePreventRemove(requestPending && Boolean(user) && !navigateAfterSave, () => undefined);
+
+  useEffect(() => {
+    if (!navigateAfterSave) {
+      return;
+    }
+
+    router.replace('/profile');
+  }, [navigateAfterSave, router]);
 
   const {
     control,
@@ -121,7 +134,10 @@ export default function ProfileEditScreen() {
       await updateProfile.mutateAsync(pendingUpdate.payload);
       setPendingUpdate(null);
       setConfirmationError(undefined);
-      router.replace('/profile');
+      requestInFlight.current = false;
+      setIsSubmitting(false);
+      setNavigateAfterSave(true);
+      return;
     } catch (error) {
       if (isAxiosError(error) && error.response?.status === 409) {
         setError('email', {
@@ -138,83 +154,95 @@ export default function ProfileEditScreen() {
   };
 
   return (
-    <SecondaryScreen fallbackHref="/profile">
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Text accessibilityRole="header" style={styles.title}>
-          Editar perfil
-        </Text>
-        <Text style={styles.subtitle}>
-          Atualize somente seu nome e e-mail. O perfil de acesso permanece inalterado.
-        </Text>
-
-        <Controller
-          control={control}
-          name="name"
-          render={({ field: { onChange, value } }) => (
-            <AuthField
-              label="Nome"
-              placeholder="Seu nome completo"
-              value={value}
-              onChangeText={onChange}
-              autoCapitalize="words"
-              autoComplete="name"
-              textContentType="name"
-              error={errors.name?.message}
-            />
-          )}
-        />
-
-        <Controller
-          control={control}
-          name="email"
-          render={({ field: { onChange, value } }) => (
-            <AuthField
-              label="E-mail"
-              placeholder="seuemail@exemplo.com"
-              value={value}
-              onChangeText={onChange}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              autoComplete="email"
-              textContentType="emailAddress"
-              error={errors.email?.message}
-            />
-          )}
-        />
-
-        <AuthField label="Perfil" value={user.role} editable={false} />
-
-        {feedback ? (
-          <Text accessibilityRole="alert" style={styles.feedback}>
-            {feedback}
+    <SecondaryScreen fallbackHref="/profile" backPending={requestPending}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardAvoiding}
+      >
+        <ScrollView
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <Text accessibilityRole="header" style={styles.title}>
+            Editar perfil
           </Text>
-        ) : null}
+          <Text style={styles.subtitle}>
+            Atualize somente seu nome e e-mail. O perfil de acesso permanece inalterado.
+          </Text>
 
-        <AuthButton
-          label="Salvar alterações"
-          loadingLabel="Salvando..."
-          isLoading={updateProfile.isPending || isSubmitting}
-          onPress={handleSubmit(onSubmit)}
-        />
+          <Controller
+            control={control}
+            name="name"
+            render={({ field: { onChange, value } }) => (
+              <AuthField
+                label="Nome"
+                placeholder="Seu nome completo"
+                value={value}
+                onChangeText={onChange}
+                editable={!requestPending}
+                autoCapitalize="words"
+                autoComplete="name"
+                textContentType="name"
+                error={errors.name?.message}
+              />
+            )}
+          />
 
-        <ConfirmationDialog
-          visible={pendingUpdate !== null}
-          title="Confirmar alterações"
-          targetLabel="Seu perfil"
-          summary={pendingUpdate?.summary}
-          confirmLabel="Salvar alterações"
-          onCancel={cancelConfirmation}
-          onConfirm={confirmUpdate}
-          pending={updateProfile.isPending || isSubmitting}
-          errorMessage={confirmationError}
-        />
-      </ScrollView>
+          <Controller
+            control={control}
+            name="email"
+            render={({ field: { onChange, value } }) => (
+              <AuthField
+                label="E-mail"
+                placeholder="seuemail@exemplo.com"
+                value={value}
+                onChangeText={onChange}
+                editable={!requestPending}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                autoComplete="email"
+                textContentType="emailAddress"
+                error={errors.email?.message}
+              />
+            )}
+          />
+
+          {feedback ? (
+            <Text accessibilityRole="alert" style={styles.feedback}>
+              {feedback}
+            </Text>
+          ) : null}
+
+          <AuthButton
+            label="Salvar alterações"
+            loadingLabel="Salvando..."
+            isLoading={requestPending}
+            onPress={handleSubmit(onSubmit)}
+          />
+
+          <ConfirmationDialog
+            visible={pendingUpdate !== null}
+            title="Confirmar alterações"
+            targetLabel="Seu perfil"
+            summary={pendingUpdate?.summary}
+            confirmLabel="Salvar alterações"
+            onCancel={cancelConfirmation}
+            onConfirm={confirmUpdate}
+            pending={requestPending}
+            errorMessage={confirmationError}
+          />
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SecondaryScreen>
   );
 }
 
 function createStyles(AUTH_THEME: ReturnType<typeof getAuthTheme>) {
   return StyleSheet.create({
+    keyboardAvoiding: {
+      flex: 1,
+    },
     content: {
       padding: AUTH_THEME.spacing.xl,
       gap: AUTH_THEME.spacing.xl,

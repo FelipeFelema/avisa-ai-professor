@@ -12,16 +12,28 @@ export type SecondaryScreenProps = {
   fallbackHref: Href;
   children: ReactNode;
   contentStyle?: StyleProp<ViewStyle>;
+  backDisabled?: boolean;
+  backPending?: boolean;
 };
 
-export function SecondaryScreen({ fallbackHref, children, contentStyle }: SecondaryScreenProps) {
+export function SecondaryScreen({
+  fallbackHref,
+  children,
+  contentStyle,
+  backDisabled = false,
+  backPending = false,
+}: SecondaryScreenProps) {
   const { palette: theme } = useTheme();
   const styles = createStyles(theme);
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.backBar}>
-        <BackButton fallbackHref={fallbackHref} />
+        <BackButton
+          fallbackHref={fallbackHref}
+          disabled={backDisabled || backPending}
+          pending={backPending}
+        />
       </View>
       <View style={[styles.content, contentStyle]}>{children}</View>
     </SafeAreaView>

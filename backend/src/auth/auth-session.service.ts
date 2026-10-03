@@ -10,22 +10,64 @@ const PASSWORD_SALT_ROUNDS = 10;
 export class AuthSessionService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async prepareRefreshTokenHash(refreshToken: string): Promise<string> {
+    return bcrypt.hash(this.digest(refreshToken), PASSWORD_SALT_ROUNDS);
+  }
+
   async create(
     userId: string,
     sessionId: string,
     refreshToken: string,
     expiresAt: Date,
   ): Promise<AuthSession> {
+    const refreshTokenHash = await this.prepareRefreshTokenHash(refreshToken);
     return this.prisma.authSession.create({
       data: {
         id: sessionId,
         userId,
-        refreshTokenHash: await bcrypt.hash(
-          this.digest(refreshToken),
-          PASSWORD_SALT_ROUNDS,
-        ),
+        refreshTokenHash,
         expiresAt,
       },
+    });
+  }
+
+  async withUserLock<T>(
+    userId: string,
+    operation: (tx: Prisma.TransactionClient) => Promise<T>,
+  ): Promise<T> {
+    return this.prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`
+        SELECT "id" FROM "User" WHERE "id" = ${userId} FOR UPDATE
+      `;
+      return operation(tx);
+    });
+  }
+
+  async findActiveInTransaction(
+    tx: Prisma.TransactionClient,
+    userId: string,
+    sessionId: string,
+    now = new Date(),
+  ): Promise<AuthSession | null> {
+    return tx.authSession.findFirst({
+      where: {
+        id: sessionId,
+        userId,
+        revokedAt: null,
+        expiresAt: { gt: now },
+      },
+    });
+  }
+
+  async createInTransaction(
+    tx: Prisma.TransactionClient,
+    userId: string,
+    sessionId: string,
+    refreshTokenHash: string,
+    expiresAt: Date,
+  ): Promise<AuthSession> {
+    return tx.authSession.create({
+      data: { id: sessionId, userId, refreshTokenHash, expiresAt },
     });
   }
 

@@ -3,9 +3,10 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import * as bcrypt from 'bcrypt';
+import { hashPassword } from '../common/security/password-hasher';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Prisma, Role, User } from '@prisma/client';
 import { InviteCodeService } from '../invites-code/invite-code.service';
@@ -15,8 +16,6 @@ import {
   normalizeUserName,
   normalizeUserProfile,
 } from '../common/normalizers/user-normalizer';
-
-const PASSWORD_SALT_ROUNDS = 10;
 
 function isPrismaError(error: unknown): error is { code: string } {
   return error !== null && typeof error === 'object' && 'code' in error;
@@ -68,10 +67,7 @@ export class UsersService {
         throw new ConflictException('Esse email já existe');
       }
 
-      const hashedPassword = await bcrypt.hash(
-        userData.password,
-        PASSWORD_SALT_ROUNDS,
-      );
+      const hashedPassword = await hashPassword(userData.password);
 
       let role: Role = Role.PARENT;
 
@@ -133,28 +129,44 @@ export class UsersService {
     }
 
     const normalizedData = normalizeUserProfile(updateData);
-    const data: Prisma.UserUpdateInput = {};
-    const nameChanged =
-      normalizedData.name !== undefined &&
-      normalizedData.name !== normalizeUserName(currentUser.name);
-    const emailChanged =
-      normalizedData.email !== undefined &&
-      normalizedData.email !== normalizeUserEmail(currentUser.email);
-
-    if (nameChanged) {
-      data.name = normalizedData.name;
-    }
-
-    if (emailChanged) {
-      data.email = normalizedData.email;
-    }
-
-    if (!nameChanged && !emailChanged) {
+    if (!this.profileChanges(currentUser, normalizedData).changed) {
       return currentUser;
     }
 
     try {
       return await this.prisma.$transaction(async (tx) => {
+        await tx.$queryRaw`
+          SELECT "id" FROM "User" WHERE "id" = ${userId} FOR UPDATE
+        `;
+
+        const lockedUser = await tx.user.findUnique({
+          where: { id: userId },
+          select: this.userSelect,
+        });
+        if (!lockedUser) {
+          throw new NotFoundException('UsuÃ¡rio nÃ£o encontrado');
+        }
+
+        const activeSessions = await tx.$queryRaw<Array<{ id: string }>>`
+          SELECT "id" FROM "AuthSession"
+          WHERE "id" = ${currentSessionId}
+            AND "userId" = ${userId}
+            AND "revokedAt" IS NULL
+            AND "expiresAt" > NOW()
+          FOR UPDATE
+        `;
+        if (activeSessions.length === 0) {
+          throw new UnauthorizedException('SessÃ£o invÃ¡lida');
+        }
+
+        const { data, emailChanged, changed } = this.profileChanges(
+          lockedUser,
+          normalizedData,
+        );
+        if (!changed) {
+          return lockedUser;
+        }
+
         const updatedUser = await tx.user.update({
           where: { id: userId },
           data,
@@ -181,5 +193,27 @@ export class UsersService {
 
       throw error;
     }
+  }
+
+  private profileChanges(
+    user: Pick<User, 'name' | 'email'>,
+    normalizedData: ReturnType<typeof normalizeUserProfile>,
+  ) {
+    const data: Prisma.UserUpdateInput = {};
+    const nameChanged =
+      normalizedData.name !== undefined &&
+      normalizedData.name !== normalizeUserName(user.name);
+    const emailChanged =
+      normalizedData.email !== undefined &&
+      normalizedData.email !== normalizeUserEmail(user.email);
+
+    if (nameChanged) {
+      data.name = normalizedData.name;
+    }
+    if (emailChanged) {
+      data.email = normalizedData.email;
+    }
+
+    return { data, emailChanged, changed: nameChanged || emailChanged };
   }
 }

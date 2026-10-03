@@ -1,4 +1,4 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, type Ref, useState } from 'react';
 import {
   BlurEvent,
   FocusEvent,
@@ -19,6 +19,7 @@ type AuthFieldProps = TextInputProps & {
   error?: string;
   helperText?: ReactNode;
   inputStyle?: StyleProp<TextStyle>;
+  inputRef?: Ref<TextInput>;
 };
 
 export function AuthField({
@@ -27,6 +28,7 @@ export function AuthField({
   helperText,
   style,
   inputStyle,
+  inputRef,
   ...props
 }: AuthFieldProps) {
   const { palette: theme } = useTheme();
@@ -52,6 +54,7 @@ export function AuthField({
       </Text>
 
       <TextInput
+        ref={inputRef}
         {...props}
         accessibilityLabel={props.accessibilityLabel ?? label}
         accessibilityState={{ disabled: props.editable === false }}
