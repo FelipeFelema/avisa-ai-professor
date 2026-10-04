@@ -67,7 +67,9 @@ describe('useUpdateAnnouncement', () => {
     });
     await waitFor(() => expect(result.current.isPending).toBe(false));
 
-    expect(updateAnnouncementMock).toHaveBeenCalledWith('announcement-1', data);
+    expect(updateAnnouncementMock).toHaveBeenCalledWith('announcement-1', data, {
+      sessionGeneration: expect.any(Number),
+    });
     expect(invalidateQueries).toHaveBeenCalledWith({
       queryKey: announcementKeys.detail('announcement-1'),
     });

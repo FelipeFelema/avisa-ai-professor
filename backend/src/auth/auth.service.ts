@@ -8,6 +8,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as crypto from 'crypto';
+import { Prisma } from '@prisma/client';
 import {
   hashPassword,
   verifyPassword,
@@ -142,52 +143,70 @@ export class AuthService {
 
   async login(email: string, password: string) {
     const verified = await this.verifyCredentials(email, password);
-    const sessionId = crypto.randomUUID();
-    const tokens = this.createTokens(verified.user, sessionId);
-    const refreshTokenHash =
-      await this.authSessionService.prepareRefreshTokenHash(
-        tokens.refresh_token,
-      );
-
-    return this.authSessionService.withUserLock(
+    return this.persistTokens(
       verified.user.id,
-      async (tx) => {
-        const currentCredential = await tx.user.findUnique({
-          where: { id: verified.user.id },
-          select: { password: true },
-        });
-
-        if (
-          !currentCredential ||
-          currentCredential.password !== verified.credentialSnapshot
-        ) {
-          throw new UnauthorizedException('E-mail ou senha inválidos');
-        }
-
-        await this.authSessionService.createInTransaction(
-          tx,
-          verified.user.id,
-          sessionId,
-          refreshTokenHash,
-          new Date(Date.now() + REFRESH_SESSION_TTL_MS),
-        );
-
-        return tokens;
-      },
+      crypto.randomUUID(),
+      verified.credentialSnapshot,
     );
   }
 
   async issueTokens(user: TokenUser, sessionId = crypto.randomUUID()) {
-    const tokens = this.createTokens(user, sessionId);
+    return this.persistTokens(user.id, sessionId);
+  }
 
-    await this.authSessionService.create(
-      user.id,
-      sessionId,
-      tokens.refresh_token,
-      new Date(Date.now() + REFRESH_SESSION_TTL_MS),
-    );
+  private async readTokenUser(tx: Prisma.TransactionClient, userId: string) {
+    const current = await tx.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true, role: true, password: true },
+    });
+    if (!current) throw new UnauthorizedException();
+    return current;
+  }
 
-    return tokens;
+  // A read-only lock pass obtains current claims after waiting. Hashing occurs
+  // after that transaction closes; a second lock pass revalidates the snapshot
+  // before writing. Identity/credential changes fail closed, without retries.
+  private async persistTokens(
+    userId: string,
+    sid: string,
+    credential?: string,
+  ) {
+    try {
+      const snapshot = await this.authSessionService.withUserLock(
+        userId,
+        async (tx) => {
+          const current = await this.readTokenUser(tx, userId);
+          if (credential !== undefined && current.password !== credential)
+            throw new UnauthorizedException();
+          return current;
+        },
+      );
+      const tokens = this.createTokens(snapshot, sid);
+      const hash = await this.authSessionService.prepareRefreshTokenHash(
+        tokens.refresh_token,
+      );
+      return await this.authSessionService.withUserLock(userId, async (tx) => {
+        const current = await this.readTokenUser(tx, userId);
+        if (
+          current.password !== snapshot.password ||
+          current.email !== snapshot.email ||
+          current.role !== snapshot.role
+        )
+          throw new UnauthorizedException();
+        await this.authSessionService.createInTransaction(
+          tx,
+          userId,
+          sid,
+          hash,
+          new Date(Date.now() + REFRESH_SESSION_TTL_MS),
+        );
+        return tokens;
+      });
+    } catch (error) {
+      if (error instanceof UnauthorizedException)
+        throw new UnauthorizedException();
+      throw new InternalServerErrorException('Não foi possível autenticar.');
+    }
   }
 
   private createTokens(user: TokenUser, sessionId: string) {
@@ -227,43 +246,67 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    const session = await this.authSessionService.findActive(
-      payload.sub,
-      payload.sid,
-    );
-    if (
-      !session ||
-      !(await this.authSessionService.verifyRefreshToken(session, refreshToken))
-    ) {
-      throw new UnauthorizedException();
+    try {
+      const session = await this.authSessionService.findActive(
+        payload.sub,
+        payload.sid,
+      );
+      if (
+        !session ||
+        !(await this.authSessionService.verifyRefreshToken(
+          session,
+          refreshToken,
+        ))
+      )
+        throw new UnauthorizedException();
+      const validateSession = async (tx: Prisma.TransactionClient) => {
+        const active = await this.authSessionService.findActiveInTransaction(
+          tx,
+          payload.sub,
+          payload.sid,
+        );
+        if (!active || active.refreshTokenHash !== session.refreshTokenHash)
+          throw new UnauthorizedException();
+      };
+      const snapshot = await this.authSessionService.withUserLock(
+        payload.sub,
+        async (tx) => {
+          const current = await this.readTokenUser(tx, payload.sub);
+          await validateSession(tx);
+          return current;
+        },
+      );
+      const tokens = this.createTokens(snapshot, payload.sid);
+      const hash = await this.authSessionService.prepareRefreshTokenHash(
+        tokens.refresh_token,
+      );
+      return await this.authSessionService.withUserLock(
+        payload.sub,
+        async (tx) => {
+          const current = await this.readTokenUser(tx, payload.sub);
+          await validateSession(tx);
+          if (
+            current.password !== snapshot.password ||
+            current.email !== snapshot.email ||
+            current.role !== snapshot.role
+          )
+            throw new UnauthorizedException();
+          await this.authSessionService.rotateInTransaction(
+            tx,
+            payload.sub,
+            payload.sid,
+            session.refreshTokenHash,
+            hash,
+            new Date(Date.now() + REFRESH_SESSION_TTL_MS),
+          );
+          return tokens;
+        },
+      );
+    } catch (error) {
+      if (error instanceof UnauthorizedException)
+        throw new UnauthorizedException();
+      throw new InternalServerErrorException('Não foi possível autenticar.');
     }
-
-    const user = session.user;
-    const newPayload = this.createJwtPayload(
-      user.id,
-      user.email,
-      user.role,
-      session.id,
-    );
-    const access_token = this.jwtService.sign(newPayload, {
-      secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
-      expiresIn: ACCESS_TOKEN_TTL,
-    });
-    const newRefreshToken = this.jwtService.sign(
-      { ...newPayload, jti: crypto.randomUUID() },
-      {
-        secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
-        expiresIn: REFRESH_TOKEN_TTL,
-      },
-    );
-
-    await this.authSessionService.rotate(
-      session.id,
-      newRefreshToken,
-      new Date(Date.now() + REFRESH_SESSION_TTL_MS),
-    );
-
-    return { access_token, refresh_token: newRefreshToken, sid: session.id };
   }
 
   private createJwtPayload(

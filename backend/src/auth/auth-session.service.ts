@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthSession, Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { createHash } from 'node:crypto';
@@ -21,14 +21,15 @@ export class AuthSessionService {
     expiresAt: Date,
   ): Promise<AuthSession> {
     const refreshTokenHash = await this.prepareRefreshTokenHash(refreshToken);
-    return this.prisma.authSession.create({
-      data: {
-        id: sessionId,
+    return this.withUserLock(userId, (tx) =>
+      this.createInTransaction(
+        tx,
         userId,
+        sessionId,
         refreshTokenHash,
         expiresAt,
-      },
-    });
+      ),
+    );
   }
 
   async withUserLock<T>(
@@ -66,6 +67,13 @@ export class AuthSessionService {
     refreshTokenHash: string,
     expiresAt: Date,
   ): Promise<AuthSession> {
+    if (
+      !(await tx.user.findUnique({
+        where: { id: userId },
+        select: { id: true },
+      }))
+    )
+      throw new UnauthorizedException();
     return tx.authSession.create({
       data: { id: sessionId, userId, refreshTokenHash, expiresAt },
     });
@@ -100,16 +108,55 @@ export class AuthSessionService {
     refreshToken: string,
     expiresAt: Date,
   ): Promise<AuthSession> {
-    return this.prisma.authSession.update({
-      where: { id: sessionId },
-      data: {
-        refreshTokenHash: await bcrypt.hash(
-          this.digest(refreshToken),
-          PASSWORD_SALT_ROUNDS,
-        ),
-        expiresAt,
-      },
+    const snapshot = await this.prisma.authSession.findFirst({
+      where: { id: sessionId, revokedAt: null, expiresAt: { gt: new Date() } },
     });
+    if (!snapshot) throw new UnauthorizedException();
+    const preparedHash = await this.prepareRefreshTokenHash(refreshToken);
+    await this.withUserLock(snapshot.userId, (tx) =>
+      this.rotateInTransaction(
+        tx,
+        snapshot.userId,
+        sessionId,
+        snapshot.refreshTokenHash,
+        preparedHash,
+        expiresAt,
+      ),
+    );
+    const current = await this.findActive(snapshot.userId, sessionId);
+    if (!current) throw new UnauthorizedException();
+    return current;
+  }
+
+  async rotateInTransaction(
+    tx: Prisma.TransactionClient,
+    userId: string,
+    sessionId: string,
+    expectedHash: string,
+    preparedHash: string,
+    expiresAt: Date,
+  ): Promise<void> {
+    if (
+      !(await tx.user.findUnique({
+        where: { id: userId },
+        select: { id: true },
+      }))
+    )
+      throw new UnauthorizedException();
+    const active = await this.findActiveInTransaction(tx, userId, sessionId);
+    if (!active || active.refreshTokenHash !== expectedHash)
+      throw new UnauthorizedException();
+    const result = await tx.authSession.updateMany({
+      where: {
+        id: sessionId,
+        userId,
+        revokedAt: null,
+        expiresAt: { gt: new Date() },
+        refreshTokenHash: expectedHash,
+      },
+      data: { refreshTokenHash: preparedHash, expiresAt },
+    });
+    if (result.count !== 1) throw new UnauthorizedException();
   }
 
   async revokeOthers(userId: string, currentSessionId: string): Promise<void> {

@@ -2,6 +2,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { changePassword, getChangePasswordFeedback } from '@/services/auth';
 import type { ChangePasswordFeedback, ChangePasswordRequest } from '@/types/auth';
+import {
+  getSessionGeneration,
+  isSessionGenerationChangedError,
+  isSessionGenerationCurrent,
+} from '@/lib/session-generation';
 
 export function useChangePassword() {
   const { user, expireSession } = useAuth();
@@ -32,18 +37,27 @@ export function useChangePassword() {
     if (inFlight.current || !account.current || !mounted.current) return 'ignored';
     inFlight.current = true;
     const entry = generation.current;
+    const sessionGeneration = getSessionGeneration();
     let transient: ChangePasswordRequest | undefined = data;
     setIsPending(true);
     setFeedback(undefined);
     try {
-      await changePassword(transient);
-      if (!mounted.current || entry !== generation.current || !account.current) return 'ignored';
+      await changePassword(transient, { sessionGeneration });
+      if (
+        !mounted.current ||
+        entry !== generation.current ||
+        !account.current ||
+        !isSessionGenerationCurrent(sessionGeneration)
+      )
+        return 'ignored';
       return 'success';
     } catch (error) {
+      if (isSessionGenerationChangedError(error) || !isSessionGenerationCurrent(sessionGeneration))
+        return 'ignored';
       const safe = getChangePasswordFeedback(error);
       if (!mounted.current || entry !== generation.current || !account.current) return 'ignored';
       if (safe.status === 401) {
-        await expireSession();
+        await expireSession(sessionGeneration);
         return 'ignored';
       }
       setFeedback(safe);

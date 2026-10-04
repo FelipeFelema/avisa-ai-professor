@@ -26,6 +26,7 @@ const sessions = {
   findActive: jest.fn(),
   verifyRefreshToken: jest.fn(),
   rotate: jest.fn(),
+  rotateInTransaction: jest.fn(),
   findActiveInTransaction: jest.fn(),
   revokeOthersInTransaction: jest.fn(),
 };
@@ -57,7 +58,12 @@ describe('AuthService', () => {
       'replacement-hash',
     );
     sessions.findActiveInTransaction.mockResolvedValue({ id: 'session-id' });
-    lockedTx.user.findUnique.mockResolvedValue({ password: 'stored-hash' });
+    lockedTx.user.findUnique.mockResolvedValue({
+      id: 'user-id',
+      email: 'user@example.com',
+      role: 'PARENT',
+      password: 'stored-hash',
+    });
     sessions.withUserLock.mockImplementation(async (...args: unknown[]) => {
       const callback = args[1] as (tx: typeof lockedTx) => Promise<unknown>;
       return callback(lockedTx);
@@ -178,10 +184,10 @@ describe('AuthService', () => {
       verifierCalls[0]?.[0] === password &&
         verifierCalls[0]?.[1] === 'stored-hash',
     ).toBe(true);
-    expect(sessions.withUserLock).toHaveBeenCalledTimes(1);
+    expect(sessions.withUserLock).toHaveBeenCalledTimes(2);
     expect(lockedTx.user.findUnique).toHaveBeenCalledWith({
       where: { id: 'user-id' },
-      select: { password: true },
+      select: { id: true, email: true, role: true, password: true },
     });
     expect(sessions.prepareRefreshTokenHash).toHaveBeenCalledTimes(1);
     expect(sessions.createInTransaction).toHaveBeenCalledWith(
@@ -254,7 +260,12 @@ describe('AuthService', () => {
         password: storedHash,
         role: 'PARENT',
       });
-      lockedTx.user.findUnique.mockResolvedValue({ password: storedHash });
+      lockedTx.user.findUnique.mockResolvedValue({
+        id: 'user-id',
+        email: 'user@example.com',
+        role: 'PARENT',
+        password: storedHash,
+      });
       sessions.createInTransaction.mockResolvedValue({ id: 'session-id' });
 
       const result = await service.login(
@@ -294,16 +305,122 @@ describe('AuthService', () => {
       user: { id: 'user-id', email: 'new@example.com', role: 'PARENT' },
     });
     sessions.verifyRefreshToken.mockResolvedValue(true);
-    sessions.rotate.mockResolvedValue({ id: 'session-id' });
+    sessions.findActiveInTransaction.mockResolvedValue({
+      id: 'session-id',
+      refreshTokenHash: 'hash',
+    });
+    lockedTx.user.findUnique.mockResolvedValue({
+      id: 'user-id',
+      email: 'new@example.com',
+      role: 'PARENT',
+    });
+    sessions.rotateInTransaction.mockResolvedValue(undefined);
 
     const result = await service.refreshToken('refresh-token');
 
     expect(sessions.findActive).toHaveBeenCalledWith('user-id', 'session-id');
-    expect(sessions.rotate).toHaveBeenCalledWith(
+    expect(sessions.rotateInTransaction).toHaveBeenCalledWith(
+      lockedTx,
+      'user-id',
       'session-id',
-      'token',
+      'hash',
+      'prepared-refresh-hash',
       expect.any(Date),
     );
     expect(result.sid).toBe('session-id');
+    expect(sessions.rotate).not.toHaveBeenCalled();
+    expect(
+      sessions.prepareRefreshTokenHash.mock.invocationCallOrder[0],
+    ).toBeLessThan(sessions.withUserLock.mock.invocationCallOrder[1]);
+  });
+
+  it.each([null, { id: 'session-id', refreshTokenHash: 'rotated' }])(
+    'revalidates missing/revoked/expired or rotated refresh after the lock %#',
+    async (live) => {
+      jwt.verify.mockReturnValue({ sub: 'user-id', sid: 'session-id' });
+      sessions.findActive.mockResolvedValue({
+        id: 'session-id',
+        refreshTokenHash: 'snapshot',
+        user: { id: 'user-id', email: 'user@example.com', role: 'PARENT' },
+      });
+      sessions.verifyRefreshToken.mockResolvedValue(true);
+      sessions.findActiveInTransaction.mockResolvedValue(live);
+      await expect(service.refreshToken('synthetic')).rejects.toThrow(
+        UnauthorizedException,
+      );
+      expect(sessions.rotateInTransaction).not.toHaveBeenCalled();
+    },
+  );
+
+  it('coordinates issueTokens with User existence and commit, never calling an unlocked writer', async () => {
+    await service.issueTokens({
+      id: 'user-id',
+      email: 'user@example.com',
+      role: 'PARENT',
+    });
+    expect(sessions.withUserLock).toHaveBeenCalled();
+    expect(sessions.createInTransaction).toHaveBeenCalled();
+    expect(sessions.create).not.toHaveBeenCalled();
+    lockedTx.user.findUnique.mockResolvedValue(null);
+    await expect(
+      service.issueTokens({
+        id: 'user-id',
+        email: 'user@example.com',
+        role: 'PARENT',
+      }),
+    ).rejects.toThrow(UnauthorizedException);
+  });
+
+  it('does not return tokens when commit fails', async () => {
+    sessions.withUserLock.mockRejectedValueOnce(
+      new Error('private persistence details'),
+    );
+    await expect(
+      service.issueTokens({
+        id: 'user-id',
+        email: 'user@example.com',
+        role: 'PARENT',
+      }),
+    ).rejects.toThrow('Não foi possível autenticar.');
+  });
+
+  it('uses current locked claims when login waited across a profile/role change', async () => {
+    users.findByEmail.mockResolvedValue({
+      id: 'user-id',
+      email: 'old@example.com',
+      role: 'PARENT',
+      password: 'stored-hash',
+    });
+    lockedTx.user.findUnique.mockResolvedValue({
+      id: 'user-id',
+      email: 'current@example.com',
+      role: 'ADMIN',
+      password: 'stored-hash',
+    });
+    await service.login('old@example.com', 'Synthetic password');
+    expect(jwt.sign).toHaveBeenCalledWith(
+      expect.objectContaining({ email: 'current@example.com', role: 'ADMIN' }),
+      expect.anything(),
+    );
+  });
+
+  it('rechecks identity between hash preparation and persistence, without automatic retry', async () => {
+    lockedTx.user.findUnique
+      .mockResolvedValueOnce({
+        id: 'user-id',
+        email: 'user@example.com',
+        role: 'PARENT',
+        password: 'stored-hash',
+      })
+      .mockResolvedValueOnce(null);
+    await expect(
+      service.issueTokens({
+        id: 'user-id',
+        email: 'user@example.com',
+        role: 'PARENT',
+      }),
+    ).rejects.toThrow(UnauthorizedException);
+    expect(sessions.createInTransaction).not.toHaveBeenCalled();
+    expect(sessions.withUserLock).toHaveBeenCalledTimes(2);
   });
 });

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { Pressable, Text } from 'react-native';
 
@@ -7,7 +8,12 @@ import { AuthProvider } from '@/providers/AuthProvider';
 import * as authService from '@/services/auth';
 import * as storage from '@/storage';
 import { queryClient } from '@/config';
-import type { AuthUser } from '@/types/auth';
+import {
+  getSessionGeneration,
+  invalidateSessionGeneration,
+  SessionGenerationChangedError,
+} from '@/lib/session-generation';
+import type { AuthUser, SessionCleanupOutcome } from '@/types/auth';
 
 jest.mock('@/services/auth', () => ({
   getProfile: jest.fn(),
@@ -32,16 +38,21 @@ jest.mock('@/lib', () => {
 
 function AuthProbe({ updatedUser }: { updatedUser: AuthUser }) {
   const { user, isLoading, applyProfileUpdate, expireSession, login, register } = useAuth();
+  const { sessionStorageRecoveryRequired, retrySessionCleanup } = useAuth();
 
   return (
     <>
       <Text>{user?.name ?? 'NO_USER'}</Text>
       <Text>{isLoading ? 'LOADING' : 'READY'}</Text>
+      <Text>{sessionStorageRecoveryRequired ? 'STORAGE_RECOVERY_REQUIRED' : 'STORAGE_READY'}</Text>
       <Pressable onPress={() => applyProfileUpdate(updatedUser)}>
         <Text>Aplicar perfil</Text>
       </Pressable>
       <Pressable onPress={() => void expireSession()}>
         <Text>Expirar sessao</Text>
+      </Pressable>
+      <Pressable onPress={() => void retrySessionCleanup?.()}>
+        <Text>Retry cleanup</Text>
       </Pressable>
       <Pressable onPress={() => void login({ email: 'login@example.com', password: 'secret' })}>
         <Text>Entrar</Text>
@@ -62,6 +73,16 @@ function AuthProbe({ updatedUser }: { updatedUser: AuthUser }) {
   );
 }
 
+function AuthActionsProbe({
+  onActions,
+}: {
+  onActions: (actions: ReturnType<typeof useAuth>) => void;
+}) {
+  const actions = useAuth();
+  useEffect(() => onActions(actions), [actions, onActions]);
+  return null;
+}
+
 describe('AuthProvider profile/session boundaries', () => {
   const currentUser: AuthUser = {
     id: 'user-1',
@@ -77,6 +98,12 @@ describe('AuthProvider profile/session boundaries', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.mocked(storage.saveTokens).mockResolvedValue(true);
+    jest.mocked(storage.clearTokens).mockResolvedValue({
+      accessTokenRemoved: true,
+      refreshTokenRemoved: true,
+      complete: true,
+    });
     jest.mocked(storage.getTokens).mockResolvedValue({
       accessToken: 'access-token',
       refreshToken: 'refresh-token',
@@ -111,7 +138,7 @@ describe('AuthProvider profile/session boundaries', () => {
       email: 'login@example.com',
       password: 'secret',
     });
-    expect(storage.saveTokens).toHaveBeenCalledWith(tokens);
+    expect(storage.saveTokens).toHaveBeenCalledWith(tokens, expect.any(Number));
     expect(authService.getProfile).toHaveBeenCalledTimes(1);
   });
 
@@ -139,7 +166,7 @@ describe('AuthProvider profile/session boundaries', () => {
       password: 'secret',
       teacherCode: 'TEACHER-1',
     });
-    expect(storage.saveTokens).toHaveBeenCalledWith(tokens);
+    expect(storage.saveTokens).toHaveBeenCalledWith(tokens, expect.any(Number));
     expect(authService.getProfile).toHaveBeenCalledTimes(1);
   });
 
@@ -194,7 +221,7 @@ describe('AuthProvider profile/session boundaries', () => {
     });
 
     await waitFor(() => expect(getByText('NO_USER')).toBeTruthy());
-    expect(storage.clearTokens).not.toHaveBeenCalled();
+    expect(storage.clearTokens).toHaveBeenCalledTimes(1);
     expect(clear).toHaveBeenCalledTimes(1);
 
     await unmount();
@@ -240,5 +267,254 @@ describe('AuthProvider profile/session boundaries', () => {
     await waitFor(() => expect(getByText('NO_USER')).toBeTruthy());
     expect(storage.clearTokens).toHaveBeenCalledTimes(1);
     expect(clear).toHaveBeenCalledTimes(1);
+  });
+
+  it('closes identity and cache before waiting for token storage cleanup', async () => {
+    let finishCleanup!: (outcome: SessionCleanupOutcome) => void;
+    jest.mocked(storage.clearTokens).mockReturnValue(
+      new Promise((resolve) => {
+        finishCleanup = resolve;
+      }),
+    );
+    const { getByText } = await render(
+      <AuthProvider>
+        <AuthProbe updatedUser={updatedUser} />
+      </AuthProvider>,
+    );
+
+    await waitFor(() => expect(getByText(currentUser.name)).toBeTruthy());
+    queryClient.setQueryData(['private', 'fixture'], { content: 'private-content' });
+    await act(async () => {
+      fireEvent.press(getByText('Expirar sessao'));
+    });
+
+    expect(getByText('NO_USER')).toBeTruthy();
+    expect(queryClient.getQueryData(['private', 'fixture'])).toBeUndefined();
+    expect(getByText('READY')).toBeTruthy();
+    finishCleanup({ accessTokenRemoved: true, refreshTokenRemoved: true, complete: true });
+    await waitFor(() => expect(getByText('STORAGE_READY')).toBeTruthy());
+  });
+
+  it('ignores a profile restore that resolves after session invalidation', async () => {
+    let resolveProfile!: (profile: AuthUser) => void;
+    jest.mocked(authService.getProfile).mockReturnValue(
+      new Promise((resolve) => {
+        resolveProfile = resolve;
+      }),
+    );
+    const { getByText } = await render(
+      <AuthProvider>
+        <AuthProbe updatedUser={updatedUser} />
+      </AuthProvider>,
+    );
+
+    expect(getByText('LOADING')).toBeTruthy();
+    expect(getByText('NO_USER')).toBeTruthy();
+    await act(async () => {
+      fireEvent.press(getByText('Expirar sessao'));
+    });
+    resolveProfile(currentUser);
+    await act(async () => Promise.resolve());
+
+    expect(getByText('NO_USER')).toBeTruthy();
+    expect(getByText('READY')).toBeTruthy();
+    expect(queryClient.getQueryData(['auth', 'profile'])).toBeUndefined();
+  });
+
+  it('does not apply a profile update from an invalidated session generation', async () => {
+    let actions!: ReturnType<typeof useAuth>;
+    const onActions = (value: ReturnType<typeof useAuth>) => {
+      actions = value;
+    };
+    const { getByText } = await render(
+      <AuthProvider>
+        <>
+          <AuthProbe updatedUser={updatedUser} />
+          <AuthActionsProbe onActions={onActions} />
+        </>
+      </AuthProvider>,
+    );
+
+    await waitFor(() => expect(getByText(currentUser.name)).toBeTruthy());
+    const staleGeneration = getSessionGeneration();
+    await act(async () => {
+      await actions.expireSession();
+    });
+    await act(async () => {
+      actions.applyProfileUpdate(updatedUser, staleGeneration);
+    });
+
+    expect(getByText('NO_USER')).toBeTruthy();
+    expect(queryClient.getQueryData(['auth', 'profile'])).toBeUndefined();
+  });
+
+  it('ignores login tokens returned after the session generation changes', async () => {
+    const tokens = { accessToken: 'late-access', refreshToken: 'late-refresh' };
+    let resolveLogin!: (value: typeof tokens) => void;
+    jest.mocked(storage.getTokens).mockResolvedValue(null);
+    jest.mocked(authService.login).mockReturnValue(
+      new Promise((resolve) => {
+        resolveLogin = resolve;
+      }),
+    );
+    let actions!: ReturnType<typeof useAuth>;
+    const onActions = (value: ReturnType<typeof useAuth>) => {
+      actions = value;
+    };
+    const { getByText } = await render(
+      <AuthProvider>
+        <>
+          <AuthProbe updatedUser={updatedUser} />
+          <AuthActionsProbe onActions={onActions} />
+        </>
+      </AuthProvider>,
+    );
+    await waitFor(() => expect(getByText('READY')).toBeTruthy());
+
+    let loginPromise!: Promise<void>;
+    await act(async () => {
+      loginPromise = actions.login({ email: 'login@example.com', password: 'secret' });
+    });
+    const observed = loginPromise.catch((error: unknown) => error);
+    await act(async () => {
+      await actions.expireSession();
+    });
+    await act(async () => {
+      resolveLogin(tokens);
+      await observed;
+    });
+
+    expect(await observed).toBeInstanceOf(SessionGenerationChangedError);
+    expect(storage.saveTokens).not.toHaveBeenCalled();
+    expect(authService.getProfile).not.toHaveBeenCalled();
+    expect(getByText('NO_USER')).toBeTruthy();
+  });
+
+  it('ignores registration tokens returned after the session generation changes', async () => {
+    const tokens = { accessToken: 'late-access', refreshToken: 'late-refresh' };
+    let resolveRegister!: (value: typeof tokens) => void;
+    jest.mocked(storage.getTokens).mockResolvedValue(null);
+    jest.mocked(authService.register).mockReturnValue(
+      new Promise((resolve) => {
+        resolveRegister = resolve;
+      }),
+    );
+    let actions!: ReturnType<typeof useAuth>;
+    const onActions = (value: ReturnType<typeof useAuth>) => {
+      actions = value;
+    };
+    const { getByText } = await render(
+      <AuthProvider>
+        <>
+          <AuthProbe updatedUser={updatedUser} />
+          <AuthActionsProbe onActions={onActions} />
+        </>
+      </AuthProvider>,
+    );
+    await waitFor(() => expect(getByText('READY')).toBeTruthy());
+
+    let registerPromise!: Promise<void>;
+    await act(async () => {
+      registerPromise = actions.register({
+        name: 'Novo Usuario',
+        email: 'register@example.com',
+        password: 'secret',
+        teacherCode: 'TEACHER-1',
+      });
+    });
+    const observed = registerPromise.catch((error: unknown) => error);
+    await act(async () => {
+      await actions.expireSession();
+    });
+    await act(async () => {
+      resolveRegister(tokens);
+      await observed;
+    });
+
+    expect(await observed).toBeInstanceOf(SessionGenerationChangedError);
+    expect(storage.saveTokens).not.toHaveBeenCalled();
+    expect(authService.getProfile).not.toHaveBeenCalled();
+    expect(getByText('NO_USER')).toBeTruthy();
+  });
+
+  it('keeps authentication closed when token persistence fails', async () => {
+    const tokens = { accessToken: 'access', refreshToken: 'refresh' };
+    jest.mocked(storage.getTokens).mockResolvedValue(null);
+    jest.mocked(storage.saveTokens).mockResolvedValue(false);
+    jest.mocked(storage.clearTokens).mockResolvedValue({
+      accessTokenRemoved: false,
+      refreshTokenRemoved: false,
+      complete: false,
+    });
+    jest.mocked(authService.login).mockResolvedValue(tokens);
+    let actions!: ReturnType<typeof useAuth>;
+    const onActions = (value: ReturnType<typeof useAuth>) => {
+      actions = value;
+    };
+    const { getByText } = await render(
+      <AuthProvider>
+        <>
+          <AuthProbe updatedUser={updatedUser} />
+          <AuthActionsProbe onActions={onActions} />
+        </>
+      </AuthProvider>,
+    );
+    await waitFor(() => expect(getByText('READY')).toBeTruthy());
+
+    await act(async () => {
+      await expect(
+        actions.login({ email: 'login@example.com', password: 'secret' }),
+      ).rejects.toThrow('Não foi possível salvar a sessão neste dispositivo.');
+    });
+
+    expect(getByText('NO_USER')).toBeTruthy();
+    expect(getByText('STORAGE_RECOVERY_REQUIRED')).toBeTruthy();
+    expect(authService.getProfile).not.toHaveBeenCalled();
+  });
+
+  it('ignores an expired-session callback from an old generation', async () => {
+    const setHandler = jest.mocked(apiLib.setSessionExpiredHandler);
+    const { getByText } = await render(
+      <AuthProvider>
+        <AuthProbe updatedUser={updatedUser} />
+      </AuthProvider>,
+    );
+    await waitFor(() => expect(getByText(currentUser.name)).toBeTruthy());
+    const handler = [...setHandler.mock.calls]
+      .reverse()
+      .find(([candidate]) => typeof candidate === 'function')?.[0];
+    expect(handler).toEqual(expect.any(Function));
+    const staleGeneration = getSessionGeneration();
+    queryClient.setQueryData(['auth', 'profile'], currentUser);
+    invalidateSessionGeneration();
+
+    await act(async () => {
+      await (handler as (generation: number) => Promise<void>)(staleGeneration);
+    });
+
+    expect(getByText(currentUser.name)).toBeTruthy();
+    expect(storage.clearTokens).not.toHaveBeenCalled();
+    expect(queryClient.getQueryData(['auth', 'profile'])).toEqual(currentUser);
+  });
+
+  it('keeps authentication closed and exposes a retry when SecureStore cleanup is partial', async () => {
+    jest.mocked(authService.getProfile).mockRejectedValue(new Error('profile unavailable'));
+    jest.mocked(storage.clearTokens).mockResolvedValue({
+      accessTokenRemoved: false,
+      refreshTokenRemoved: true,
+      complete: false,
+    });
+    const { getByText } = await render(
+      <AuthProvider>
+        <AuthProbe updatedUser={updatedUser} />
+      </AuthProvider>,
+    );
+
+    await waitFor(() => expect(getByText('STORAGE_RECOVERY_REQUIRED')).toBeTruthy());
+    expect(getByText('NO_USER')).toBeTruthy();
+    await act(async () => {
+      fireEvent.press(getByText('Retry cleanup'));
+    });
+    expect(storage.clearTokens).toHaveBeenCalledTimes(2);
   });
 });

@@ -3,6 +3,11 @@ import { jest } from '@jest/globals';
 
 jest.mock('expo-router', () => ({
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: jest.fn() },
+  Redirect: ({ href }: { href: string }) => {
+    const ReactRuntime = require('react');
+    const Native = require('react-native');
+    return ReactRuntime.createElement(Native.Text, null, `REDIRECT:${href}`);
+  },
   useRouter: () => ({
     push: jest.fn(),
     replace: jest.fn(),
@@ -10,7 +15,9 @@ jest.mock('expo-router', () => ({
     canGoBack: jest.fn(),
   }),
   useLocalSearchParams: () => ({}),
-  Stack: ({ children }: { children?: ReactNode }) => children,
+  Stack: Object.assign(({ children }: { children?: ReactNode }) => children, {
+    Screen: () => null,
+  }),
   Slot: ({ children }: { children?: ReactNode }) => children,
 }));
 

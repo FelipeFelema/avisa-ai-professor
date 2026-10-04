@@ -61,8 +61,11 @@ describe('useUpdateProfile', () => {
     });
 
     expect(updateProfileMock).toHaveBeenCalledTimes(1);
-    expect(updateProfileMock).toHaveBeenCalledWith({ name: updatedUser.name });
-    expect(applyProfileUpdate).toHaveBeenCalledWith(updatedUser);
+    expect(updateProfileMock).toHaveBeenCalledWith(
+      { name: updatedUser.name },
+      { sessionGeneration: expect.any(Number) },
+    );
+    expect(applyProfileUpdate).toHaveBeenCalledWith(updatedUser, expect.any(Number));
     await waitFor(() => expect(result.current.isPending).toBe(false));
   });
 

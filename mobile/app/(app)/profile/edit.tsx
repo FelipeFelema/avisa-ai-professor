@@ -14,6 +14,7 @@ import {
   type ConfirmationSummaryRow,
 } from '@/components/ui';
 import { getHttpErrorMessage } from '@/lib';
+import { getSessionGeneration, isSessionGenerationCurrent } from '@/lib/session-generation';
 import { useAuth } from '@/hooks/useAuth';
 import { useUpdateProfile } from '@/hooks/useUpdateProfile';
 import type { UpdateProfileRequest } from '@/types/auth';
@@ -129,9 +130,11 @@ export default function ProfileEditScreen() {
 
     requestInFlight.current = true;
     setIsSubmitting(true);
+    const sessionGeneration = getSessionGeneration();
 
     try {
       await updateProfile.mutateAsync(pendingUpdate.payload);
+      if (!isSessionGenerationCurrent(sessionGeneration)) return;
       setPendingUpdate(null);
       setConfirmationError(undefined);
       requestInFlight.current = false;
@@ -139,6 +142,7 @@ export default function ProfileEditScreen() {
       setNavigateAfterSave(true);
       return;
     } catch (error) {
+      if (!isSessionGenerationCurrent(sessionGeneration)) return;
       if (isAxiosError(error) && error.response?.status === 409) {
         setError('email', {
           type: 'server',

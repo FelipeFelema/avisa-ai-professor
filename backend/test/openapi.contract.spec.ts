@@ -157,6 +157,92 @@ describe('OpenAPI runtime contract', () => {
     await app.close();
   });
 
+  it('documents read-only impact and the closed authenticated own-account DELETE', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/api/v1/docs/openapi.json')
+      .expect(200);
+    const runtime = response.body as OpenApiDocument;
+    for (const document of [runtime, designContract]) {
+      const operation = document.paths['/api/v1/users/account-deletion']?.get;
+      expect(operation?.operationId).toBe('users.getAccountDeletionImpact');
+      expect(operation?.security).toEqual([{ bearerAuth: [] }]);
+      expect(operation?.parameters ?? []).toEqual([]);
+      expect(operation?.requestBody).toBeUndefined();
+      const deletion = document.paths['/api/v1/users/account']?.delete;
+      expect(deletion?.operationId).toBe('users.deleteOwnAccount');
+      expect(deletion?.security).toEqual([{ bearerAuth: [] }]);
+      expect(deletion?.parameters ?? []).toEqual([]);
+      expect(Object.keys(deletion?.responses ?? {}).sort()).toEqual([
+        '204',
+        '400',
+        '401',
+        '409',
+        '429',
+        '500',
+      ]);
+      expect(deletion?.responses['204'].content).toBeUndefined();
+      const requestBody = deletion?.requestBody as {
+        required?: boolean;
+        content?: { 'application/json'?: { schema?: { $ref?: string } } };
+      };
+      expect(requestBody.required).toBe(true);
+      expect(requestBody.content?.['application/json']?.schema?.$ref).toBe(
+        '#/components/schemas/DeleteAccountRequest',
+      );
+      const deleteSchema = document.components.schemas.DeleteAccountRequest;
+      expect(deleteSchema?.additionalProperties).toBe(false);
+      expect(deleteSchema?.required?.slice().sort()).toEqual(
+        ['currentPassword', 'confirmationPhrase'].sort(),
+      );
+      for (const field of ['currentPassword', 'confirmationPhrase'])
+        expect(deleteSchema?.properties?.[field]).toMatchObject({
+          type: 'string',
+          writeOnly: true,
+        });
+      expect(deleteSchema?.properties?.confirmationPhrase?.enum).toEqual([
+        'EXCLUIR MINHA CONTA',
+      ]);
+      expect(deletion?.responses['400'].description).toContain(
+        'CURRENT_PASSWORD_INVALID',
+      );
+      expect(deletion?.responses['409'].description).toContain(
+        'LAST_ADMIN_REQUIRED',
+      );
+      const schema = document.components.schemas.AccountDeletionImpact;
+      expect(schema?.additionalProperties).toBe(false);
+      expect(schema?.required?.slice().sort()).toEqual(
+        [
+          'role',
+          'canDelete',
+          'blockReason',
+          'ownedClassroomsCount',
+          'announcementsInOwnedClassroomsCount',
+          'externalMembershipsCount',
+          'authoredAnnouncementsInOtherClassroomsCount',
+        ].sort(),
+      );
+      expect(schema?.properties?.role?.enum).toEqual([
+        'PARENT',
+        'PROFESSOR',
+        'ADMIN',
+      ]);
+      expect(schema?.properties?.blockReason).toMatchObject({
+        nullable: true,
+        enum: ['LAST_ADMIN_REQUIRED'],
+      });
+      for (const name of [
+        'ownedClassroomsCount',
+        'announcementsInOwnedClassroomsCount',
+        'externalMembershipsCount',
+        'authoredAnnouncementsInOtherClassroomsCount',
+      ])
+        expect(schema?.properties?.[name]).toMatchObject({
+          type: 'integer',
+          minimum: 0,
+        });
+    }
+  });
+
   it('documents the closed write-only password request, protected operation and empty success', async () => {
     const response = await request(app.getHttpServer())
       .get('/api/v1/docs/openapi.json')

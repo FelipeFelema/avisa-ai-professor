@@ -3,8 +3,14 @@ import { AxiosError, create, InternalAxiosRequestConfig } from 'axios';
 import { clearTokens, getTokens, saveTokens } from '@/storage';
 
 import { env } from '@/config';
+import {
+  getSessionGeneration,
+  invalidateSessionGeneration,
+  isSessionGenerationCurrent,
+  SessionGenerationChangedError,
+} from '@/lib/session-generation';
 
-type SessionExpiredHandler = () => void | Promise<void>;
+type SessionExpiredHandler = (generation: number) => void | Promise<void>;
 
 let sessionExpiredHandler: SessionExpiredHandler | undefined;
 
@@ -12,9 +18,10 @@ export function setSessionExpiredHandler(handler?: SessionExpiredHandler) {
   sessionExpiredHandler = handler;
 }
 
-async function notifySessionExpired() {
-  await clearTokens();
-  await sessionExpiredHandler?.();
+async function notifySessionExpired(generation: number) {
+  if (!isSessionGenerationCurrent(generation)) return;
+  if (sessionExpiredHandler) await sessionExpiredHandler(generation);
+  else await clearTokens(invalidateSessionGeneration());
 }
 
 export const api = create({
@@ -29,7 +36,12 @@ export const authApi = create({
 
 // Atach the access token to every authenticated request.
 api.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
-  const tokens = await getTokens();
+  const generation = config.sessionGeneration ?? getSessionGeneration();
+  config.sessionGeneration = generation;
+  if (!isSessionGenerationCurrent(generation)) throw new SessionGenerationChangedError();
+
+  const tokens = await getTokens(generation);
+  if (!isSessionGenerationCurrent(generation)) throw new SessionGenerationChangedError();
 
   if (tokens) {
     config.headers.Authorization = `Bearer ${tokens.accessToken}`;
@@ -48,17 +60,23 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    if (error.response?.status !== 401 || originalRequest._retry) {
+    const generation = originalRequest.sessionGeneration ?? getSessionGeneration();
+    if (!isSessionGenerationCurrent(generation)) {
+      return Promise.reject(new SessionGenerationChangedError());
+    }
+
+    if (originalRequest.noAuthReplay || error.response?.status !== 401 || originalRequest._retry) {
       return Promise.reject(error);
     }
 
     originalRequest._retry = true;
 
     try {
-      const tokens = await getTokens();
+      const tokens = await getTokens(generation);
+      if (!isSessionGenerationCurrent(generation)) throw new SessionGenerationChangedError();
 
       if (!tokens) {
-        await notifySessionExpired();
+        await notifySessionExpired(generation);
         return Promise.reject(error);
       }
 
@@ -68,19 +86,23 @@ api.interceptors.response.use(
           refreshToken: tokens.refreshToken,
         },
       );
+      if (!isSessionGenerationCurrent(generation)) throw new SessionGenerationChangedError();
 
       const newTokens = {
         accessToken: response.data.access_token,
         refreshToken: response.data.refresh_token,
       };
 
-      await saveTokens(newTokens);
+      const saved = await saveTokens(newTokens, generation);
+      if (!saved || !isSessionGenerationCurrent(generation)) {
+        throw new SessionGenerationChangedError();
+      }
 
       originalRequest.headers.Authorization = `Bearer ${newTokens.accessToken}`;
 
       return api(originalRequest);
     } catch {
-      await notifySessionExpired();
+      if (isSessionGenerationCurrent(generation)) await notifySessionExpired(generation);
 
       return Promise.reject(error);
     }

@@ -10,6 +10,7 @@ import { AuthButton, AuthField, AuthScreen } from '@/components/auth';
 import { Button, ThemeSelector } from '@/components/ui';
 import { HTTP_STATUS } from '@/constants/http-status';
 import { useAuth } from '@/hooks/useAuth';
+import { consumeSessionNotice } from '@/lib/session-notice';
 import { useTheme } from '@/hooks/useTheme';
 import type { Theme } from '@/theme';
 import { loginSchema, type LoginFormData } from '@/validations/login.schema';
@@ -19,8 +20,9 @@ export default function LoginScreen() {
   const styles = createStyles(theme);
 
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, sessionStorageRecoveryRequired, retrySessionCleanup } = useAuth();
   const [loginError, setLoginError] = useState('');
+  const [sessionNotice, setSessionNotice] = useState(() => consumeSessionNotice());
 
   const {
     control,
@@ -58,6 +60,7 @@ export default function LoginScreen() {
 
   const onSubmit = async (data: LoginFormData) => {
     setLoginError('');
+    setSessionNotice(undefined);
     await loginMutation.mutateAsync(data).catch(() => undefined);
   };
 
@@ -123,6 +126,27 @@ export default function LoginScreen() {
           </Text>
         ) : null}
 
+        {sessionNotice ? (
+          <Text accessibilityRole="alert" style={styles.sessionNotice}>
+            {sessionNotice === 'account-deleted'
+              ? 'Sua conta foi excluída e as sessões foram encerradas.'
+              : 'Sua sessão terminou. Entre novamente.'}
+          </Text>
+        ) : null}
+
+        {sessionStorageRecoveryRequired ? (
+          <View style={styles.sessionRecovery}>
+            <Text accessibilityRole="alert" style={styles.sessionNotice}>
+              O acesso privado foi encerrado. Não foi possível remover todas as credenciais locais.
+            </Text>
+            <Button
+              label="Tentar limpar a sessão local"
+              variant="secondary"
+              onPress={() => void retrySessionCleanup?.()}
+            />
+          </View>
+        ) : null}
+
         <AuthButton
           label="Entrar"
           loadingLabel="Entrando..."
@@ -159,6 +183,13 @@ function createStyles(theme: Theme) {
     feedbackError: {
       color: theme.colors.danger,
       ...theme.typography.caption,
+    },
+    sessionNotice: {
+      color: theme.colors.text,
+      ...theme.typography.body,
+    },
+    sessionRecovery: {
+      gap: theme.spacing.sm,
     },
   });
 }

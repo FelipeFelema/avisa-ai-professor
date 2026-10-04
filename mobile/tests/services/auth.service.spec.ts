@@ -35,7 +35,9 @@ describe('auth service profile update', () => {
     await expect(authService.updateProfile(request)).resolves.toEqual(updatedUser);
 
     expect(mockedApi.patch).toHaveBeenCalledTimes(1);
-    expect(mockedApi.patch).toHaveBeenCalledWith('/users/profile', request);
+    expect(mockedApi.patch).toHaveBeenCalledWith('/users/profile', request, {
+      sessionGeneration: expect.any(Number),
+    });
   });
 
   it('sends both changed fields and never includes role or unrelated profile data', async () => {
@@ -47,10 +49,11 @@ describe('auth service profile update', () => {
 
     await authService.updateProfile(request);
 
-    expect(mockedApi.patch).toHaveBeenCalledWith('/users/profile', {
-      name: request.name,
-      email: request.email,
-    });
+    expect(mockedApi.patch).toHaveBeenCalledWith(
+      '/users/profile',
+      { name: request.name, email: request.email },
+      { sessionGeneration: expect.any(Number) },
+    );
     expect(mockedApi.patch.mock.calls[0][1]).not.toHaveProperty('role');
   });
 
@@ -69,9 +72,11 @@ describe('auth service profile update', () => {
     );
 
     expect(conflict.response?.status).toBe(409);
-    expect(mockedApi.patch).toHaveBeenCalledWith('/users/profile', {
-      email: 'joao.silva@example.com',
-    });
+    expect(mockedApi.patch).toHaveBeenCalledWith(
+      '/users/profile',
+      { email: 'joao.silva@example.com' },
+      { sessionGeneration: expect.any(Number) },
+    );
   });
 });
 
@@ -86,9 +91,10 @@ describe('transient password service', () => {
     mockedApi.post.mockResolvedValue({ data: undefined });
     expect(await authService.changePassword(body)).toBeUndefined();
     expect(mockedApi.post).toHaveBeenCalledTimes(1);
-    const [path, data] = mockedApi.post.mock.calls[0];
+    const [path, data, config] = mockedApi.post.mock.calls[0];
     expect(path).toBe('/auth/change-password');
     expect(JSON.stringify(data) === JSON.stringify(body)).toBe(true);
+    expect(config).toEqual({ sessionGeneration: expect.any(Number) });
   });
   it.each([
     [400, 'CURRENT_PASSWORD_INVALID', 'currentPassword'],

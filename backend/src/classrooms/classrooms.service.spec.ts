@@ -6,10 +6,13 @@ import {
   ConflictException,
   ForbiddenException,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { CLASSROOMS_LIMITS } from '../common/constants/classroom.constants';
 
 const mockPrisma = {
+  $queryRaw: jest.fn(),
+  user: { findUnique: jest.fn() },
   $transaction: jest.fn(),
   classroom: {
     create: jest.fn(),
@@ -44,9 +47,10 @@ describe('ClassroomsService', () => {
 
     service = module.get<ClassroomsService>(ClassroomsService);
 
-    jest.clearAllMocks();
+    jest.resetAllMocks();
 
     mockPrisma.classroom.count.mockResolvedValue(0);
+    mockPrisma.user.findUnique.mockResolvedValue({ id: 'user-id' });
     mockPrisma.$transaction.mockImplementation(
       async (callback: (transaction: typeof mockPrisma) => Promise<unknown>) =>
         callback(mockPrisma),
@@ -428,6 +432,35 @@ describe('ClassroomsService', () => {
   });
 
   describe('delete', () => {
+    it.each([false, true])(
+      'checks User before receipt access, including replay %s',
+      async (replay) => {
+        mockPrisma.user.findUnique.mockResolvedValue(null);
+        mockPrisma.classroomDeletionReceipt.findUnique.mockResolvedValue(
+          replay ? { ownerId: 'user-id' } : null,
+        );
+        await expect(service.delete('user-id', 'classroom-id')).rejects.toThrow(
+          UnauthorizedException,
+        );
+        expect(mockPrisma.$queryRaw).toHaveBeenCalled();
+        expect(
+          mockPrisma.classroomDeletionReceipt.findUnique,
+        ).not.toHaveBeenCalled();
+        expect(
+          mockPrisma.classroomDeletionReceipt.create,
+        ).not.toHaveBeenCalled();
+      },
+    );
+    it('rechecks User under the recovery transaction before consulting a conflicting receipt', async () => {
+      mockPrisma.$transaction.mockRejectedValueOnce({ code: 'P2002' });
+      mockPrisma.user.findUnique.mockResolvedValue(null);
+      await expect(service.delete('gone', 'classroom-id')).rejects.toThrow(
+        UnauthorizedException,
+      );
+      expect(
+        mockPrisma.classroomDeletionReceipt.findUnique,
+      ).not.toHaveBeenCalled();
+    });
     it('should delete classroom when user is the owner', async () => {
       const userId = 'user-id';
       const classroomId = 'classroom-id';

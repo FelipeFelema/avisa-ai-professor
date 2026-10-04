@@ -5,6 +5,7 @@ import { PropsWithChildren } from 'react';
 import { announcementKeys, classroomKeys } from '@/config';
 import * as classroomService from '@/services/classes/classroom.service';
 import { useDeleteClassroom } from '@/hooks/useDeleteClassroom';
+import { invalidateSessionGeneration } from '@/lib/session-generation';
 import type { ClassroomSummary } from '@/types/classroom';
 import {
   cacheAvailableClassroomVariants,
@@ -182,6 +183,47 @@ describe('useDeleteClassroom', () => {
     await cleanupClassroomSearchState(queryClient);
   });
 
+  it('skips cache invalidation if the session changes during query cancellation', async () => {
+    deleteClassroomMock.mockResolvedValue(undefined);
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        mutations: { retry: false, gcTime: 0 },
+        queries: { retry: false, gcTime: 0 },
+      },
+    });
+    let releaseCancellation!: () => void;
+    const cancellation = new Promise<void>((resolve) => {
+      releaseCancellation = resolve;
+    });
+    const cancelQueries = jest
+      .spyOn(queryClient, 'cancelQueries')
+      .mockImplementation(async () => cancellation);
+    const invalidateQueries = jest.spyOn(queryClient, 'invalidateQueries');
+    const { result } = await renderHook(() => useDeleteClassroom(), {
+      wrapper: createWrapper(queryClient),
+    });
+    let mutationPromise!: Promise<void | undefined>;
+
+    try {
+      await act(async () => {
+        mutationPromise = result.current.mutateAsync('classroom-1');
+        await waitFor(() => expect(cancelQueries).toHaveBeenCalledTimes(2));
+      });
+      invalidateSessionGeneration();
+      await act(async () => {
+        releaseCancellation();
+        await mutationPromise;
+      });
+
+      expect(deleteClassroomMock).toHaveBeenCalledTimes(1);
+      expect(invalidateQueries).not.toHaveBeenCalled();
+      await expect(mutationPromise).resolves.toBeUndefined();
+    } finally {
+      releaseCancellation();
+      jest.restoreAllMocks();
+    }
+  });
+
   it('ignores a second deletion while the first request is in flight', async () => {
     let resolveDelete!: () => void;
     deleteClassroomMock.mockImplementation(
@@ -204,7 +246,9 @@ describe('useDeleteClassroom', () => {
     });
 
     expect(deleteClassroomMock).toHaveBeenCalledTimes(1);
-    expect(deleteClassroomMock).toHaveBeenCalledWith('classroom-1');
+    expect(deleteClassroomMock).toHaveBeenCalledWith('classroom-1', {
+      sessionGeneration: expect.any(Number),
+    });
 
     await act(async () => {
       resolveDelete();

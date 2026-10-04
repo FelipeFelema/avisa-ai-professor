@@ -24,6 +24,7 @@ build/
 # expo
 .expo/
 .expo-shared/
+.expo-ci-export/
 
 # metro bundler
 .metro-cache/
