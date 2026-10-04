@@ -8,6 +8,7 @@ import { useAnnouncement } from '@/hooks/useAnnouncement';
 import { useAuth } from '@/hooks/useAuth';
 import { useDeleteAnnouncement } from '@/hooks/useDeleteAnnouncement';
 import { getHttpErrorMessage } from '@/lib';
+import { getSessionGeneration, isSessionGenerationCurrent } from '@/lib/session-generation';
 import { useTheme } from '@/hooks/useTheme';
 import type { Theme } from '@/theme';
 
@@ -112,6 +113,7 @@ export default function AnnouncementDetailsScreen() {
 
     requestInFlight.current = true;
     setIsConfirming(true);
+    const sessionGeneration = getSessionGeneration();
 
     if (!announcement) {
       requestInFlight.current = false;
@@ -124,10 +126,12 @@ export default function AnnouncementDetailsScreen() {
         announcementId,
         classroomId: announcement.classroomId,
       });
+      if (!isSessionGenerationCurrent(sessionGeneration)) return;
       setDeleteConfirmationVisible(false);
       setConfirmationError(undefined);
       router.back();
     } catch (error) {
+      if (!isSessionGenerationCurrent(sessionGeneration)) return;
       setConfirmationError(getHttpErrorMessage(error));
     } finally {
       requestInFlight.current = false;

@@ -6,7 +6,7 @@ import * as announcementsService from '@/services/announcements';
 export function useClassroomAnnouncements(classroomId: string) {
   return useQuery({
     queryKey: announcementKeys.byClassroom(classroomId),
-    queryFn: () => announcementsService.findByClassroom(classroomId),
+    queryFn: ({ signal }) => announcementsService.findByClassroom(classroomId, { signal }),
     enabled: !!classroomId,
   });
 }

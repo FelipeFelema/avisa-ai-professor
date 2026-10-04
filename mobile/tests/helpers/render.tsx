@@ -20,6 +20,8 @@ const defaultAuthContext: AuthContextData = {
   logout: async () => undefined,
   applyProfileUpdate: () => undefined,
   expireSession: async () => undefined,
+  sessionStorageRecoveryRequired: false,
+  retrySessionCleanup: async () => true,
 };
 
 export function renderWithProviders(

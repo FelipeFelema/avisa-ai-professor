@@ -37,6 +37,34 @@ export interface ChangePasswordFeedback {
   indeterminate?: boolean;
 }
 
+export interface DeleteAccountRequest {
+  currentPassword: string;
+  confirmationPhrase: string;
+}
+
+export interface AccountDeletionImpact {
+  role: UserRole;
+  canDelete: boolean;
+  blockReason: 'LAST_ADMIN_REQUIRED' | null;
+  ownedClassroomsCount: number;
+  announcementsInOwnedClassroomsCount: number;
+  externalMembershipsCount: number;
+  authoredAnnouncementsInOtherClassroomsCount: number;
+}
+
+export interface AccountDeletionFeedback {
+  status?: number;
+  message: string;
+  field?: keyof DeleteAccountRequest;
+  indeterminate?: boolean;
+}
+
+export interface SessionCleanupOutcome {
+  accessTokenRemoved: boolean;
+  refreshTokenRemoved: boolean;
+  complete: boolean;
+}
+
 export interface AuthContextData {
   user: AuthUser | null;
   isAuthenticated: boolean;
@@ -45,8 +73,10 @@ export interface AuthContextData {
   login: (data: LoginRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
-  applyProfileUpdate: (user: AuthUser) => void;
-  expireSession: () => Promise<void>;
+  applyProfileUpdate: (user: AuthUser, generation?: number) => void;
+  expireSession: (generation?: number) => Promise<SessionCleanupOutcome | void>;
+  sessionStorageRecoveryRequired?: boolean;
+  retrySessionCleanup?: () => Promise<boolean>;
 }
 
 export interface RegisterRequest {

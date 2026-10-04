@@ -6,7 +6,7 @@ import * as announcementsService from '@/services/announcements';
 export function useAnnouncement(id: string) {
   return useQuery({
     queryKey: announcementKeys.detail(id),
-    queryFn: () => announcementsService.findOne(id),
+    queryFn: ({ signal }) => announcementsService.findOne(id, { signal }),
     enabled: !!id,
   });
 }

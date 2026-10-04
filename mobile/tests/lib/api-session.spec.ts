@@ -8,6 +8,7 @@ import {
 import { api, authApi, setSessionExpiredHandler } from '@/lib';
 import * as storage from '@/storage';
 import { changePassword, ChangePasswordError } from '@/services/auth';
+import { invalidateSessionGeneration } from '@/lib/session-generation';
 
 jest.mock('@/storage', () => ({
   clearTokens: jest.fn(),
@@ -66,6 +67,7 @@ describe('API session bridge', () => {
       accessToken: 'access-token',
       refreshToken: 'refresh-token',
     });
+    jest.mocked(storage.saveTokens).mockResolvedValue(true);
   });
 
   afterEach(() => {
@@ -80,6 +82,51 @@ describe('API session bridge', () => {
 
     expect(request.headers.get('Authorization')).toBe('Bearer access-token');
   });
+
+  it.each([401, 503])(
+    'never refreshes, replays or retains an opted-out DELETE on %s',
+    async (status) => {
+      const previousAdapter = api.defaults.adapter;
+      const refresh = jest.spyOn(authApi, 'post');
+      const adapter = jest.fn(
+        async (request: InternalAxiosRequestConfig): Promise<AxiosResponse> => {
+          throw new AxiosError('untrusted', undefined, request, undefined, {
+            status,
+            statusText: 'Error',
+            config: request,
+            headers: {},
+            data: {},
+          });
+        },
+      );
+      api.defaults.adapter = adapter;
+      try {
+        await expect(
+          api.delete('/users/account', {
+            noAuthReplay: true,
+            data: { currentPassword: 'synthetic', confirmationPhrase: 'EXCLUIR MINHA CONTA' },
+          }),
+        ).rejects.toBeInstanceOf(AxiosError);
+        expect(adapter).toHaveBeenCalledTimes(1);
+        expect(refresh).not.toHaveBeenCalled();
+        expect(storage.saveTokens).not.toHaveBeenCalled();
+        expect(storage.clearTokens).not.toHaveBeenCalled();
+        // An ordinary request after reconnection cannot resurrect the failed DELETE.
+        adapter.mockImplementationOnce(async (request) => ({
+          data: {},
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config: request,
+        }));
+        await api.get('/users/profile');
+        expect(adapter).toHaveBeenCalledTimes(2);
+        expect(adapter.mock.calls[1][0].method).toBe('get');
+      } finally {
+        api.defaults.adapter = previousAdapter;
+      }
+    },
+  );
 
   it('passes requests through without an Authorization header when no tokens exist', async () => {
     jest.mocked(storage.getTokens).mockResolvedValue(null);
@@ -111,10 +158,13 @@ describe('API session bridge', () => {
 
     await expect(rejected?.(unauthorizedError(request))).resolves.toBe(retriedResponse);
     expect(refresh).toHaveBeenCalledWith('/auth/refresh', { refreshToken: 'refresh-token' });
-    expect(storage.saveTokens).toHaveBeenCalledWith({
-      accessToken: 'new-access',
-      refreshToken: 'new-refresh',
-    });
+    expect(storage.saveTokens).toHaveBeenCalledWith(
+      {
+        accessToken: 'new-access',
+        refreshToken: 'new-refresh',
+      },
+      expect.any(Number),
+    );
     expect(request.headers.get('Authorization')).toBe('Bearer new-access');
     api.defaults.adapter = previousAdapter;
   });
@@ -127,7 +177,7 @@ describe('API session bridge', () => {
     const error = unauthorizedError(config());
 
     await expect(rejected?.(error)).rejects.toBe(error);
-    expect(storage.clearTokens).toHaveBeenCalledTimes(1);
+    expect(storage.clearTokens).not.toHaveBeenCalled();
     expect(expireSession).toHaveBeenCalledTimes(1);
     expect(storage.saveTokens).not.toHaveBeenCalled();
   });
@@ -166,7 +216,7 @@ describe('API session bridge', () => {
       newPassword: 'Synthetic new password',
       confirmNewPassword: 'Synthetic new password',
     };
-    const adapter = jest.fn(async (request: InternalAxiosRequestConfig) => {
+    const adapter = jest.fn(async (request: InternalAxiosRequestConfig): Promise<AxiosResponse> => {
       throw new AxiosError('untrusted', undefined, request, undefined, {
         status: 400,
         statusText: 'Bad Request',
@@ -205,7 +255,7 @@ describe('API session bridge', () => {
     const error = unauthorizedError(config());
 
     await expect(rejected?.(error)).rejects.toBe(error);
-    expect(storage.clearTokens).toHaveBeenCalledTimes(1);
+    expect(storage.clearTokens).not.toHaveBeenCalled();
     expect(expireSession).toHaveBeenCalledTimes(1);
     expect(storage.saveTokens).not.toHaveBeenCalled();
   });
@@ -218,7 +268,35 @@ describe('API session bridge', () => {
     const rejected = responseHandlers().find((handler) => handler.rejected)?.rejected;
 
     await expect(rejected?.(responseError)).rejects.toBe(responseError);
-    expect(storage.clearTokens).toHaveBeenCalledTimes(1);
+    expect(storage.clearTokens).not.toHaveBeenCalled();
     expect(expireSession).toHaveBeenCalledTimes(1);
+  });
+
+  it('suppresses a refresh that completes after the session generation was invalidated', async () => {
+    let resolveRefresh!: (value: AxiosResponse) => void;
+    const refreshResponse = new Promise<AxiosResponse>((resolve) => {
+      resolveRefresh = resolve;
+    });
+    const refresh = jest.spyOn(authApi, 'post').mockReturnValue(refreshResponse);
+    const previousAdapter = api.defaults.adapter;
+    const adapter = jest.fn();
+    api.defaults.adapter = adapter;
+    const rejected = responseHandlers().find((handler) => handler.rejected)?.rejected;
+    const request = config();
+    const originalError = unauthorizedError(request);
+    const outcome = rejected?.(originalError).catch((error) => error);
+
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(refresh).toHaveBeenCalledTimes(1);
+    invalidateSessionGeneration();
+    resolveRefresh({
+      data: { access_token: 'late-access', refresh_token: 'late-refresh' },
+    } as AxiosResponse);
+
+    await expect(outcome).resolves.toBe(originalError);
+    expect(storage.saveTokens).not.toHaveBeenCalled();
+    expect(adapter).not.toHaveBeenCalled();
+    api.defaults.adapter = previousAdapter;
   });
 });

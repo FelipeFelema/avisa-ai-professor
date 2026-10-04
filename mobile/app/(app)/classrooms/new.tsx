@@ -8,6 +8,7 @@ import { isAxiosError } from 'axios';
 import { Button, FormField, SecondaryScreen } from '@/components/ui';
 import { HTTP_STATUS } from '@/constants/http-status';
 import { useCreateClassroom } from '@/hooks/useCreateClassroom';
+import { getSessionGeneration, isSessionGenerationCurrent } from '@/lib/session-generation';
 import { useTheme } from '@/hooks/useTheme';
 import type { Theme } from '@/theme';
 import {
@@ -48,11 +49,14 @@ export default function NewClassroomScreen() {
 
   const onSubmit = async (data: CreateClassroomFormData) => {
     setSubmitError('');
+    const sessionGeneration = getSessionGeneration();
 
     try {
       await createClassroom.mutateAsync({ name: data.name });
+      if (!isSessionGenerationCurrent(sessionGeneration)) return;
       router.replace('/classrooms');
     } catch (error) {
+      if (!isSessionGenerationCurrent(sessionGeneration)) return;
       const message = getApiErrorMessage(error);
 
       if (message) {

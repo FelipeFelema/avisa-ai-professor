@@ -147,6 +147,13 @@ export default function ProfileScreen() {
           loading={isSigningOut}
           onPress={handleLogout}
         />
+
+        <Button
+          label="Excluir minha conta"
+          variant="destructive"
+          accessibilityHint="Abrir o resumo e a confirmação da exclusão permanente da sua conta"
+          onPress={() => router.push('/profile/delete-account')}
+        />
       </ScrollView>
     </SafeAreaView>
   );

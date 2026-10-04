@@ -19,6 +19,7 @@ import {
 } from '@/components/ui';
 import { AuthField } from '@/components/auth';
 import { getHttpErrorMessage } from '@/lib';
+import { getSessionGeneration, isSessionGenerationCurrent } from '@/lib/session-generation';
 import { useTheme } from '@/hooks/useTheme';
 import { getAuthTheme } from '@/theme/auth';
 import { useAnnouncement } from '@/hooks/useAnnouncement';
@@ -209,6 +210,7 @@ export default function EditAnnouncementScreen() {
 
     requestInFlight.current = true;
     setIsConfirming(true);
+    const sessionGeneration = getSessionGeneration();
 
     try {
       await updateAnnouncement.mutateAsync({
@@ -216,10 +218,12 @@ export default function EditAnnouncementScreen() {
         classroomId: announcement.classroomId,
         data: pendingUpdate.data,
       });
+      if (!isSessionGenerationCurrent(sessionGeneration)) return;
       setPendingUpdate(null);
       setConfirmationError(undefined);
       router.back();
     } catch (error) {
+      if (!isSessionGenerationCurrent(sessionGeneration)) return;
       setConfirmationError(getHttpErrorMessage(error));
     } finally {
       requestInFlight.current = false;

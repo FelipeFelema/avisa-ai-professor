@@ -6,6 +6,6 @@ import { getMyClassrooms } from '@/services/classes/classroom.service';
 export function useMyClassrooms() {
   return useQuery({
     queryKey: classroomKeys.my(),
-    queryFn: getMyClassrooms,
+    queryFn: ({ signal }) => getMyClassrooms({ signal }),
   });
 }

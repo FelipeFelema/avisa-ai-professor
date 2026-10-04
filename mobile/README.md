@@ -10,6 +10,7 @@ Aplicativo mobile do Avisa Aí Professor, desenvolvido com React Native e Expo. 
 - Renovação automática do token de acesso.
 - Validação de formulários com mensagens claras para o usuário.
 - Visualização do perfil e logout.
+- Consulta de impacto e exclusão permanente da própria conta.
 - Busca, entrada e saída de turmas.
 - Criação de turmas para professores.
 - Listagem, criação, edição e exclusão de comunicados para professores.
@@ -107,6 +108,14 @@ Os testes Jest/RNTL cobrem os comportamentos automatizáveis; acessibilidade rea
 ## API
 
 O aplicativo depende da API descrita no [README do backend](../backend/README.md).
+
+### Exclusão da conta
+
+Na tela Perfil, **Excluir minha conta** consulta `GET /api/v1/users/account-deletion` para mostrar as relações atuais. A confirmação envia uma única solicitação a `DELETE /api/v1/users/account`, com a senha atual e a frase literal `EXCLUIR MINHA CONTA`. A exclusão é permanente; o resumo não reserva nem congela as relações, que são recalculadas pelo servidor no envio. O último `ADMIN` é bloqueado no resumo e novamente pelo servidor.
+
+O DELETE não renova a sessão, não é reenviado por interceptors/reconexão e não é repetido automaticamente. Se a resposta se perder ou o resultado for incerto, o app oferece uma verificação de sessão somente de leitura: sessão inválida encerra o acesso local; sessão válida carrega outro resumo e exige nova confirmação manual, sem afirmar que a tentativa anterior falhou; sem resposta conclusiva, o resultado continua indeterminado. Credenciais e frase digitadas permanecem transitórias e não entram no cache de queries/mutations ou no armazenamento. Ao encerrar a sessão, dados privados e tokens são limpos; a preferência de tema Claro/Escuro permanece.
+
+O contrato e os limites desse fluxo estão em [account-deletion.md](../specs/008-account-deletion-data-lifecycle/contracts/account-deletion.md). Os gates automatizados e as observações manuais são registrados separadamente em [validation.md](../specs/008-account-deletion-data-lifecycle/validation.md); export ou testes automatizados não substituem evidência de aparelho/tecnologia assistiva.
 
 Documentação operacional relacionada:
 

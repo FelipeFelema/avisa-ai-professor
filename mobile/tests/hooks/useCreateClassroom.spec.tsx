@@ -41,7 +41,10 @@ describe('useCreateClassroom', () => {
     });
     await waitFor(() => expect(result.current.isPending).toBe(false));
 
-    expect(createClassroomMock).toHaveBeenCalledWith({ name: '7º Ano A' });
+    expect(createClassroomMock).toHaveBeenCalledWith(
+      { name: '7º Ano A' },
+      { sessionGeneration: expect.any(Number) },
+    );
     expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: classroomKeys.my() });
     expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: classroomKeys.available() });
   });

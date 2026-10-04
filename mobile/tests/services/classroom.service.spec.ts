@@ -26,7 +26,9 @@ describe('classroom service deletion', () => {
     await expect(deleteClassroom('classroom-1')).resolves.toBeUndefined();
 
     expect(mockedApi.delete).toHaveBeenCalledTimes(1);
-    expect(mockedApi.delete).toHaveBeenCalledWith('/classrooms/classroom-1');
+    expect(mockedApi.delete).toHaveBeenCalledWith('/classrooms/classroom-1', {
+      sessionGeneration: expect.any(Number),
+    });
   });
 
   it('does not convert a DELETE 404 into a successful deletion', async () => {
@@ -60,7 +62,9 @@ describe('classroom summary services', () => {
 
     await expect(getMyClassrooms()).resolves.toEqual([classroom]);
 
-    expect(mockedApi.get).toHaveBeenCalledWith('/classrooms/my');
+    expect(mockedApi.get).toHaveBeenCalledWith('/classrooms/my', {
+      sessionGeneration: expect.any(Number),
+    });
   });
 
   it('normalizes the available search and passes through expiresAt', async () => {
@@ -70,6 +74,7 @@ describe('classroom summary services', () => {
 
     expect(mockedApi.get).toHaveBeenCalledWith('/classrooms', {
       params: { search: 'mat' },
+      sessionGeneration: expect.any(Number),
     });
   });
 
@@ -84,6 +89,7 @@ describe('classroom summary services', () => {
     expect(mockedApi.get).toHaveBeenCalledWith('/classrooms', {
       params: { search: 'mat' },
       signal: controller.signal,
+      sessionGeneration: expect.any(Number),
     });
   });
 
@@ -94,7 +100,9 @@ describe('classroom summary services', () => {
 
       await expect(getAvailableClassrooms(search)).resolves.toEqual([classroom]);
 
-      expect(mockedApi.get).toHaveBeenCalledWith('/classrooms');
+      expect(mockedApi.get).toHaveBeenCalledWith('/classrooms', {
+        sessionGeneration: expect.any(Number),
+      });
     },
   );
 });

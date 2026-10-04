@@ -140,7 +140,10 @@ describe('theme startup and session integration', () => {
 
     await view.rerender(sessionTree('account-a'));
     expect(view.getByTestId('route-stack')).toBeTruthy();
-    expect(view.getByTestId('stack-screen').props.children).toBe('(tabs)');
+    expect(view.getAllByTestId('stack-screen').map((screen) => screen.props.children)).toEqual([
+      '(tabs)',
+      'profile/delete-account',
+    ]);
 
     await view.rerender(sessionTree('account-b'));
     expect(view.getByTestId('route-stack')).toBeTruthy();

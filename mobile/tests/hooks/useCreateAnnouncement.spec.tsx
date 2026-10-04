@@ -63,11 +63,14 @@ describe('useCreateAnnouncement', () => {
     });
     await waitFor(() => expect(result.current.isPending).toBe(false));
 
-    expect(createAnnouncementMock).toHaveBeenCalledWith({
+    expect(createAnnouncementMock.mock.calls[0]?.[0]).toEqual({
       classroomId: 'classroom-1',
       title: 'Reunião',
       content: 'Reunião amanhã.',
       durationInDays: 7,
+    });
+    expect(createAnnouncementMock.mock.calls[0]?.[1]).toEqual({
+      sessionGeneration: expect.any(Number),
     });
     expect(invalidateQueries).toHaveBeenCalledWith({
       queryKey: announcementKeys.byClassroom('classroom-1'),

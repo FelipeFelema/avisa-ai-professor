@@ -52,7 +52,9 @@ describe('useDeleteAnnouncement', () => {
       });
     });
 
-    expect(deleteAnnouncementMock).toHaveBeenCalledWith('announcement-1');
+    expect(deleteAnnouncementMock).toHaveBeenCalledWith('announcement-1', {
+      sessionGeneration: expect.any(Number),
+    });
     expect(invalidateQueries).toHaveBeenCalledWith({
       queryKey: announcementKeys.detail('announcement-1'),
     });

@@ -10,6 +10,12 @@ import type {
   ChangePasswordRequest,
   ChangePasswordFeedback,
 } from '@/types/auth';
+import {
+  assertSessionGeneration,
+  getSessionGeneration,
+  isSessionGenerationChangedError,
+  type PrivateRequestOptions,
+} from '@/lib/session-generation';
 
 interface AuthApiResponse {
   access_token: string;
@@ -110,14 +116,24 @@ function sanitizePasswordError(error: unknown): ChangePasswordError {
   return new ChangePasswordError({ status, message: indeterminateMessage, indeterminate: true });
 }
 
-export async function changePassword(data: ChangePasswordRequest): Promise<void> {
+export async function changePassword(
+  data: ChangePasswordRequest,
+  options: PrivateRequestOptions = {},
+): Promise<void> {
+  const generation = options.sessionGeneration ?? getSessionGeneration();
   try {
-    await api.post<void>('/auth/change-password', {
-      currentPassword: data.currentPassword,
-      newPassword: data.newPassword,
-      confirmNewPassword: data.confirmNewPassword,
-    });
+    await api.post<void>(
+      '/auth/change-password',
+      {
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
+        confirmNewPassword: data.confirmNewPassword,
+      },
+      { ...options, sessionGeneration: generation },
+    );
+    assertSessionGeneration(generation);
   } catch (error) {
+    if (isSessionGenerationChangedError(error)) throw error;
     throw sanitizePasswordError(error);
   }
 }
@@ -131,14 +147,27 @@ export async function login(data: LoginRequest): Promise<LoginResponse> {
   };
 }
 
-export async function getProfile(): Promise<AuthUser> {
-  const response = await api.get<AuthUser>('/users/profile');
+export async function getProfile(options: PrivateRequestOptions = {}): Promise<AuthUser> {
+  const generation = options.sessionGeneration ?? getSessionGeneration();
+  const response = await api.get<AuthUser>('/users/profile', {
+    ...options,
+    sessionGeneration: generation,
+  });
+  assertSessionGeneration(generation);
 
   return response.data;
 }
 
-export async function updateProfile(data: UpdateProfileRequest): Promise<AuthUser> {
-  const response = await api.patch<AuthUser>('/users/profile', data);
+export async function updateProfile(
+  data: UpdateProfileRequest,
+  options: PrivateRequestOptions = {},
+): Promise<AuthUser> {
+  const generation = options.sessionGeneration ?? getSessionGeneration();
+  const response = await api.patch<AuthUser>('/users/profile', data, {
+    ...options,
+    sessionGeneration: generation,
+  });
+  assertSessionGeneration(generation);
 
   return response.data;
 }
