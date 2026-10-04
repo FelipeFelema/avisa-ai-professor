@@ -4,8 +4,10 @@ import {
   NotFoundException,
   ConflictException,
   ForbiddenException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 import { ClassroomWithUsers } from '../common/types/classroom-with-users.type';
 import { ClassroomSummaryDto } from './dto/classroom-summary.dto';
 import { CLASSROOMS_LIMITS } from '../common/constants/classroom.constants';
@@ -249,6 +251,7 @@ export class ClassroomsService {
   async delete(userId: string, classroomId: string): Promise<void> {
     try {
       await this.prisma.$transaction(async (transaction) => {
+        await this.lockCaller(transaction, userId);
         const receipt = await transaction.classroomDeletionReceipt.findUnique({
           where: { classroomId },
         });
@@ -285,8 +288,11 @@ export class ClassroomsService {
       });
     } catch (error: unknown) {
       if (this.isUniqueConstraintViolation(error)) {
-        const receipt = await this.prisma.classroomDeletionReceipt.findUnique({
-          where: { classroomId },
+        const receipt = await this.prisma.$transaction(async (transaction) => {
+          await this.lockCaller(transaction, userId);
+          return transaction.classroomDeletionReceipt.findUnique({
+            where: { classroomId },
+          });
         });
 
         if (receipt?.ownerId === userId) {
@@ -296,6 +302,20 @@ export class ClassroomsService {
 
       throw error;
     }
+  }
+
+  private async lockCaller(
+    tx: Prisma.TransactionClient,
+    userId: string,
+  ): Promise<void> {
+    await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${userId} FOR UPDATE`;
+    if (
+      !(await tx.user.findUnique({
+        where: { id: userId },
+        select: { id: true },
+      }))
+    )
+      throw new UnauthorizedException();
   }
 
   private isUniqueConstraintViolation(error: unknown): boolean {

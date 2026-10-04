@@ -36,7 +36,8 @@ describe('AuthSessionService', () => {
       ],
     }).compile();
     service = module.get<AuthSessionService>(AuthSessionService);
-    jest.clearAllMocks();
+    jest.resetAllMocks();
+    tx.user.findUnique.mockResolvedValue({ id: 'user-id' });
     prisma.$transaction.mockImplementation(
       (operation: (client: typeof tx) => unknown) =>
         Promise.resolve(operation(tx)),
@@ -45,12 +46,13 @@ describe('AuthSessionService', () => {
 
   it('hashes refresh tokens when creating a session', async () => {
     (bcrypt.hash as jest.Mock).mockResolvedValue('hashed');
-    prisma.authSession.create.mockResolvedValue({ id: 'sid' });
+    tx.user.findUnique.mockResolvedValue({ id: 'user-id' });
+    tx.authSession.create.mockResolvedValue({ id: 'sid' });
 
     await service.create('user-id', 'sid', 'refresh', new Date('2026-09-01'));
 
     expect(bcrypt.hash).toHaveBeenCalledWith(expect.any(String), 10);
-    expect(prisma.authSession.create).toHaveBeenCalledWith({
+    expect(tx.authSession.create).toHaveBeenCalledWith({
       data: {
         id: 'sid',
         userId: 'user-id',
@@ -58,6 +60,10 @@ describe('AuthSessionService', () => {
         expiresAt: new Date('2026-09-01'),
       },
     });
+    expect(prisma.authSession.create).not.toHaveBeenCalled();
+    expect((bcrypt.hash as jest.Mock).mock.invocationCallOrder[0]).toBeLessThan(
+      prisma.$transaction.mock.invocationCallOrder[0],
+    );
   });
 
   it('queries only active, unexpired sessions for the matching user and sid', async () => {
@@ -172,17 +178,54 @@ describe('AuthSessionService', () => {
   });
 
   it('does not clear a revoked timestamp while rotating a refresh token', async () => {
-    prisma.authSession.update.mockResolvedValue({ id: 'sid' });
+    prisma.authSession.findFirst.mockResolvedValue({
+      id: 'sid',
+      userId: 'user-id',
+      refreshTokenHash: 'snapshot',
+    });
+    tx.user.findUnique.mockResolvedValue({ id: 'user-id' });
+    tx.authSession.findFirst.mockResolvedValue({
+      id: 'sid',
+      userId: 'user-id',
+      refreshTokenHash: 'snapshot',
+    });
+    tx.authSession.updateMany.mockResolvedValue({ count: 1 });
 
     await service.rotate('sid', 'synthetic-refresh', new Date('2026-09-08'));
 
-    const updateCalls = prisma.authSession.update.mock
+    const updateCalls = tx.authSession.updateMany.mock
       .calls as unknown as Array<[{ data: Record<string, unknown> }]>;
     const [update] = updateCalls[0];
     expect(Object.prototype.hasOwnProperty.call(update.data, 'revokedAt')).toBe(
       false,
     );
   });
+
+  it('fails closed if the User disappeared before session creation', async () => {
+    tx.user.findUnique.mockResolvedValue(null);
+    await expect(
+      service.create('gone', 'sid', 'refresh', new Date(Date.now() + 10000)),
+    ).rejects.toThrow('Unauthorized');
+    expect(tx.authSession.create).not.toHaveBeenCalled();
+  });
+
+  it.each([null, { refreshTokenHash: 'changed' }])(
+    'rejects missing/rotated snapshots before rotation %#',
+    async (live) => {
+      prisma.authSession.findFirst.mockResolvedValue({
+        id: 'sid',
+        userId: 'user-id',
+        refreshTokenHash: 'snapshot',
+      });
+      tx.user.findUnique.mockResolvedValue({ id: 'user-id' });
+      tx.authSession.findFirst.mockResolvedValue(live);
+      await expect(
+        service.rotate('sid', 'refresh', new Date(Date.now() + 10000)),
+      ).rejects.toThrow('Unauthorized');
+      expect(tx.authSession.updateMany).not.toHaveBeenCalled();
+      expect(prisma.authSession.update).not.toHaveBeenCalled();
+    },
+  );
 
   it('checks the digest representation before the legacy raw-token fallback', async () => {
     (bcrypt.compare as jest.Mock)

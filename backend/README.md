@@ -19,6 +19,7 @@ API REST do Avisa Aí Professor. A aplicação centraliza autenticação, regras
 - Cadastro, login e renovação de tokens de acesso.
 - Sessões por dispositivo com refresh tokens armazenados somente como hash.
 - Atualização self-service de nome/e-mail com revogação seletiva das demais sessões.
+- Consulta de impacto e exclusão permanente da própria conta, com revogação de todas as sessões.
 - Perfis `PARENT`, `PROFESSOR` e `ADMIN`.
 - Códigos de convite para o cadastro de perfis privilegiados.
 - Criação de turmas por professores e participação de usuários em turmas.
@@ -29,15 +30,24 @@ API REST do Avisa Aí Professor. A aplicação centraliza autenticação, regras
 
 Todas as rotas têm o prefixo `/api/v1`.
 
-| Recurso               | Rotas                                                                                                                     | Acesso                              |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| Autenticação          | `POST /auth/register`, `POST /auth/login`, `POST /auth/refresh`                                                           | Público                             |
-| Perfil                | `GET /users/profile`, `PATCH /users/profile`                                                                              | Autenticado                         |
-| Turmas                | `GET /classrooms`, `GET /classrooms/my`, `GET /classrooms/:id`, `POST /classrooms/:id/join`, `POST /classrooms/:id/leave` | Autenticado                         |
-| Criação de turma      | `POST /classrooms`                                                                                                        | Professor                           |
-| Exclusão de turma     | `DELETE /classrooms/:id`                                                                                                  | Professor owner                     |
-| Comunicados           | `GET /announcements`, `GET /announcements/:id`, `GET /announcements/classrooms/:classroomId`                              | Autenticado e participante da turma |
-| Gestão de comunicados | `POST /announcements`, `PATCH /announcements/:id`, `DELETE /announcements/:id`                                            | Professor autor do comunicado       |
+| Recurso               | Rotas                                                                                                                     | Acesso                                                |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Autenticação          | `POST /auth/register`, `POST /auth/login`, `POST /auth/refresh`                                                           | Público                                               |
+| Perfil                | `GET /users/profile`, `PATCH /users/profile`                                                                              | Autenticado                                           |
+| Turmas                | `GET /classrooms`, `GET /classrooms/my`, `GET /classrooms/:id`, `POST /classrooms/:id/join`, `POST /classrooms/:id/leave` | Autenticado                                           |
+| Criação de turma      | `POST /classrooms`                                                                                                        | Professor                                             |
+| Exclusão de turma     | `DELETE /classrooms/:id`                                                                                                  | Professor owner                                       |
+| Comunicados           | `GET /announcements`, `GET /announcements/:id`, `GET /announcements/classrooms/:classroomId`                              | Autenticado e participante da turma                   |
+| Gestão de comunicados | `POST /announcements`, `PATCH /announcements/:id`, `DELETE /announcements/:id`                                            | Professor autor do comunicado                         |
+| Exclusão de conta     | `GET /users/account-deletion`, `DELETE /users/account`                                                                    | Própria conta; todos os papéis, exceto o último ADMIN |
+
+## Exclusão de conta
+
+`GET /api/v1/users/account-deletion` retorna um resumo atual e somente de leitura das relações que seriam removidas. `DELETE /api/v1/users/account` recebe a senha atual e a frase exata `EXCLUIR MINHA CONTA`; a identidade vem da sessão autenticada e nunca de um identificador enviado pelo cliente. Os dois endpoints exigem JWT e usam `Cache-Control: no-store`.
+
+A exclusão é permanente e não tem recuperação nem recibo de conta. Após revalidar a sessão, credencial e grafo atuais, o backend remove a conta, todas as sessões e as relações/conteúdos sob sua responsabilidade em uma transação; responde `204 No Content` somente depois do commit. Códigos de convite e dados sem relação com a conta permanecem. Uma conta `ADMIN` não pode ser excluída quando for a última `ADMIN`. O DELETE usa o `RateLimitGuard` existente; limites e timeouts globais não são alterados por esse fluxo.
+
+O contrato detalhado de campos, erros, preservação e concorrência está em [account-deletion.md](../specs/008-account-deletion-data-lifecycle/contracts/account-deletion.md).
 
 ## Pré-requisitos
 
@@ -88,6 +98,26 @@ npx prisma migrate dev
 ```
 
 Em deploy, use migrations versionadas com `npx prisma migrate deploy`. Testes de integração/e2e devem receber um `DATABASE_URL` descartável cujo nome contenha `test`; o helper recusa bancos de desenvolvimento/produção para operações destrutivas.
+
+### Testes destrutivos da exclusão de conta
+
+Na raiz do repositório, selecione explicitamente a base local descartável `avisa_ai_test`; os helpers também recusam limpeza fora de localhost ou de uma base cujo nome contenha `test`.
+
+```powershell
+Set-Location backend
+$env:DATABASE_URL = 'postgresql://postgres:postgres@localhost:5432/avisa_ai_test'
+$env:NODE_ENV = 'test'
+$env:JWT_ACCESS_SECRET = 'local_test_access_only'
+$env:JWT_REFRESH_SECRET = 'local_test_refresh_only'
+npm run prisma:validate
+npm run prisma:generate
+npm run prisma:migrate:deploy
+npm run test:integration
+npm run test:contract
+npm run test:e2e
+```
+
+Os valores de conexão são exemplos locais e devem corresponder ao PostgreSQL de teste configurado na máquina. Esses testes limpam fixtures da base selecionada: nunca use `avisa_ai` nem uma base com dados pessoais. Não há migration nova da exclusão de conta. Consulte [quickstart.md](../specs/008-account-deletion-data-lifecycle/quickstart.md) para a matriz e os limites completos.
 
 ## Execução
 

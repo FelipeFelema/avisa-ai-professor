@@ -20,6 +20,145 @@
     { "name": "invite-codes", "description": "Convites administrativos" }
   ],
   "paths": {
+    "/api/v1/users/account-deletion": {
+      "get": {
+        "description": "Somente sub e sid da sessão validada. Sem corpo ou parâmetros; snapshot consistente de leitura, sem IDs ou total de ADMINs. O resumo não autoriza nem congela uma exclusão futura.",
+        "operationId": "users.getAccountDeletionImpact",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Impacto atual, inclusive bloqueio da última ADMIN",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountDeletionImpact"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida ou campo não permitido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Não foi possível consultar o impacto da exclusão.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Consultar o impacto da exclusão da própria conta",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/api/v1/users/account": {
+      "delete": {
+        "description": "Usa exclusivamente sub e sid atuais. Requer senha atual e a frase exata EXCLUIR MINHA CONTA. Uma única transação READ COMMITTED usa o gate ADMIN antes dos locks User/Classroom e remove o grafo vigente; não há receipt nem repetição automática. Responde somente após commit.",
+        "operationId": "users.deleteOwnAccount",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteAccountRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Exclusão integral confirmada após commit; resposta vazia."
+          },
+          "400": {
+            "description": "DTO inválido, CURRENT_PASSWORD_INVALID ou ACCOUNT_DELETION_CONFIRMATION_MISMATCH; sem escrita.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "LAST_ADMIN_REQUIRED ou CREDENTIAL_CHANGED; sem escrita.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de requisições excedido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Falha sanitizada; nenhum detalhe interno é exposto.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Excluir permanentemente a própria conta",
+        "tags": [
+          "users"
+        ]
+      }
+    },
     "/api/v1/auth/change-password": {
       "post": {
         "description": "Usa user/sid autenticados. Valida strings exatas, nova senha de 6–72 pontos de código Unicode e confirmação. Grava credencial e revoga outras sessões atomicamente; os tokens iniciadores permanecem válidos. Limitado por IP.",
@@ -669,6 +808,79 @@
       }
     },
     "schemas": {
+      "AccountDeletionImpact": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "PARENT",
+              "PROFESSOR",
+              "ADMIN"
+            ]
+          },
+          "canDelete": {
+            "type": "boolean"
+          },
+          "blockReason": {
+            "type": "string",
+            "enum": [
+              "LAST_ADMIN_REQUIRED"
+            ],
+            "nullable": true
+          },
+          "ownedClassroomsCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "announcementsInOwnedClassroomsCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "externalMembershipsCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "authoredAnnouncementsInOtherClassroomsCount": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "role",
+          "canDelete",
+          "blockReason",
+          "ownedClassroomsCount",
+          "announcementsInOwnedClassroomsCount",
+          "externalMembershipsCount",
+          "authoredAnnouncementsInOtherClassroomsCount"
+        ]
+      },
+      "DeleteAccountRequest": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "minLength": 1,
+            "writeOnly": true,
+            "description": "String não vazia, preservada integralmente, sem novo limite de senha sobre credenciais existentes. Sem trim, normalização ou coerção."
+          },
+          "confirmationPhrase": {
+            "type": "string",
+            "enum": [
+              "EXCLUIR MINHA CONTA"
+            ],
+            "writeOnly": true,
+            "description": "String exatamente EXCLUIR MINHA CONTA. Sem trim, normalização ou coerção."
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "currentPassword",
+          "confirmationPhrase"
+        ]
+      },
       "ChangePasswordRequest": {
         "type": "object",
         "properties": {

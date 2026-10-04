@@ -369,45 +369,51 @@ describe('password change production HTTP/PostgreSQL', () => {
   it('a refresh that started earlier never revives a revoked sid', async () => {
     const { first, second } = await fixture();
     const sessions = app.get<AuthSessionService>(AuthSessionService);
-    const original = sessions.rotate.bind(
+    const original = sessions.withUserLock.bind(
       sessions,
-    ) as AuthSessionService['rotate'];
+    ) as AuthSessionService['withUserLock'];
     const arrived = createDeterministicBarrier(2);
     const release = createDeterministicBarrier(2);
-    jest.spyOn(sessions, 'rotate').mockImplementationOnce(async (...args) => {
-      await arrived.wait();
-      await release.wait();
-      return original(...args);
-    });
+    jest
+      .spyOn(sessions, 'withUserLock')
+      .mockImplementationOnce(async (id, operation) => {
+        await arrived.wait();
+        await release.wait();
+        return original(id, operation);
+      });
     const refreshing = app
       .get<AuthService>(AuthService)
-      .refreshToken(second.refresh_token);
+      .refreshToken(second.refresh_token)
+      .then(
+        () => false,
+        () => true,
+      );
     await arrived.wait();
     try {
       expect((await change(first.access_token)).status).toBe(204);
     } finally {
       release.release();
     }
-    const tokens = await refreshing;
+    expect(await refreshing).toBe(true);
     expect(
       (
         await prisma.authSession.findUniqueOrThrow({
           where: { id: second.sid },
         })
-      ).revokedAt !== null,
-    ).toBe(true);
+      ).revokedAt,
+    ).not.toBeNull();
     expect(
       (
         await request(app.getHttpServer())
           .get('/api/v1/users/profile')
-          .auth(tokens.access_token, { type: 'bearer' })
+          .auth(second.access_token, { type: 'bearer' })
       ).status,
     ).toBe(401);
     expect(
       (
         await request(app.getHttpServer())
           .post('/api/v1/auth/refresh')
-          .send({ refreshToken: tokens.refresh_token })
+          .send({ refreshToken: second.refresh_token })
       ).status,
     ).toBe(401);
   });
