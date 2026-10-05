@@ -1,5 +1,7 @@
 # Implementation Plan: Detail Surfaces Visual Polish
 
+**Escopo de validação vigente — decisão de 2026-10-04:** [política permanente](../../.specify/memory/validation-scope.md). Automação e walkthrough funcional pelo próprio usuário são suficientes para o escopo manual. Campanhas nativas especializadas Android/iOS, TalkBack/VoiceOver e participantes independentes estão dispensados; exigências antigas desses itens abaixo são históricas e não bloqueiam conclusão nem geram follow-ups. Semântica básica de UI e gates automatizados permanecem aplicáveis.
+
 **Branch**: `004-detail-surfaces-visual-polish` | **Date**: 2026-10-01 | **Spec**: [spec.md](./spec.md)
 
 **Input**: Feature specification from `specs/004-detail-surfaces-visual-polish/spec.md`
@@ -32,16 +34,16 @@ O card de comunicado passará a usar a função pura `getClassroomAnnouncementEx
 
 ## Constitution Check
 
-*GATE: aprovado antes da pesquisa; reavaliado depois do design.*
+_GATE: aprovado antes da pesquisa; reavaliado depois do design._
 
-| Princípio/gate | Resultado | Aplicação |
-|---|---|---|
-| I. Domain-Modular Architecture | PASS | As rotas continuam compondo componentes, hooks e tema existentes. O card usa a função de apresentação em `lib`; nenhuma regra de negócio vai para a tela. |
-| II. Secure, Explicit API Contracts | PASS | Nenhum endpoint, DTO, input ou autorização muda. A visibilidade por papel, ownership e autoria é preservada; o servidor segue como autoridade. |
-| III. Testable Delivery | PASS | Testes de rota/card cobrem ordem, estados, rótulos e regressões de ação. Gates mobile da constituição e evidência manual são previstos. |
-| IV. Data Integrity and Safe Evolution | PASS | Nenhum dado ou schema muda. `expiresAt`, membership e autoria continuam vindo dos contratos atuais. |
-| V. Predictable and Accessible User Experience | PASS | Loading, erro, ausência, vazio e sucesso têm destinos definidos; hierarquia, nomes, leitura, contraste e alvos são verificados. |
-| Restrições de produto | PASS | Escopo restrito a Detalhe da turma, Detalhe do comunicado e Perfil. Specs 005–008 e superfícies primárias ficam fora da implementação. |
+| Princípio/gate                                | Resultado | Aplicação                                                                                                                                                 |
+| --------------------------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| I. Domain-Modular Architecture                | PASS      | As rotas continuam compondo componentes, hooks e tema existentes. O card usa a função de apresentação em `lib`; nenhuma regra de negócio vai para a tela. |
+| II. Secure, Explicit API Contracts            | PASS      | Nenhum endpoint, DTO, input ou autorização muda. A visibilidade por papel, ownership e autoria é preservada; o servidor segue como autoridade.            |
+| III. Testable Delivery                        | PASS      | Testes de rota/card cobrem ordem, estados, rótulos e regressões de ação. Gates mobile da constituição e evidência manual são previstos.                   |
+| IV. Data Integrity and Safe Evolution         | PASS      | Nenhum dado ou schema muda. `expiresAt`, membership e autoria continuam vindo dos contratos atuais.                                                       |
+| V. Predictable and Accessible User Experience | PASS      | Loading, erro, ausência, vazio e sucesso têm destinos definidos; hierarquia, nomes, leitura, contraste e alvos são verificados.                           |
+| Restrições de produto                         | PASS      | Escopo restrito a Detalhe da turma, Detalhe do comunicado e Perfil. Specs 005–008 e superfícies primárias ficam fora da implementação.                    |
 
 Não há violação constitucional nem `NEEDS CLARIFICATION` pendente.
 
@@ -115,13 +117,13 @@ Esta execução encerra o design. A decomposição em `tasks.md` é feita pelo f
 
 ## Post-Design Constitution Check
 
-| Gate | Resultado | Evidência de design |
-|---|---|---|
-| Arquitetura e limites | PASS | Alterações previstas nas três rotas e no card existente; helper e tokens são reutilizados. |
-| Segurança e contratos | PASS | Matriz de visibilidade preserva papel, ownership e autoria; API e autorização do servidor não mudam. |
-| Testabilidade e gates | PASS | Quickstart inclui testes dirigidos, gates mobile e walkthrough com limites de evidência. |
-| Dados e evolução | PASS | Data model só descreve dados e estados atuais; nenhuma migration ou campo novo. |
-| UX previsível/acessível | PASS | Contrato define ordem, estados, ações, nomes, layout flexível e verificação manual. |
+| Gate                    | Resultado | Evidência de design                                                                                  |
+| ----------------------- | --------- | ---------------------------------------------------------------------------------------------------- |
+| Arquitetura e limites   | PASS      | Alterações previstas nas três rotas e no card existente; helper e tokens são reutilizados.           |
+| Segurança e contratos   | PASS      | Matriz de visibilidade preserva papel, ownership e autoria; API e autorização do servidor não mudam. |
+| Testabilidade e gates   | PASS      | Quickstart inclui testes dirigidos, gates mobile e walkthrough com limites de evidência.             |
+| Dados e evolução        | PASS      | Data model só descreve dados e estados atuais; nenhuma migration ou campo novo.                      |
+| UX previsível/acessível | PASS      | Contrato define ordem, estados, ações, nomes, layout flexível e verificação manual.                  |
 
 Resultado pós-design: **PASS**.
 

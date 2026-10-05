@@ -1,5 +1,7 @@
 # Quickstart: Account Deletion Validation
 
+**Escopo de validação vigente — decisão de 2026-10-04:** [política permanente](../../.specify/memory/validation-scope.md). Automação e walkthrough funcional pelo próprio usuário são suficientes para o escopo manual. Campanhas nativas especializadas Android/iOS, TalkBack/VoiceOver e participantes independentes estão dispensados; exigências antigas desses itens abaixo são históricas e não bloqueiam conclusão nem geram follow-ups. Semântica básica de UI e gates automatizados permanecem aplicáveis.
+
 **Spec**: [spec.md](./spec.md) | **Contract**: [contracts/account-deletion.md](./contracts/account-deletion.md) | **Model**: [data-model.md](./data-model.md)
 
 Guia reutilizável para configurar o banco isolado, reproduzir os gates automatizados e executar a matriz de aceitação da Spec 008. A implementação está concluída; resultados medidos e limitações atuais estão em [validation.md](./validation.md), [backend-validation.md](./backend-validation.md), [mobile-validation.md](./mobile-validation.md) e nos registros manuais abaixo. A matriz descreve o comportamento esperado; este arquivo sozinho não é evidência de execução.

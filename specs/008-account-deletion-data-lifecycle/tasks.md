@@ -4,6 +4,8 @@ description: "Dependency-ordered tasks for account deletion and data lifecycle"
 
 # Tasks: Account Deletion and Data Lifecycle
 
+**Escopo de validação vigente — decisão de 2026-10-04:** [política permanente](../../.specify/memory/validation-scope.md). Automação e walkthrough funcional pelo próprio usuário são suficientes para o escopo manual. Campanhas nativas especializadas Android/iOS, TalkBack/VoiceOver e participantes independentes estão dispensados; exigências antigas desses itens abaixo são históricas e não bloqueiam conclusão nem geram follow-ups. Semântica básica de UI e gates automatizados permanecem aplicáveis.
+
 **Input**: Design documents from `/specs/008-account-deletion-data-lifecycle/`
 
 **Prerequisites**: [plan.md](./plan.md), [spec.md](./spec.md), [research.md](./research.md), [data-model.md](./data-model.md), [contracts/account-deletion.md](./contracts/account-deletion.md), [quickstart.md](./quickstart.md), and `.specify/memory/constitution.md`.
@@ -167,8 +169,8 @@ description: "Dependency-ordered tasks for account deletion and data lifecycle"
 - [x] T061 [P] Run backend Prisma validation/generation/existing-migration deployment against explicitly verified `avisa_ai_test`, format check, lint, typecheck, coverage, integration, contract, E2E and build commands from `specs/008-account-deletion-data-lifecycle/quickstart.md`; record each command/exit and meaningful failures in `specs/008-account-deletion-data-lifecycle/backend-validation.md`, keeping destructive test suites serialized on their shared database.
 - [x] T062 [P] Run mobile typecheck, lint, format check, Doctor, complete CI Jest/coverage and export commands from `specs/008-account-deletion-data-lifecycle/quickstart.md`; record command/exit and environment/network limitations in `specs/008-account-deletion-data-lifecycle/mobile-validation.md`, separating automated gates from unobserved Android/iOS/AT behavior.
 - [x] T063 Perform the disposable-account Android walkthrough for all roles/last ADMIN in Claro/Escuro, with cancel/reentry, successful deletion, second-session refusal, back/deep link/restart and preserved theme; measure unaided impact comprehension/completion against the two-minute SC-006 target and record device/SO/role/theme/scenario/duration/results without secrets in `specs/008-account-deletion-data-lifecycle/android-walkthrough.md`, leaving unavailable observations `NOT MEASURED`.
-- [ ] T064 Perform keyboard-open, enlarged-text and TalkBack walkthroughs for warnings, counts, fields/errors/focus, destructive labels, disabled/busy announcements, pending guards and reachable actions in both themes; inspect actual contrast/layout and record device/SO/scale/AT/theme/scenario evidence in `specs/008-account-deletion-data-lifecycle/accessibility-validation.md`, measuring iOS/VoiceOver separately only if executed and leaving unavailable observations open.
-- [ ] T065 Consolidate checkpoints, FR/SC evidence, commands/exits, device limitations and outstanding tasks in `specs/008-account-deletion-data-lifecycle/validation.md`; run `git diff --check` and an affected-file/scope audit against `specs/008-account-deletion-data-lifecycle/tasks.md`, confirm no new schema/migration/package/account receipt or unrelated product scope, preserve prior WIP and mark only actually completed tasks.
+- **T064 — DISPENSADA POR ESCOPO (2026-10-04)**: Campanha Android/TalkBack da exclusão da conta. Ver [decisão permanente](../../.specify/memory/validation-scope.md). Não representa teste executado ou PASS; não bloqueia conclusão nem gera follow-up.
+- [x] T065 Consolidate applicable checkpoints, FR/SC evidence, commands/exits and individual acceptance in `specs/008-account-deletion-data-lifecycle/validation.md`; record T064 as DISPENSADA POR ESCOPO without treating its historical measurements as blockers. Incorporate the individual complement from 009:T070 via 009:T073, run `git diff --check` and an affected-file/scope audit, preserve prior WIP and mark only actually completed work. Native/AT campaigns and independent participants are not requirements. **Concluída em 2026-10-05 via 009:T073; T070 registrada, copy simplificada e gates afetados aprovados.**
 
 **Checkpoint**: Automated delivery gates pass and manual results are attributed to observed environments. Unmeasured usability/AT criteria are not treated as passed.
 
@@ -194,7 +196,7 @@ Phase 4: US2 / T029–T042 → atomic server checkpoint
                   ↓ server + summary required for client integration
 Phase 5: US3 / T043–T057 → full destructive-flow checkpoint
                   ↓ integrated flow verified
-Phase 6: T058–T060 → {T061, T062} → T063 → T064 → T065
+Phase 6: T058–T060 → {T061, T062} → T063 → T065 (T064 DISPENSADA POR ESCOPO; complement 009:T070 → 009:T073)
 ```
 
 ### Task dependencies within stories
@@ -203,7 +205,7 @@ Phase 6: T058–T060 → {T061, T062} → T063 → T064 → T065
 - **US1 mobile**: T017/T018/T019 are distinct test files. T023 follows T017/T008. T024 follows T018/T023 and the settled GET contract. T025 follows T024; T026 follows T019/T023/T025; T027 follows T026. T028 joins T022/T027 and all US1 tests. The screen cannot invoke a live DELETE yet.
 - **US2**: T029–T033 can be prepared together after Phase 2 when US1 file ownership is free. T034 follows T029/T008/T010/T011 and T020; T035 follows T034; T036 follows T035/T030; T037 follows T036/T022. T038 follows T031/T035; T039 follows T032/T035; T040 follows T039/T011; T041 follows T010/T035/T002. T033 runs after T036. T042 joins T037–T041 and the HTTP matrix.
 - **US3**: T043–T048 can be prepared together after prior writes to their files have finished. T049 follows T044; T050 follows T049/T043/T012; T051 follows T050/T045. T052 follows T051. T053 follows T052 because both proof tasks own `private-session-boundaries.spec.tsx`. T054 follows T050/T047/T023/T036; T055 follows T054/T046/T025; T056 follows T055/T051/T048/T027. T057 joins T053/T056 and all US3 tests.
-- **Polish**: T058/T059/T060 need T042/T057; T059/T060 write the main evidence sequentially. T061/T062 require settled implementation/regressions and use distinct evidence files; never run multiple destructive backend suites concurrently. T063/T064 require the integrated flow and actual manual environments, run sequentially for accurate walkthrough evidence, and T065 consolidates every result.
+- **Polish**: T058/T059/T060 need T042/T057; T059/T060 write the main evidence sequentially. T061/T062 require settled implementation/regressions and use distinct evidence files; never run multiple destructive backend suites concurrently. T063 uses individual functional acceptance; T064 is dispensed and does not block T065. T065 consolidates only applicable evidence, including the individual complement in 009:T070.
 
 ### User story dependencies
 

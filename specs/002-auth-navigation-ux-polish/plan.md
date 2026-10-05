@@ -1,5 +1,7 @@
 # Implementation Plan: Auth Navigation UX Polish
 
+**Escopo de validação vigente — decisão de 2026-10-04:** [política permanente](../../.specify/memory/validation-scope.md). Automação e walkthrough funcional pelo próprio usuário são suficientes para o escopo manual. Campanhas nativas especializadas Android/iOS, TalkBack/VoiceOver e participantes independentes estão dispensados; exigências antigas desses itens abaixo são históricas e não bloqueiam conclusão nem geram follow-ups. Semântica básica de UI e gates automatizados permanecem aplicáveis.
+
 **Branch**: 002-auth-navigation-ux-polish | **Date**: 2026-09-16 | **Spec**: [spec.md](./spec.md)
 
 **Input**: Feature specification from specs/002-auth-navigation-ux-polish/spec.md
@@ -60,16 +62,16 @@ de CTA no Login; testes unitários/de rota e uma matriz funcional Android.
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-| Princípio/gate | Resultado | Aplicação ao plano |
-|---|---|---|
-| I. Domain-Modular Architecture | PASS | O desenho permanece na separação Expo Router → components → hooks/providers. A navegação visual fica em mobile/src/components/ui; rotas continuam responsáveis por composição, sem acoplamento com backend ou persistência. |
-| II. Secure, Explicit API Contracts | PASS | Não há endpoint, DTO, regra de acesso, token ou validação de API nova. Os formulários continuam no Zod/RHF existente e nenhuma credencial será introduzida. |
-| III. Testable Delivery | PASS | Serão adicionados testes de BackButton, shell/estados, cadastro/Login e matriz de rotas; os gates mobile existentes continuam obrigatórios. |
-| IV. Data Integrity and Safe Evolution | PASS | Não há modelo, banco ou migração envolvidos. |
-| V. Predictable and Accessible User Experience | PASS | O controle terá nome acessível “Voltar”, role de botão e alvo mínimo; loading/erro/not-found manterão uma saída; texto e feedback continuarão em português. |
-| Restrições de produto e plataforma | PASS | A implementação usa componentes já instalados, preserva as telas raiz e valida primeiro Android; iOS ausente será reportado como não medido. |
+| Princípio/gate                                | Resultado | Aplicação ao plano                                                                                                                                                                                                          |
+| --------------------------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| I. Domain-Modular Architecture                | PASS      | O desenho permanece na separação Expo Router → components → hooks/providers. A navegação visual fica em mobile/src/components/ui; rotas continuam responsáveis por composição, sem acoplamento com backend ou persistência. |
+| II. Secure, Explicit API Contracts            | PASS      | Não há endpoint, DTO, regra de acesso, token ou validação de API nova. Os formulários continuam no Zod/RHF existente e nenhuma credencial será introduzida.                                                                 |
+| III. Testable Delivery                        | PASS      | Serão adicionados testes de BackButton, shell/estados, cadastro/Login e matriz de rotas; os gates mobile existentes continuam obrigatórios.                                                                                 |
+| IV. Data Integrity and Safe Evolution         | PASS      | Não há modelo, banco ou migração envolvidos.                                                                                                                                                                                |
+| V. Predictable and Accessible User Experience | PASS      | O controle terá nome acessível “Voltar”, role de botão e alvo mínimo; loading/erro/not-found manterão uma saída; texto e feedback continuarão em português.                                                                 |
+| Restrições de produto e plataforma            | PASS      | A implementação usa componentes já instalados, preserva as telas raiz e valida primeiro Android; iOS ausente será reportado como não medido.                                                                                |
 
 Nenhuma violação constitucional ou decisão de complexidade excepcional foi
 identificada. A fase de pesquisa pode prosseguir.
@@ -116,15 +118,15 @@ retorno com a mesma finalidade.
 
 ### Política de fallback por rota
 
-| Rota | Fallback sem histórico utilizável | Contexto dinâmico |
-|---|---|---|
-| Cadastro | /login | Nenhum |
-| Criar turma | /classrooms | Nenhum |
-| Detalhe da turma | /classrooms | Nenhum |
-| Novo comunicado | /classrooms/:id | id da rota |
-| Detalhe do comunicado | /classrooms | /classrooms/:classroomId quando o comunicado carregado identificar a turma |
-| Editar comunicado | /announcements/:id | id da rota |
-| Editar perfil | /profile | Nenhum |
+| Rota                  | Fallback sem histórico utilizável | Contexto dinâmico                                                          |
+| --------------------- | --------------------------------- | -------------------------------------------------------------------------- |
+| Cadastro              | /login                            | Nenhum                                                                     |
+| Criar turma           | /classrooms                       | Nenhum                                                                     |
+| Detalhe da turma      | /classrooms                       | Nenhum                                                                     |
+| Novo comunicado       | /classrooms/:id                   | id da rota                                                                 |
+| Detalhe do comunicado | /classrooms                       | /classrooms/:classroomId quando o comunicado carregado identificar a turma |
+| Editar comunicado     | /announcements/:id                | id da rota                                                                 |
+| Editar perfil         | /profile                          | Nenhum                                                                     |
 
 No caminho normal, a tela anterior sempre vence o fallback. As telas raiz
 /login, /, /classrooms e /profile não renderizarão BackButton.
@@ -182,7 +184,7 @@ mudanças de contratos externos e dados persistidos.
 
 ### Documentation (this feature)
 
-~~~text
+```text
 specs/002-auth-navigation-ux-polish/
 ├── spec.md
 ├── plan.md
@@ -193,11 +195,11 @@ specs/002-auth-navigation-ux-polish/
 │   └── mobile-interactions.md
 └── checklists/
     └── requirements.md
-~~~
+```
 
 ### Source Code (repository root)
 
-~~~text
+```text
 mobile/
 ├── app/
 │   ├── (auth)/
@@ -228,7 +230,7 @@ mobile/
     │   ├── auth-navigation-ux.spec.tsx
     │   └── secondary-navigation.spec.tsx
     └── setup.ts
-~~~
+```
 
 **Structure Decision**: manter a arquitetura existente do monorepo. A feature é
 exclusivamente uma evolução de componentes e telas Expo Router no diretório
@@ -246,13 +248,13 @@ participantes permanecerá explicitamente não medida.
 
 ## Post-Design Constitution Check
 
-| Gate | Resultado | Evidência de design |
-|---|---|---|
-| Arquitetura e limites | PASS | Componentes compartilhados concentram somente apresentação/navegação; queries, mutations e validações existentes não mudam. |
-| Segurança e contratos | PASS | Nenhuma chamada de API, payload, token, regra de acesso ou segredo é introduzido. |
-| Testabilidade e gates | PASS | O contrato aponta testes RNTL/Jest, typecheck, lint, Prettier, Doctor e export; a matriz cobre os seis SC aplicáveis. |
-| Dados e evolução | PASS | Nenhuma entidade, persistência ou migração é necessária. |
-| UX previsível/acessível | PASS | Retorno presente em todos os estados, label/role/tamanho definidos, teclado tratável e idioma preservado. |
+| Gate                    | Resultado | Evidência de design                                                                                                         |
+| ----------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Arquitetura e limites   | PASS      | Componentes compartilhados concentram somente apresentação/navegação; queries, mutations e validações existentes não mudam. |
+| Segurança e contratos   | PASS      | Nenhuma chamada de API, payload, token, regra de acesso ou segredo é introduzido.                                           |
+| Testabilidade e gates   | PASS      | O contrato aponta testes RNTL/Jest, typecheck, lint, Prettier, Doctor e export; a matriz cobre os seis SC aplicáveis.       |
+| Dados e evolução        | PASS      | Nenhuma entidade, persistência ou migração é necessária.                                                                    |
+| UX previsível/acessível | PASS      | Retorno presente em todos os estados, label/role/tamanho definidos, teclado tratável e idioma preservado.                   |
 
 Resultado pós-design: PASS. O plano está pronto para a geração de tasks.md;
 esta execução encerra antes da implementação.

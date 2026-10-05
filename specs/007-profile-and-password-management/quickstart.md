@@ -1,5 +1,7 @@
 # Quickstart: Profile and Password Management
 
+**Escopo de validação vigente — decisão de 2026-10-04:** [política permanente](../../.specify/memory/validation-scope.md). Automação e walkthrough funcional pelo próprio usuário são suficientes para o escopo manual. Campanhas nativas especializadas Android/iOS, TalkBack/VoiceOver e participantes independentes estão dispensados; exigências antigas desses itens abaixo são históricas e não bloqueiam conclusão nem geram follow-ups. Semântica básica de UI e gates automatizados permanecem aplicáveis.
+
 **Date**: 2026-10-02
 
 Guia para validar a implementação futura, não registro de execução. Contrato: [contracts/profile-and-password.md](./contracts/profile-and-password.md); estados/invariantes: [data-model.md](./data-model.md). Suites novas abaixo só existirão após implementação.

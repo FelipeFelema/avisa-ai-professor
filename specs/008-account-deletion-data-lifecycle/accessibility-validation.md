@@ -1,5 +1,7 @@
 # Account-deletion accessibility validation
 
+**Status vigente — 2026-10-04:** campanha especializada **DISPENSADA POR ESCOPO**; não é pendência nem teste executado. Aplica-se a [política permanente](../../.specify/memory/validation-scope.md). Android/TalkBack, iOS/VoiceOver, auditorias físicas especializadas e participantes independentes não são exigidos, agora ou nas specs futuras. Relatos funcionais individuais continuam válidos. Menções antigas a esses itens como pendência, bloqueio ou follow-up abaixo são registros históricos, substituídos por esta decisão; gates automatizados, dependências e CI permanecem aplicáveis.
+
 **Status: NOT MEASURED — 2026-10-04**
 
 No Android device/TalkBack environment was available (`adb` is not installed or on PATH). No iOS device/VoiceOver session was run. Therefore actual keyboard-open layout, enlarged-text rendering, visual contrast, focus movement and assistive-technology announcements were not observed.

@@ -1,5 +1,7 @@
 # Implementation Plan: Primary Surfaces Visual Polish
 
+**Escopo de validação vigente — decisão de 2026-10-04:** [política permanente](../../.specify/memory/validation-scope.md). Automação e walkthrough funcional pelo próprio usuário são suficientes para o escopo manual. Campanhas nativas especializadas Android/iOS, TalkBack/VoiceOver e participantes independentes estão dispensados; exigências antigas desses itens abaixo são históricas e não bloqueiam conclusão nem geram follow-ups. Semântica básica de UI e gates automatizados permanecem aplicáveis.
+
 **Branch**: `003-primary-surfaces-visual-polish` | **Date**: 2026-09-26 | **Spec**: [spec.md](./spec.md)
 
 **Input**: Feature specification from `specs/003-primary-surfaces-visual-polish/spec.md`
@@ -71,16 +73,16 @@ integração/contrato e uma matriz manual Android.
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-| Princípio/gate | Resultado | Aplicação ao plano |
-|---|---|---|
-| I. Domain-Modular Architecture | PASS | O backend permanece no módulo `classrooms`, com DTO e service responsáveis pelo resumo; o mobile mantém a separação Expo Router → components → hooks/services/types/lib. O vínculo com `Announcement` já existe na projeção de `ClassroomSummary` e não cria novo módulo. |
-| II. Secure, Explicit API Contracts | PASS | A mudança de API é aditiva, versionada e documentada: `LastAnnouncementSummary.expiresAt` será refletido no DTO, no OpenAPI canônico e nos testes. Não há nova entrada, token, permissão ou segredo. |
-| III. Testable Delivery | PASS | A função de calendário terá teste unitário; rotas cobrirão estados, hierarquia, perfis, ações, texto longo e acessibilidade; backend cobrirá as duas listagens e o contrato; os quality gates existentes permanecem obrigatórios. |
-| IV. Data Integrity and Safe Evolution | PASS | `Announcement.expiresAt` já é a fonte persistida e não será alterada. Nenhuma migration é necessária; a query continuará filtrando comunicados ativos e ordenando o mais recente. |
-| V. Predictable and Accessible User Experience | PASS | Home distinguirá loading/error/empty/success; labels e roles existentes serão preservados ou explicitados; a busca manterá nome e função; ações continuarão separadas do toque de abrir o card e todos os controles manterão o alvo mínimo. |
-| Restrições de produto e plataforma | PASS | O escopo fica limitado a Home, Turmas e elementos compartilhados diretamente usados por elas; Android é o alvo de evidência e iOS permanece `NOT MEASURED` quando não houver prova. |
+| Princípio/gate                                | Resultado | Aplicação ao plano                                                                                                                                                                                                                                                        |
+| --------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| I. Domain-Modular Architecture                | PASS      | O backend permanece no módulo `classrooms`, com DTO e service responsáveis pelo resumo; o mobile mantém a separação Expo Router → components → hooks/services/types/lib. O vínculo com `Announcement` já existe na projeção de `ClassroomSummary` e não cria novo módulo. |
+| II. Secure, Explicit API Contracts            | PASS      | A mudança de API é aditiva, versionada e documentada: `LastAnnouncementSummary.expiresAt` será refletido no DTO, no OpenAPI canônico e nos testes. Não há nova entrada, token, permissão ou segredo.                                                                      |
+| III. Testable Delivery                        | PASS      | A função de calendário terá teste unitário; rotas cobrirão estados, hierarquia, perfis, ações, texto longo e acessibilidade; backend cobrirá as duas listagens e o contrato; os quality gates existentes permanecem obrigatórios.                                         |
+| IV. Data Integrity and Safe Evolution         | PASS      | `Announcement.expiresAt` já é a fonte persistida e não será alterada. Nenhuma migration é necessária; a query continuará filtrando comunicados ativos e ordenando o mais recente.                                                                                         |
+| V. Predictable and Accessible User Experience | PASS      | Home distinguirá loading/error/empty/success; labels e roles existentes serão preservados ou explicitados; a busca manterá nome e função; ações continuarão separadas do toque de abrir o card e todos os controles manterão o alvo mínimo.                               |
+| Restrições de produto e plataforma            | PASS      | O escopo fica limitado a Home, Turmas e elementos compartilhados diretamente usados por elas; Android é o alvo de evidência e iOS permanece `NOT MEASURED` quando não houver prova.                                                                                       |
 
 Não há violação constitucional a justificar. O ajuste cross-layer é necessário
 porque FR-009 exige transportar ao cliente um atributo já persistido, sem
@@ -109,7 +111,7 @@ As decisões completas e as alternativas estão em [research.md](./research.md).
    texto contextual opcional para servir à Home, `Minhas turmas` e
    `Turmas disponíveis` sem confundir vazio com falha.
 5. **Hierarquia semântica em Turmas**: agrupar introdução, busca, `Minhas
-   turmas` e `Turmas disponíveis` em blocos com cabeçalhos acessíveis; manter
+turmas` e `Turmas disponíveis` em blocos com cabeçalhos acessíveis; manter
    `Criar turma` somente para `PROFESSOR`. O campo receberá um `Ionicons`
    `search-outline` decorativo por uma prop opcional de `FormField`; o valor,
    callback, query key, parâmetro HTTP, loading, resultado e erro não mudam.
@@ -225,13 +227,13 @@ por `speckit-tasks` quando autorizada.
 
 ## Post-Design Constitution Check
 
-| Gate | Resultado | Evidência de design |
-|---|---|---|
-| Arquitetura e limites | PASS | A alteração de resumo fica em `classrooms`; a apresentação fica em componentes/rotas mobile existentes e a função de calendário é isolada e testável. |
-| Segurança e contratos | PASS | `expiresAt` é um campo de resposta documentado; não há input novo, mudança de autorização, token, segredo ou endpoint. |
-| Testabilidade e gates | PASS | O contrato aponta testes unitários, de rota, serviço, integração e OpenAPI, além dos comandos de qualidade backend/mobile e da evidência Android. |
-| Dados e evolução | PASS | A origem permanece `Announcement.expiresAt`; não há alteração de schema ou migration e o filtro de ativo será coberto. |
-| UX previsível/acessível | PASS | Os estados têm semântica distinta, a ordem das seções é explícita, o ícone de busca é decorativo e os controles preservam nomes, funções e alvos. |
+| Gate                    | Resultado | Evidência de design                                                                                                                                   |
+| ----------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Arquitetura e limites   | PASS      | A alteração de resumo fica em `classrooms`; a apresentação fica em componentes/rotas mobile existentes e a função de calendário é isolada e testável. |
+| Segurança e contratos   | PASS      | `expiresAt` é um campo de resposta documentado; não há input novo, mudança de autorização, token, segredo ou endpoint.                                |
+| Testabilidade e gates   | PASS      | O contrato aponta testes unitários, de rota, serviço, integração e OpenAPI, além dos comandos de qualidade backend/mobile e da evidência Android.     |
+| Dados e evolução        | PASS      | A origem permanece `Announcement.expiresAt`; não há alteração de schema ou migration e o filtro de ativo será coberto.                                |
+| UX previsível/acessível | PASS      | Os estados têm semântica distinta, a ordem das seções é explícita, o ícone de busca é decorativo e os controles preservam nomes, funções e alvos.     |
 
 Resultado pós-design: PASS. O plano está pronto para a geração posterior de
 `tasks.md` e para implementação faseada conforme o limite da spec.

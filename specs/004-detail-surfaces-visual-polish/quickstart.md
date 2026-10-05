@@ -1,5 +1,7 @@
 # Quickstart: Detail Surfaces Visual Polish
 
+**Escopo de validação vigente — decisão de 2026-10-04:** [política permanente](../../.specify/memory/validation-scope.md). Automação e walkthrough funcional pelo próprio usuário são suficientes para o escopo manual. Campanhas nativas especializadas Android/iOS, TalkBack/VoiceOver e participantes independentes estão dispensados; exigências antigas desses itens abaixo são históricas e não bloqueiam conclusão nem geram follow-ups. Semântica básica de UI e gates automatizados permanecem aplicáveis.
+
 **Data**: 2026-10-01
 
 Este é o roteiro de validação para a implementação futura da spec 004. O contrato de interface está em [contracts/detail-surfaces.md](./contracts/detail-surfaces.md), e os dados/estados estão em [data-model.md](./data-model.md). Nenhuma migration, endpoint ou dependência nova é necessária.

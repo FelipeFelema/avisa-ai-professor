@@ -1,5 +1,7 @@
 # Feature Specification: Account Deletion and Data Lifecycle
 
+**Escopo de validação vigente — decisão de 2026-10-04:** [política permanente](../../.specify/memory/validation-scope.md). Automação e walkthrough funcional pelo próprio usuário são suficientes para o escopo manual. Campanhas nativas especializadas Android/iOS, TalkBack/VoiceOver e participantes independentes estão dispensados; exigências antigas desses itens abaixo são históricas e não bloqueiam conclusão nem geram follow-ups. Semântica básica de UI e gates automatizados permanecem aplicáveis.
+
 **Feature Branch**: `008-account-deletion-data-lifecycle`
 
 **Created**: 2026-10-03
@@ -8,7 +10,7 @@
 
 **Input**: User description: "Adicionar exclusão permanente da própria conta, com confirmação explícita, encerramento de sessões e tratamento consistente dos dados de PARENT, PROFESSOR, ADMIN e recursos sob ownership. A capacidade deve permanecer independente da gestão de perfil/senha e das futuras funcionalidades administrativas e de notificações."
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Compreender e confirmar a exclusão (Priority: P1)
 
@@ -74,7 +76,7 @@ Quando a exclusão termina, o aplicativo elimina o estado autenticado local, ret
 - A frase de confirmação contém variações de caixa, espaços adicionais ou caracteres parecidos com os solicitados.
 - Dados históricos inesperados associam autoria ou ownership a um papel que atualmente não criaria esses recursos.
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -107,19 +109,19 @@ Quando a exclusão termina, o aplicativo elimina o estado autenticado local, ret
 
 ### Data Lifecycle Policy
 
-| Dado ou relação | Resultado após exclusão bem-sucedida |
-| --- | --- |
-| Perfil, e-mail e credencial da conta | Excluídos permanentemente; o e-mail volta a ficar disponível para cadastro. |
-| Sessões da conta | Excluídas ou tornadas definitivamente inválidas, em todos os dispositivos. |
-| Participações da conta em turmas de terceiros | Excluídas; as turmas e os demais membros são preservados. |
-| Comunicados de autoria da conta em turmas de terceiros | Excluídos; os demais conteúdos da turma são preservados. |
-| Turmas sob ownership da conta | Excluídas com todos os comunicados e participações; as contas dos participantes são preservadas. |
-| Registros mínimos de exclusões anteriores de turmas vinculados à conta | Excluídos para não reter o identificador da conta sem necessidade operacional. |
-| Códigos de convite sem vínculo de autoria com a conta | Preservados, pois o modelo atual não os atribui a um usuário. |
-| Preferência local de tema | Preservada na instalação, sem identidade de conta. |
-| Dados de outras contas sem relação com a conta excluída | Preservados integralmente. |
+| Dado ou relação                                                        | Resultado após exclusão bem-sucedida                                                             |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Perfil, e-mail e credencial da conta                                   | Excluídos permanentemente; o e-mail volta a ficar disponível para cadastro.                      |
+| Sessões da conta                                                       | Excluídas ou tornadas definitivamente inválidas, em todos os dispositivos.                       |
+| Participações da conta em turmas de terceiros                          | Excluídas; as turmas e os demais membros são preservados.                                        |
+| Comunicados de autoria da conta em turmas de terceiros                 | Excluídos; os demais conteúdos da turma são preservados.                                         |
+| Turmas sob ownership da conta                                          | Excluídas com todos os comunicados e participações; as contas dos participantes são preservadas. |
+| Registros mínimos de exclusões anteriores de turmas vinculados à conta | Excluídos para não reter o identificador da conta sem necessidade operacional.                   |
+| Códigos de convite sem vínculo de autoria com a conta                  | Preservados, pois o modelo atual não os atribui a um usuário.                                    |
+| Preferência local de tema                                              | Preservada na instalação, sem identidade de conta.                                               |
+| Dados de outras contas sem relação com a conta excluída                | Preservados integralmente.                                                                       |
 
-### Key Entities *(include if feature involves data)*
+### Key Entities _(include if feature involves data)_
 
 - **Conta**: identidade autenticável composta por perfil, papel, e-mail e credencial; é o alvo único da exclusão iniciada pela própria pessoa.
 - **Sessão**: autorização de acesso de um dispositivo; todas as sessões da conta deixam de ser válidas após o sucesso.
@@ -129,7 +131,7 @@ Quando a exclusão termina, o aplicativo elimina o estado autenticado local, ret
 - **Registro de exclusão de turma**: registro mínimo usado para reconhecer repetição de uma exclusão de turma; deve deixar de identificar a conta removida.
 - **Preferência da instalação**: configuração sem vínculo com a conta, atualmente o tema; sobrevive à limpeza do estado autenticado.
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 
@@ -182,3 +184,9 @@ Quando a exclusão termina, o aplicativo elimina o estado autenticado local, ret
 - Depende da base visual e de navegação já estabilizada até a `005-theme-preferences` para apresentar o fluxo nos dois temas.
 - Usa os conceitos vigentes de conta autenticada, sessão, turma, participação, comunicado e ownership; não cria dependência funcional entre a `007` e a `008`.
 - Deve estar concluída antes da consolidação de release da `013-release-polish-and-documentation` e será reavaliada na `014-production-security-assessment`.
+
+## Ajuste de linguagem aprovado pelo usuário — 2026-10-05
+
+A copy da exclusão MUST usar linguagem breve e comum, com impactos condicionados ao papel e aos vínculos atuais. PARENT MUST ver saída das turmas e preservação de turmas/conteúdos de terceiros, sem aviso de exclusão de comunicados próprios, pois não publica comunicados no fluxo suportado. PROFESSOR MUST receber resumo de exclusão das turmas próprias e conteúdos, preservação das contas dos participantes e eventual remoção de seus comunicados/participações em outras turmas. ADMIN MUST receber esses impactos quando aplicáveis, mais perda do acesso administrativo e bloqueio claro se for o último administrador.
+
+Não expor detalhes técnicos de credenciais, sessões, recibos ou recálculo transacional na copy principal. Vínculos históricos de ownership informados pelo servidor continuam recebendo aviso de exclusão, inclusive se o papel atual for PARENT, para preservar FR-003/FR-004. A política de remoção/preservação de dados, senha atual, confirmação exata e guarda do último ADMIN permanece inalterada. Evidência de T070/T073: [validation.md](./validation.md).
