@@ -41,6 +41,28 @@ beforeEach(() => {
 });
 
 describe('profile route', () => {
+  it('offers teacher invites only to ADMIN and preserves existing controls', async () => {
+    mockUseAuth.mockReturnValue({
+      user: { id: 'u', name: 'Admin', email: 'admin@example.com', role: 'ADMIN' },
+      logout: jest.fn(),
+      isLoading: false,
+    } as never);
+    let view = await renderProfile();
+    await fireEvent.press(view.getByRole('button', { name: 'Convites de professores' }));
+    expect(push).toHaveBeenCalledWith('/admin/teacher-invites');
+    expect(view.getByRole('button', { name: 'Alterar senha' })).toBeTruthy();
+    expect(view.getByRole('button', { name: 'Excluir minha conta' })).toBeTruthy();
+    await view.unmount();
+
+    mockUseAuth.mockReturnValue({
+      user: { id: 'u', name: 'Professor', email: 'prof@example.com', role: 'PROFESSOR' },
+      logout: jest.fn(),
+      isLoading: false,
+    } as never);
+    view = await renderProfile();
+    expect(view.queryByRole('button', { name: 'Convites de professores' })).toBeNull();
+  });
+
   it.each(['PARENT', 'PROFESSOR', 'ADMIN'] as const)(
     'offers a separate password action for %s preserving profile and theme',
     async (role) => {

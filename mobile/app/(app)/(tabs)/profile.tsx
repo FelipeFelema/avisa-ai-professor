@@ -141,6 +141,14 @@ export default function ProfileScreen() {
           onPress={() => router.push('/profile/change-password')}
         />
 
+        {user.role === 'ADMIN' ? (
+          <Button
+            label="Convites de professores"
+            variant="secondary"
+            onPress={() => router.push('/admin/teacher-invites')}
+          />
+        ) : null}
+
         <Button
           label="Sair da conta"
           variant="destructive"
