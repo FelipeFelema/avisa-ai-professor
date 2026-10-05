@@ -13,7 +13,9 @@ Plataforma de comunicação escolar que conecta professores e responsáveis por 
 - Criação, edição, visualização e exclusão de comunicados por professores.
 - Exibição de comunicados ativos para participantes da turma.
 - Perfil da conta no aplicativo mobile.
-- Códigos de convite para controlar o cadastro de perfis privilegiados.
+- Convites de PROFESSOR, gerados somente por ADMIN, com validade fixa de sete dias e uso único.
+
+Somente uma conta `ADMIN` autenticada pode gerar um convite de PROFESSOR. Cadastro público continua criando `PARENT` sem convite ou `PROFESSOR` com convite válido; ele nunca cria `ADMIN`. Cada geração deliberada cria outro convite e não revoga os anteriores. O aplicativo mantém código e feedback apenas durante a visita à tela e copia o código somente após ação explícita. Timeout ou falha de cópia não provocam repetição automática. O contrato anterior de geração de convites para `ADMIN` e de `expiresInDays` foi removido; login e os fluxos existentes de `PARENT` e `PROFESSOR` continuam disponíveis. A documentação usa apenas exemplos fictícios, nunca códigos operacionais.
 
 ## Arquitetura
 
