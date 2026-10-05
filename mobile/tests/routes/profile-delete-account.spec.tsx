@@ -79,7 +79,7 @@ async function screen() {
     </>,
     { queryClient },
   );
-  await waitFor(() => expect(view.getByText('Turmas próprias: 2')).toBeTruthy());
+  await waitFor(() => expect(view.getByLabelText('Senha atual')).toBeTruthy());
   return { ...view, queryClient };
 }
 async function fill(view: Awaited<ReturnType<typeof screen>>) {
@@ -96,22 +96,50 @@ describe('read-only account confirmation route', () => {
     expect(view.getByText('Sair da conta')).toBeTruthy();
     expect(auth.logout).not.toHaveBeenCalled();
   });
-  it.each(['PARENT', 'PROFESSOR', 'ADMIN'] as const)(
-    'shows server %s graph/copy including historical relations',
+  it.each(['PROFESSOR', 'ADMIN'] as const)(
+    'summarizes the server %s ownership and authored content without internal details',
     async (role) => {
       read.mockResolvedValue({ ...impact, role });
       const view = await screen();
       expect(view.getByText('A exclusão é permanente e não pode ser desfeita.')).toBeTruthy();
-      expect(view.getByText('Comunicados nas suas turmas: 3')).toBeTruthy();
-      expect(view.getByText('Participações em turmas de outras pessoas: 1')).toBeTruthy();
-      expect(view.getByText('Seus comunicados em turmas de outras pessoas: 1')).toBeTruthy();
+      expect(view.getByText(/Suas turmas \(2\) serão excluídas com todos os/)).toBeTruthy();
+      expect(view.getByText('Você sairá de 1 turma de outras pessoas.')).toBeTruthy();
+      expect(
+        view.getByText(/Os comunicados que você publicou em outras turmas \(1\)/),
+      ).toBeTruthy();
+      expect(
+        view.getByText('Em outras turmas, os demais participantes e comunicados serão mantidos.'),
+      ).toBeTruthy();
       if (role === 'ADMIN')
-        expect(view.getByText('Você perderá também seu acesso administrativo.')).toBeTruthy();
-      expect(view.getByText(/Códigos de convite/)).toBeTruthy();
+        expect(view.getByText(/Você perderá o acesso administrativo/)).toBeTruthy();
+      else expect(view.queryByText(/acesso administrativo/)).toBeNull();
+      expect(view.queryByText(/credencial|registros de exclusões|Códigos de convite/)).toBeNull();
       expect(view.queryClient.getQueryCache().getAll()).toEqual([]);
       expect(view.queryClient.getMutationCache().getAll()).toEqual([]);
     },
   );
+  it('shows PARENT only account removal and leaving classrooms, without authored-content warnings', async () => {
+    read.mockResolvedValue({
+      ...impact,
+      ownedClassroomsCount: 0,
+      announcementsInOwnedClassroomsCount: 0,
+      externalMembershipsCount: 2,
+      authoredAnnouncementsInOtherClassroomsCount: 0,
+    });
+    const view = await screen();
+    expect(view.getByText('Sua conta será excluída e você sairá do aplicativo.')).toBeTruthy();
+    expect(view.getByText('Você sairá de 2 turmas de outras pessoas.')).toBeTruthy();
+    expect(
+      view.getByText('As turmas e os comunicados das outras pessoas continuarão disponíveis.'),
+    ).toBeTruthy();
+    expect(view.queryByText(/Suas turmas|turmas próprias|publicou|serão removidos/)).toBeNull();
+    expect(view.queryByText(/acesso administrativo|credencial|registros de exclusões/)).toBeNull();
+  });
+  it('still warns a PARENT about historical owned classrooms without suggesting publishing access', async () => {
+    const view = await screen();
+    expect(view.getByText(/Suas turmas \(2\) serão excluídas/)).toBeTruthy();
+    expect(view.queryByText(/Os comunicados que você publicou/)).toBeNull();
+  });
   it('protects fields, disables autofill and validates exactly without a destructive request', async () => {
     const destructiveRequest = jest.spyOn(api, 'delete');
     const view = await screen();
@@ -236,26 +264,32 @@ describe('read-only account confirmation route', () => {
     const view = await screen();
     expect(
       view.getByText(
-        'Sua conta é a última ADMIN. A exclusão está bloqueada para preservar o acesso administrativo.',
+        'Você é o último administrador. Sua conta não pode ser excluída enquanto não houver outro administrador.',
       ),
     ).toBeTruthy();
     expect(
       view.getByRole('button', { name: /Revisar confirma/ }).props.accessibilityState.disabled,
     ).toBe(true);
     expect(view.getByLabelText('Senha atual').props.editable).toBe(false);
+    expect(
+      view.getByRole('button', { name: 'Excluir minha conta' }).props.accessibilityState.disabled,
+    ).toBe(true);
+    expect(removeAccount).not.toHaveBeenCalled();
     await fireEvent.press(view.getByRole('button', { name: 'Cancelar' }));
     expect(mockRouter.back).toHaveBeenCalled();
   });
   it('treats zero relations as ready', async () => {
     read.mockResolvedValue({
       ...impact,
+      role: 'PROFESSOR',
       ownedClassroomsCount: 0,
       announcementsInOwnedClassroomsCount: 0,
       externalMembershipsCount: 0,
       authoredAnnouncementsInOtherClassroomsCount: 0,
     });
     const view = await renderWithProviders(<DeleteAccountScreen />);
-    await waitFor(() => expect(view.getByText('Turmas próprias: 0')).toBeTruthy());
+    await waitFor(() => expect(view.getByText('Você não tem turmas próprias.')).toBeTruthy());
+    expect(view.queryByText(/Você sairá de|Os comunicados que você publicou/)).toBeNull();
     expect(
       view.getByRole('button', { name: /Revisar confirma/ }).props.accessibilityState.disabled,
     ).toBe(false);
@@ -271,7 +305,7 @@ describe('read-only account confirmation route', () => {
       expect(view.getByText('Não foi possível consultar o impacto. Tente novamente.')).toBeTruthy(),
     );
     await fireEvent.press(view.getByRole('button', { name: 'Tentar novamente' }));
-    await waitFor(() => expect(view.getByText('Turmas próprias: 2')).toBeTruthy());
+    await waitFor(() => expect(view.getByLabelText('Senha atual')).toBeTruthy());
     expect(read).toHaveBeenCalledTimes(2);
   });
   it('clears on cancel/back/blur and reentry; never stores confirmation', async () => {

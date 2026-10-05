@@ -10,6 +10,7 @@ Aplicativo mobile do Avisa Aí Professor, desenvolvido com React Native e Expo. 
 - Renovação automática do token de acesso.
 - Validação de formulários com mensagens claras para o usuário.
 - Visualização do perfil e logout.
+- Geração e cópia explícita de convites de PROFESSOR para contas ADMIN.
 - Consulta de impacto e exclusão permanente da própria conta.
 - Busca, entrada e saída de turmas.
 - Criação de turmas para professores.
@@ -108,6 +109,14 @@ Os testes Jest/RNTL cobrem os comportamentos automatizáveis; acessibilidade rea
 ## API
 
 O aplicativo depende da API descrita no [README do backend](../backend/README.md).
+
+### Convites de professor
+
+No Perfil, somente `ADMIN` tem acesso a **Convites de professores**. Cada geração deliberada pede à API um código para uma conta `PROFESSOR`, válido por sete dias e para um cadastro. Cadastro sem código continua criando `PARENT`; nenhum fluxo público pode criar `ADMIN`. A opção de papel `ADMIN` e o parâmetro `expiresInDays` foram removidos intencionalmente do contrato de geração.
+
+**Copiar código** é uma ação explícita e envia apenas o texto exato exibido para a área de transferência. A tela não lê nem limpa o clipboard. Em caso de falha, o código permanece selecionável para cópia manual; um timeout de geração ou uma falha de cópia não é repetido automaticamente. Gerar outro convite não revoga o anterior, e o resultado pode ser incerto se a resposta da API se perder.
+
+O código e o feedback ficam somente no estado transitório da tela. Eles não são gravados em armazenamento local, cache de queries/mutations, navegação ou logs, e são descartados ao sair da tela ou encerrar/mudar a sessão. Exemplos de documentação são fictícios e não podem ser usados como convites reais.
 
 ### Exclusão da conta
 

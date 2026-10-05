@@ -1,5 +1,7 @@
 # Feature Specification: Consolidação de Experiência e Qualidade do Aplicativo
 
+**Escopo de validação vigente — decisão de 2026-10-04:** [política permanente](../../.specify/memory/validation-scope.md). Automação e walkthrough funcional pelo próprio usuário são suficientes para o escopo manual. Campanhas nativas especializadas Android/iOS, TalkBack/VoiceOver e participantes independentes estão dispensados; exigências antigas desses itens abaixo são históricas e não bloqueiam conclusão nem geram follow-ups. Semântica básica de UI e gates automatizados permanecem aplicáveis.
+
 **Feature Branch**: `feat/account-and-resourse-management`
 
 **Created**: 2026-08-22
@@ -31,7 +33,7 @@ This feature completes and integrates the existing baseline; it does not require
 - Q: Após o professor confirmar a exclusão de uma sala, por quanto tempo a sala, seus vínculos e seus avisos devem permanecer armazenados? → A: Remover permanentemente a sala, seus vínculos e seus avisos, sem período de recuperação.
 - Q: Se a resposta da exclusão de uma sala for perdida e o aplicativo repetir a mesma solicitação após a sala já ter sido removida, qual resultado o usuário deve receber? → A: Tratar a repetição como sucesso e retornar o usuário à lista de salas atualizada.
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Delete an Owned Classroom Safely (Priority: P1)
 
@@ -147,7 +149,7 @@ As a maintainer, I receive automated and actionable validation for every propose
 - The interactive API reference starts while part of the contract metadata is missing; delivery validation fails rather than publishing a misleading partial reference.
 - A visual reference conflicts with accessibility, Portuguese content length, or existing product identity; usability and accessibility requirements take precedence.
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -189,18 +191,18 @@ As a maintainer, I receive automated and actionable validation for every propose
 - **Device Session**: An independently revocable authenticated session associated with one user and device context. The session that performs an email change remains active, while the user's other active sessions become invalid.
 - **Deletion Retry Record**: A minimal, non-recoverable record that proves an owned-classroom deletion completed and allows only the same owner to repeat an ambiguous request as a success without retaining classroom content.
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 
 - **SC-001**: In automated authorization scenarios, 100% of classroom deletion attempts by the owner succeed and 100% of attempts by non-owners or unauthenticated actors are rejected without data loss.
-- **SC-002**: At least 95% of test participants can locate and complete an owned-classroom deletion, including confirmation, in under 45 seconds without assistance.
-- **SC-003**: At least 95% of test participants can update a name or email and verify the new value in under two minutes without assistance.
+- **SC-002**: O próprio usuário consegue localizar e concluir a exclusão de uma turma própria, incluindo confirmação, no walkthrough individual. A referência de 45 segundos não exige amostra, percentual de participantes ou estudo sem ajuda.
+- **SC-003**: O próprio usuário consegue atualizar nome ou e-mail e verificar o novo valor no walkthrough individual. Dois minutos é referência de usabilidade; não exige outros participantes ou pesquisa formal.
 - **SC-004**: 100% of user-visible update and delete actions in the agreed mobile scope show an explicit confirmation, and cancellation causes zero persisted changes in automated scenarios.
 - **SC-005**: After a successful profile update, the new identity is visible in the profile and home greeting within two seconds, every other current-account identity display remains consistent, and the identity remains correct after the next sign-in; after an email change, the current device remains authenticated and every other previously active session is rejected when it next attempts authenticated access or renewal.
 - **SC-006**: 100% of externally supported API operations appear in the interactive reference with authentication, request, success, and relevant error information, and a new developer can successfully exercise one read and one protected mutation within 15 minutes.
-- **SC-007**: 100% of audited primary screens conform to the approved visual foundation; all targeted interactive controls meet WCAG 2.2 Level AA contrast and minimum touch targets of 44×44 points on iOS and 48×48 density-independent pixels on Android; and the accessibility review finds no unresolved critical issue in the targeted flows.
-- **SC-008**: At least 90% of representative professor and parent tasks are completed on the first attempt during usability review of the redesigned primary flows.
+- **SC-007**: As telas primárias seguem a base visual aprovada, estados, temas, rótulos e semântica básica de UI, verificados por automação e walkthrough individual viável. Auditorias físicas/nativas/assistivas especializadas estão dispensadas por escopo.
+- **SC-008**: Os fluxos representativos de PROFESSOR e PARENT são cobertos por testes automatizados e walkthrough funcional do próprio usuário. Percentuais populacionais, participantes independentes e taxas de sucesso em estudo sem ajuda estão dispensados por escopo.
 - **SC-009**: 100% of proposed changes run all applicable automated gates; each gate is enforced as required by the repository hosting settings, and deliberately introduced failures in each required category are detected and prevent readiness approval. If enforcement cannot be configured, the feature receives no completion approval.
 - **SC-010**: Every critical behavior introduced or completed by this feature has at least one automated success scenario and one relevant failure or permission scenario, with all such scenarios passing before the feature is accepted.
 

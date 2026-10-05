@@ -1,5 +1,7 @@
 # Feature Specification: Theme Preferences
 
+**Escopo de validação vigente — decisão de 2026-10-04:** [política permanente](../../.specify/memory/validation-scope.md). Automação e walkthrough funcional pelo próprio usuário são suficientes para o escopo manual. Campanhas nativas especializadas Android/iOS, TalkBack/VoiceOver e participantes independentes estão dispensados; exigências antigas desses itens abaixo são históricas e não bloqueiam conclusão nem geram follow-ups. Semântica básica de UI e gates automatizados permanecem aplicáveis.
+
 **Feature Branch**: `[005-theme-preferences]`
 
 **Created**: 2026-10-01
@@ -8,7 +10,7 @@
 
 **Input**: User description: "Adicionar temas Claro e Escuro ao sistema visual estabilizado, permitir que a pessoa escolha sua preferência no Perfil, persistir essa escolha localmente e aplicá-la de forma consistente em todas as telas e estados do aplicativo."
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Escolher o tema no Login e no Perfil (Priority: P1)
 
@@ -78,17 +80,17 @@ Como pessoa que já escolheu um tema, quero que o aplicativo restaure essa prefe
 - Ações destrutivas, avisos e erros precisam manter destaque suficiente sem se confundir com fundos escuros.
 - A barra de status e a barra de abas atravessam uma troca de tema com a tela já aberta.
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### In-Scope Surface Inventory
 
-| Grupo | Superfícies e elementos abrangidos |
-|---|---|
+| Grupo                     | Superfícies e elementos abrangidos                                                                                                    |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | Inicialização e navegação | Estado inicial, restauração de sessão, fluxos público e autenticado, barra de abas, navegação secundária e barra de status do sistema |
-| Autenticação | Login e Cadastro, incluindo campos, seleção de perfil, validações e rodapé |
-| Superfícies principais | Home, Turmas e Perfil, incluindo a nova preferência de tema |
-| Superfícies secundárias | Detalhes e formulários atuais de turma, comunicado e perfil |
-| Elementos compartilhados | Cards, campos, botões, ícones, dialogs, backdrops, empty states e estados de carregamento, erro, sucesso e item ausente |
+| Autenticação              | Login e Cadastro, incluindo campos, seleção de perfil, validações e rodapé                                                            |
+| Superfícies principais    | Home, Turmas e Perfil, incluindo a nova preferência de tema                                                                           |
+| Superfícies secundárias   | Detalhes e formulários atuais de turma, comunicado e perfil                                                                           |
+| Elementos compartilhados  | Cards, campos, botões, ícones, dialogs, backdrops, empty states e estados de carregamento, erro, sucesso e item ausente               |
 
 ### Functional Requirements
 
@@ -136,7 +138,7 @@ Como pessoa que já escolheu um tema, quero que o aplicativo restaure essa prefe
 - Personalização do teclado do sistema ou de outras interfaces externas ao aplicativo, além da adaptação da barra de status prevista no escopo.
 - Novo endpoint, contrato de API, persistência no servidor, migration ou pacote adicional.
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

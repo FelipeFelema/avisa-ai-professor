@@ -1,5 +1,7 @@
 # Feature Specification: Profile and Password Management
 
+**Escopo de validação vigente — decisão de 2026-10-04:** [política permanente](../../.specify/memory/validation-scope.md). Automação e walkthrough funcional pelo próprio usuário são suficientes para o escopo manual. Campanhas nativas especializadas Android/iOS, TalkBack/VoiceOver e participantes independentes estão dispensados; exigências antigas desses itens abaixo são históricas e não bloqueiam conclusão nem geram follow-ups. Semântica básica de UI e gates automatizados permanecem aplicáveis.
+
 **Feature Branch**: `[007-profile-and-password-management]`
 
 **Created**: 2026-10-02
@@ -8,7 +10,7 @@
 
 **Input**: User description: "Completar o gerenciamento do próprio perfil permitindo alterar nome e e-mail sem expor role editável e adicionar alteração segura de senha, preservando a sessão atual e revogando as demais sessões após a troca."
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Atualizar a própria identidade sem alterar o papel (Priority: P1)
 
@@ -63,16 +65,16 @@ Como pessoa autenticada, quero trocar minha senha informando a senha atual e con
 - Outra sessão tenta usar access token ou refresh token logo após a troca.
 - A pessoa alterna o tema ou abre o teclado com texto ampliado durante qualquer um dos formulários.
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### In-Scope Flow Inventory
 
-| Fluxo | Elementos abrangidos |
-|---|---|
-| Perfil principal | Exibição atual da identidade e do papel, acesso a Editar perfil e nova ação Alterar senha |
-| Editar perfil | Nome, E-mail, validação, confirmação, conflito, no-op e atualização do estado autenticado |
-| Alterar senha | Senha atual, nova senha, confirmação, validação, feedback, proteção contra envio duplicado e sucesso |
-| Sessões | Preservação da sessão iniciadora e revogação das demais após mudança efetiva de e-mail ou senha |
+| Fluxo                 | Elementos abrangidos                                                                                                   |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Perfil principal      | Exibição atual da identidade e do papel, acesso a Editar perfil e nova ação Alterar senha                              |
+| Editar perfil         | Nome, E-mail, validação, confirmação, conflito, no-op e atualização do estado autenticado                              |
+| Alterar senha         | Senha atual, nova senha, confirmação, validação, feedback, proteção contra envio duplicado e sucesso                   |
+| Sessões               | Preservação da sessão iniciadora e revogação das demais após mudança efetiva de e-mail ou senha                        |
 | Contratos e segurança | Autorização do próprio usuário, validação na fronteira, hash seguro e ausência de dados sensíveis em respostas ou logs |
 
 ### Functional Requirements
@@ -126,7 +128,7 @@ Como pessoa autenticada, quero trocar minha senha informando a senha atual e con
 - Novos dados de perfil, avatar enviado pelo usuário ou preferências adicionais.
 - Nova tabela, migration, dependência externa ou alteração das relações de turmas, comunicados e ownership.
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

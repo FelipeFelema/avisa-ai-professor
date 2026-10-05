@@ -1,5 +1,7 @@
 # Detail Surfaces Validation
 
+**Status vigente — 2026-10-04:** Aplica-se a [política permanente](../../../.specify/memory/validation-scope.md). Android/TalkBack, iOS/VoiceOver, auditorias físicas especializadas e participantes independentes não são exigidos, agora ou nas specs futuras. Relatos funcionais individuais continuam válidos. Menções antigas a esses itens como pendência, bloqueio ou follow-up abaixo são registros históricos, substituídos por esta decisão; gates automatizados, dependências e CI permanecem aplicáveis.
+
 ## Baseline das Fases 1 e 2
 
 Data: 2026-10-01
@@ -27,32 +29,33 @@ Data: 2026-10-01
 - Doctor, export, walkthrough Android e a matriz de evidência das fases posteriores: `NOT RUN` por estarem na Fase 6, fora do limite autorizado desta execução; qualquer observação manual permanece `NOT MEASURED`.
 
 ## Checkpoint da Fase 6 - Polish e validacao transversal
+
 Data: 2026-10-01
 
 ### Matriz de cenários
 
-| Área | Cenário/observação | Evidência | Status |
-|---|---|---|---|
-| US1 | Turma do proprietário com comunicados: nome → `Comunicados`/`+ Novo` → cards → `Excluir turma` | `classroom-details.spec.tsx` | `PASS` |
-| US1 | Turma do proprietário sem comunicados: vazio antes da ação final | `classroom-details.spec.tsx`, `confirmation-matrix.spec.tsx` | `PASS` |
-| US1 | Turma de membro com e sem comunicados: `Sair da turma` no fim, sem `Excluir turma` | `classroom-details.spec.tsx`, `confirmation-matrix.spec.tsx` | `PASS` |
-| US1 | `PROFESSOR` encontra `Criar comunicado` e conserva o destino `/classrooms/{id}/new-announcement` | `classroom-details.spec.tsx` | `PASS` |
-| US1 | Usuário desconhecido, turma ausente e lista 404 não recebem ação destrutiva; retorno seguro e retry | `classroom-details.spec.tsx`, `secondary-navigation.spec.tsx` | `PASS` |
-| US1 | Lista carregando ou com erro recuperável mantém contexto, retry e ação válida | `classroom-details.spec.tsx` | `PASS` |
-| Card | Expiração hoje, em 1 dia, em X dias, inválida e passada | `AnnouncementCard.spec.tsx`, `classroom-expiration.spec.ts` | `PASS` |
-| US2 | Detalhe autoral: heading, professor, `Publicado em`, `Expira em`, corpo integral e ações em ordem | `detail-surfaces.spec.tsx` | `PASS` |
-| US2 | Detalhe não autoral não reserva nem expõe `Editar`/`Excluir` | `detail-surfaces.spec.tsx`, `confirmation-matrix.spec.tsx` | `PASS` |
-| US2 | Título, autoria e corpo longos, com quebras de linha e sem limite de linhas no detalhe | `detail-surfaces.spec.tsx` | `PASS` |
-| US2 | Loading, erro com retry, 404/ausência e fallback da navegação secundária | `detail-surfaces.spec.tsx`, `secondary-navigation.spec.tsx` | `PASS` |
-| US2 | Exclusão autoral preserva confirmação, cancelamento, pending, erro, bloqueio duplicado e `router.back()` | `confirmation-matrix.spec.tsx` | `PASS` |
-| US3 | Perfil autenticado: header, avatar, Nome, E-mail, Perfil, editar e logout em ordem | `profile.spec.tsx` | `PASS` |
-| US3 | Nome/e-mail/perfil longos permanecem presentes sem limite de linhas | `profile.spec.tsx` | `PASS` |
-| US3 | Loading e usuário indisponível são distintos; `Entrar` retorna a `/login` | `profile.spec.tsx` | `PASS` |
-| Navegação | Back único, fallback e retorno por histórico nas superfícies secundárias | `secondary-navigation.spec.tsx` | `PASS` |
-| Acessibilidade automatizada | Card e controles com nomes/roles, hint, ordem de leitura, foco habilitado, feedback pressionado, texto destrutivo e alvos mínimos de 48 dp Android/44 pt iOS | `touch-targets.spec.tsx`: 6 testes | `PASS` |
-| Layout manual | Menor largura, texto ampliado, colisão, contraste e ritmo visual | Sem dispositivo/emulador observável | `NOT MEASURED` |
-| Tecnologia assistiva | TalkBack, VoiceOver, foco real e ordem de leitura em dispositivo | `adb` não está disponível no ambiente | `NOT MEASURED` |
-| Plataforma manual | Modelo/versão Android, API, escala, participante e walkthrough dos fluxos | Walkthrough não executado sem `adb`/dispositivo | `NOT MEASURED` |
+| Área                        | Cenário/observação                                                                                                                                           | Evidência                                                     | Status         |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------- | -------------- |
+| US1                         | Turma do proprietário com comunicados: nome → `Comunicados`/`+ Novo` → cards → `Excluir turma`                                                               | `classroom-details.spec.tsx`                                  | `PASS`         |
+| US1                         | Turma do proprietário sem comunicados: vazio antes da ação final                                                                                             | `classroom-details.spec.tsx`, `confirmation-matrix.spec.tsx`  | `PASS`         |
+| US1                         | Turma de membro com e sem comunicados: `Sair da turma` no fim, sem `Excluir turma`                                                                           | `classroom-details.spec.tsx`, `confirmation-matrix.spec.tsx`  | `PASS`         |
+| US1                         | `PROFESSOR` encontra `Criar comunicado` e conserva o destino `/classrooms/{id}/new-announcement`                                                             | `classroom-details.spec.tsx`                                  | `PASS`         |
+| US1                         | Usuário desconhecido, turma ausente e lista 404 não recebem ação destrutiva; retorno seguro e retry                                                          | `classroom-details.spec.tsx`, `secondary-navigation.spec.tsx` | `PASS`         |
+| US1                         | Lista carregando ou com erro recuperável mantém contexto, retry e ação válida                                                                                | `classroom-details.spec.tsx`                                  | `PASS`         |
+| Card                        | Expiração hoje, em 1 dia, em X dias, inválida e passada                                                                                                      | `AnnouncementCard.spec.tsx`, `classroom-expiration.spec.ts`   | `PASS`         |
+| US2                         | Detalhe autoral: heading, professor, `Publicado em`, `Expira em`, corpo integral e ações em ordem                                                            | `detail-surfaces.spec.tsx`                                    | `PASS`         |
+| US2                         | Detalhe não autoral não reserva nem expõe `Editar`/`Excluir`                                                                                                 | `detail-surfaces.spec.tsx`, `confirmation-matrix.spec.tsx`    | `PASS`         |
+| US2                         | Título, autoria e corpo longos, com quebras de linha e sem limite de linhas no detalhe                                                                       | `detail-surfaces.spec.tsx`                                    | `PASS`         |
+| US2                         | Loading, erro com retry, 404/ausência e fallback da navegação secundária                                                                                     | `detail-surfaces.spec.tsx`, `secondary-navigation.spec.tsx`   | `PASS`         |
+| US2                         | Exclusão autoral preserva confirmação, cancelamento, pending, erro, bloqueio duplicado e `router.back()`                                                     | `confirmation-matrix.spec.tsx`                                | `PASS`         |
+| US3                         | Perfil autenticado: header, avatar, Nome, E-mail, Perfil, editar e logout em ordem                                                                           | `profile.spec.tsx`                                            | `PASS`         |
+| US3                         | Nome/e-mail/perfil longos permanecem presentes sem limite de linhas                                                                                          | `profile.spec.tsx`                                            | `PASS`         |
+| US3                         | Loading e usuário indisponível são distintos; `Entrar` retorna a `/login`                                                                                    | `profile.spec.tsx`                                            | `PASS`         |
+| Navegação                   | Back único, fallback e retorno por histórico nas superfícies secundárias                                                                                     | `secondary-navigation.spec.tsx`                               | `PASS`         |
+| Acessibilidade automatizada | Card e controles com nomes/roles, hint, ordem de leitura, foco habilitado, feedback pressionado, texto destrutivo e alvos mínimos de 48 dp Android/44 pt iOS | `touch-targets.spec.tsx`: 6 testes                            | `PASS`         |
+| Layout manual               | Menor largura, texto ampliado, colisão, contraste e ritmo visual                                                                                             | Sem dispositivo/emulador observável                           | `NOT MEASURED` |
+| Tecnologia assistiva        | TalkBack, VoiceOver, foco real e ordem de leitura em dispositivo                                                                                             | `adb` não está disponível no ambiente                         | `NOT MEASURED` |
+| Plataforma manual           | Modelo/versão Android, API, escala, participante e walkthrough dos fluxos                                                                                    | Walkthrough não executado sem `adb`/dispositivo               | `NOT MEASURED` |
 
 ### T014 — acessibilidade dos controles
 
@@ -60,6 +63,7 @@ Data: 2026-10-01
 - `PASS`: o card expõe um único `button` acessível com nome `Abrir comunicado ...`, hint textual, ordem título → professor → conteúdo → prazo, estado focável e feedback de pressionamento.
 - `PASS`: `+ Novo`, `Editar`, `Excluir`, `Sair da turma` e `Sair da conta` preservam nomes/roles; as variantes destrutivas mantêm texto de ação e `theme.colors.danger`.
 - `PASS`: alvos verificados contra `theme.targets.android` (48) e `theme.targets.ios` (44); o `AnnouncementCard` declara também `minWidth` mínimo.
+
 ### T016 — Jest dirigido e completo
 
 - `PASS`: `& .\\node_modules\\.bin\\jest.cmd --runInBand tests/lib/classroom-expiration.spec.ts tests/components/AnnouncementCard.spec.tsx tests/routes/classroom-details.spec.tsx tests/routes/detail-surfaces.spec.tsx tests/routes/profile.spec.tsx tests/routes/confirmation-matrix.spec.tsx tests/routes/secondary-navigation.spec.tsx tests/accessibility/touch-targets.spec.tsx` — 8 suites e 48 testes passaram.

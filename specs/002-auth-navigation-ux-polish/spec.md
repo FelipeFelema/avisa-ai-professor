@@ -1,5 +1,7 @@
 # Feature Specification: Auth Navigation UX Polish
 
+**Escopo de validação vigente — decisão de 2026-10-04:** [política permanente](../../.specify/memory/validation-scope.md). Automação e walkthrough funcional pelo próprio usuário são suficientes para o escopo manual. Campanhas nativas especializadas Android/iOS, TalkBack/VoiceOver e participantes independentes estão dispensados; exigências antigas desses itens abaixo são históricas e não bloqueiam conclusão nem geram follow-ups. Semântica básica de UI e gates automatizados permanecem aplicáveis.
+
 **Feature Branch**: `[002-auth-navigation-ux-polish]`
 
 **Created**: 2026-09-14
@@ -8,7 +10,7 @@
 
 **Input**: User description: "Corrigir problemas pontuais de navegação e usabilidade nas telas de autenticação e nas rotas secundárias, preservando a identidade visual atual e o comportamento nativo de voltar."
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Concluir o cadastro com o teclado aberto (Priority: P1)
 
@@ -68,21 +70,21 @@ Como visitante na tela de Login, quero ver apenas um convite claro para criar co
 - A pessoa entra diretamente por uma rota secundária sem histórico anterior; o controle visual não pode deixá-la presa.
 - O retorno a partir de um formulário com alterações não salvas conserva o comportamento atual; esta feature não introduz novos diálogos de descarte.
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### In-Scope Screen Inventory
 
 As telas raiz Login, Home, Turmas e Perfil não recebem controle visual de voltar. As telas secundárias abrangidas são:
 
-| Tela secundária | Destino pai seguro quando não houver histórico utilizável |
-|---|---|
-| Cadastro | Login |
-| Criar turma | Turmas |
-| Detalhe da turma | Turmas |
-| Novo comunicado | Detalhe da turma correspondente |
+| Tela secundária       | Destino pai seguro quando não houver histórico utilizável                    |
+| --------------------- | ---------------------------------------------------------------------------- |
+| Cadastro              | Login                                                                        |
+| Criar turma           | Turmas                                                                       |
+| Detalhe da turma      | Turmas                                                                       |
+| Novo comunicado       | Detalhe da turma correspondente                                              |
 | Detalhe do comunicado | Detalhe da turma correspondente quando identificável; caso contrário, Turmas |
-| Editar comunicado | Detalhe do comunicado correspondente |
-| Editar perfil | Perfil |
+| Editar comunicado     | Detalhe do comunicado correspondente                                         |
+| Editar perfil         | Perfil                                                                       |
 
 ### Functional Requirements
 
@@ -114,7 +116,7 @@ As telas raiz Login, Home, Turmas e Perfil não recebem controle visual de volta
 - Novas regras de autenticação, cadastro, autorização ou backend.
 - Alterações globais de identidade visual que pertencem às specs `003`, `004` e `005`.
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

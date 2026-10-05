@@ -153,7 +153,7 @@ describe('useJoinClassroom', () => {
     expect(available.requests[3]?.search).toBe('hist');
     await act(async () => available.requests[3]!.deferred.resolve([]));
 
-    unmount();
+    await unmount();
     myObserver.dispose();
     await variants.dispose();
     await cleanupClassroomSearchState(queryClient);
@@ -190,7 +190,7 @@ describe('useJoinClassroom', () => {
     expect(queryClient.getQueryData(classroomKeys.my())).toEqual([]);
     expect(invalidateQueries).not.toHaveBeenCalled();
 
-    unmount();
+    await unmount();
     await cleanupClassroomSearchState(queryClient);
   });
 
@@ -222,7 +222,7 @@ describe('useJoinClassroom', () => {
     expect(variants.observers[0]!.observer.getCurrentResult().isError).toBe(true);
     expect(variants.observers[0]!.observer.getCurrentResult().data).toEqual([classroom]);
 
-    unmount();
+    await unmount();
     await variants.dispose();
     await cleanupClassroomSearchState(queryClient);
   });

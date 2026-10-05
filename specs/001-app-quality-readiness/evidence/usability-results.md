@@ -1,5 +1,7 @@
 # Resultados de usabilidade — Phase 7
 
+**Status vigente — 2026-10-04:** Aplica-se a [política permanente](../../../.specify/memory/validation-scope.md). Android/TalkBack, iOS/VoiceOver, auditorias físicas especializadas e participantes independentes não são exigidos, agora ou nas specs futuras. Relatos funcionais individuais continuam válidos. Menções antigas a esses itens como pendência, bloqueio ou follow-up abaixo são registros históricos, substituídos por esta decisão; gates automatizados, dependências e CI permanecem aplicáveis.
+
 Data da validação: 2026-09-06 (America/Sao_Paulo)
 Escopo: T025, T036, T057–T058; exclusão de turma, edição de perfil e tarefas representativas mobile.
 

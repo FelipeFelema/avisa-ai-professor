@@ -20,7 +20,12 @@ function deferred<T>() {
 
 function setup() {
   const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    // Session cleanup removes the pending mutation before its observer detaches.
+    // Do not leave a browser GC timer attached to that removed test entry.
+    defaultOptions: {
+      queries: { retry: false, gcTime: Infinity },
+      mutations: { retry: false, gcTime: Infinity },
+    },
   });
   const applyProfileUpdate = jest.fn();
   const auth = {

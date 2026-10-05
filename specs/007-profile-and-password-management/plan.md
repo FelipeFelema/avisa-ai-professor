@@ -1,5 +1,7 @@
 # Implementation Plan: Profile and Password Management
 
+**Escopo de validação vigente — decisão de 2026-10-04:** [política permanente](../../.specify/memory/validation-scope.md). Automação e walkthrough funcional pelo próprio usuário são suficientes para o escopo manual. Campanhas nativas especializadas Android/iOS, TalkBack/VoiceOver e participantes independentes estão dispensados; exigências antigas desses itens abaixo são históricas e não bloqueiam conclusão nem geram follow-ups. Semântica básica de UI e gates automatizados permanecem aplicáveis.
+
 **Branch**: `007-profile-and-password-management` | **Date**: 2026-10-02 | **Spec**: [spec.md](./spec.md)
 
 **Input**: `specs/007-profile-and-password-management/spec.md`

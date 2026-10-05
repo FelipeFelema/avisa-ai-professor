@@ -35,6 +35,10 @@ type OpenApiOperation = {
   responses: Record<
     string,
     {
+      headers?: Record<
+        string,
+        { description?: string; schema?: OpenApiSchema }
+      >;
       content?: {
         'application/json'?: {
           schema?: OpenApiSchema;
@@ -346,8 +350,49 @@ describe('OpenAPI runtime contract', () => {
               ?.$ref,
           ).toBe(expectedResponseSchema);
         }
+        for (const [header, expectedHeader] of Object.entries(
+          expectedResponse.headers ?? {},
+        )) {
+          expect(actual.responses[status]?.headers?.[header]).toEqual(
+            expectedHeader,
+          );
+        }
       }
     }
+
+    const inviteRequest =
+      designContract.components.schemas.CreateInviteCodeRequest;
+    expect(inviteRequest).toMatchObject({
+      type: 'object',
+      additionalProperties: false,
+      required: ['role'],
+      properties: { role: { type: 'string', enum: ['PROFESSOR'] } },
+    });
+    expect(inviteRequest.properties).not.toHaveProperty('expiresInDays');
+    expect(
+      designContract.components.schemas.InviteCodeResponse.properties?.role,
+    ).toEqual({
+      type: 'string',
+      enum: ['PROFESSOR'],
+    });
+    expect(
+      designContract.components.schemas.InviteCodeResponse.properties?.isActive,
+    ).toEqual({
+      type: 'boolean',
+    });
+    expect(
+      designContract.paths['/api/v1/invite-codes']?.post?.operationId,
+    ).toBe('inviteCodes.create');
+    expect(
+      designContract.paths['/api/v1/invite-codes']?.post?.responses['201']
+        ?.headers?.['Cache-Control'],
+    ).toEqual({
+      description: 'no-store',
+      schema: { type: 'string' },
+    });
+    expect(
+      designContract.paths['/api/v1/auth/register']?.post?.description,
+    ).toContain('ADMIN não pode ser provisionado pelo cadastro público');
 
     const canonicalSearchParameter = designContract.paths[
       '/api/v1/classrooms'

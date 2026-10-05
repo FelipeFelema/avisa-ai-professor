@@ -1,15 +1,13 @@
 <!--
 Sync Impact Report
-- Version change: unratified scaffold -> 1.0.0
+- Version change: 2.0.0 -> 2.1.0
 - Modified principles:
-  - PRINCIPLE_1_NAME -> I. Domain-Modular Architecture
-  - PRINCIPLE_2_NAME -> II. Secure, Explicit API Contracts
-  - PRINCIPLE_3_NAME -> III. Testable Delivery
-  - PRINCIPLE_4_NAME -> IV. Data Integrity and Safe Evolution
-  - PRINCIPLE_5_NAME -> V. Predictable and Accessible User Experience
-- Added sections: Technical & Product Constraints; Development Workflow & Quality Gates.
-- Removed sections: none; scaffold placeholders and example comments were replaced.
-- Follow-up TODOs: none. The constitution is ratified from the current repository baseline.
+  - Development Workflow & Quality Gates: add the user-approved individual-project validation scope; retain automated gates and basic UI semantics
+- Added sections: Validation Scope for This Individual Project
+- Removed sections: none
+- Template review: constitution-template, plan-template, spec-template, tasks-template and checklist-template remain generic; runtime constitution references enforce this policy
+- Synchronized guidance: root AGENTS.md, validation-scope.md, Specs 001–009 spec/plan/tasks/quickstart and current evidence notices
+- Follow-up TODOs: none; dependent feature records are reconciled under the explicit 2026-10-04 user decision
 -->
 
 # Avisa Aí Professor Constitution
@@ -94,9 +92,11 @@ security rules in the client.
 - The API MUST retain URI versioning and the `/api/v1` prefix. Changes to response
   shapes, validation rules, authentication flows, or role permissions MUST be called
   out as contract changes in the feature artifacts and covered by tests.
-- The supported roles are `PARENT`, `PROFESSOR`, and `ADMIN`. Privileged registration
-  MUST continue to use the invite-code flow, and mutations MUST enforce the relevant
-  role, author, classroom owner, or administrator rule on the backend.
+- The supported roles are `PARENT`, `PROFESSOR`, and `ADMIN`. Public registration
+  MUST create `PARENT` by default or `PROFESSOR` with a valid professor invite; it
+  MUST NOT create `ADMIN`. ADMIN accounts MUST be provisioned operationally and
+  manually outside the application. Mutations MUST enforce the relevant role,
+  author, classroom owner, or administrator rule on the backend.
 - Environment files and examples MUST contain configuration placeholders only. Real
   credentials, access tokens, refresh tokens, and database secrets MUST NOT be
   committed, logged, or embedded in application source.
@@ -128,6 +128,39 @@ security rules in the client.
   states, and documentation affected by the change are consistent with the approved
   feature artifacts and all applicable quality gates pass.
 
+### Validation Scope for This Individual Project
+
+The project owner explicitly approved this scope on 2026-10-04. It applies to all
+current specifications and every remaining specification through project completion,
+unless the owner explicitly changes it. This is a permanent scope decision, not a
+temporary exception awaiting unavailable devices or participants.
+
+- Automated behavior, integration, contract, regression and applicable build/quality
+  gates MUST remain required. Basic UI labels, roles, feedback, theme and form
+  usability MUST remain implemented and covered by feasible automated checks.
+- Manual functional acceptance MAY be performed solely by the project owner.
+  Reports MUST be attributed as `PASS (user-reported)` when appropriate. Independent
+  participants, sample sizes, population success percentages and unaided participant
+  studies MUST NOT be required as delivery gates.
+- Specialized native Android/iOS measurement campaigns, TalkBack, VoiceOver and
+  physical accessibility/device audits are OUT OF SCOPE. They MUST NOT be scheduled,
+  requested repeatedly, treated as blockers or transferred to future specifications.
+  Ordinary owner-performed app walkthroughs remain allowed without requiring a
+  particular device, assistive technology or specialist measurement protocol.
+- Unexecuted tasks removed by this decision MUST be recorded as
+  `DISPENSADA POR ESCOPO`, not as executed tests or `PASS`. Historic `NOT MEASURED`
+  records MAY remain as history but MUST NOT create current or future obligations.
+- Plans, task generation, implementation, analysis and convergence MUST apply this
+  scope even when older feature artifacts require excluded evidence. Acceptance
+  criteria tied only to excluded campaigns are superseded by this scope. Existing
+  functional requirements and feasible automated UI checks remain applicable.
+
+Rationale: one person develops and validates this project without independent test
+participants or specialized native test environments. A feasible individual
+walkthrough plus meaningful automation defines the approved validation scope; it
+does not claim measurements that were never performed. Dependency security decisions
+and actual GitHub merge gates are unaffected by this decision.
+
 ## Governance
 
 This constitution is the project's highest-level engineering agreement. Feature
@@ -155,4 +188,4 @@ model, supported clients, or delivery gates materially change. Each review MUST 
 that the principles remain testable against the repository's actual commands, workflows,
 and source structure.
 
-**Version**: 1.0.0 | **Ratified**: 2026-08-22 | **Last Amended**: 2026-08-22
+**Version**: 2.1.0 | **Ratified**: 2026-08-22 | **Last Amended**: 2026-10-04

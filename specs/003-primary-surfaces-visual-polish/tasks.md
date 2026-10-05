@@ -4,6 +4,8 @@ description: "Task list for feature implementation"
 
 # Tasks: Primary Surfaces Visual Polish
 
+**Escopo de validação vigente — decisão de 2026-10-04:** [política permanente](../../.specify/memory/validation-scope.md). Automação e walkthrough funcional pelo próprio usuário são suficientes para o escopo manual. Campanhas nativas especializadas Android/iOS, TalkBack/VoiceOver e participantes independentes estão dispensados; exigências antigas desses itens abaixo são históricas e não bloqueiam conclusão nem geram follow-ups. Semântica básica de UI e gates automatizados permanecem aplicáveis.
+
 **Input**: Design documents from `/specs/003-primary-surfaces-visual-polish/`
 
 **Prerequisites**: `plan.md` and `spec.md` (required), `research.md`, `data-model.md`, `contracts/primary-surfaces.md`, and `quickstart.md`.
@@ -21,7 +23,7 @@ description: "Task list for feature implementation"
 
 **Purpose**: Confirm the existing monorepo baseline and the feature's no-dependency/no-migration boundary before implementation.
 
-- [X] T001 [P] Confirm the existing scripts, dependencies, lockfiles, and no-migration boundary against `backend/package.json`, `backend/package-lock.json`, `mobile/package.json`, `mobile/package-lock.json`, `backend/prisma/schema.prisma`, `backend/prisma/migrations/`, and `specs/003-primary-surfaces-visual-polish/plan.md`.
+- [x] T001 [P] Confirm the existing scripts, dependencies, lockfiles, and no-migration boundary against `backend/package.json`, `backend/package-lock.json`, `mobile/package.json`, `mobile/package-lock.json`, `backend/prisma/schema.prisma`, `backend/prisma/migrations/`, and `specs/003-primary-surfaces-visual-polish/plan.md`.
 
 ---
 
@@ -33,15 +35,15 @@ description: "Task list for feature implementation"
 
 ### Contract tests and regression coverage
 
-- [X] T002 [P] Add unit coverage for `expiresAt`, active-announcement filtering, newest-announcement selection, and `null` mapping in both list methods in `backend/src/classrooms/classrooms.service.spec.ts`.
-- [X] T003 [P] Add integration coverage for `GET /api/v1/classrooms/my` and `GET /api/v1/classrooms?search={texto}` in `backend/test/classrooms.integration.spec.ts`, asserting the active announcement's ISO expiration, the no-announcement shape, and unchanged membership/search behavior.
-- [X] T004 [P] Extend the canonical response expectation and runtime contract assertions for required `LastAnnouncementSummary.expiresAt` with `format: date-time` in `specs/001-app-quality-readiness/contracts/openapi.json` and `backend/test/openapi.contract.spec.ts`, without adding operations or changing unrelated schemas.
-- [X] T005 [P] Add mobile service regression coverage for both classroom-list GET functions, including `expiresAt` pass-through and the unchanged `search` query parameter, in `mobile/tests/services/classroom.service.spec.ts`.
+- [x] T002 [P] Add unit coverage for `expiresAt`, active-announcement filtering, newest-announcement selection, and `null` mapping in both list methods in `backend/src/classrooms/classrooms.service.spec.ts`.
+- [x] T003 [P] Add integration coverage for `GET /api/v1/classrooms/my` and `GET /api/v1/classrooms?search={texto}` in `backend/test/classrooms.integration.spec.ts`, asserting the active announcement's ISO expiration, the no-announcement shape, and unchanged membership/search behavior.
+- [x] T004 [P] Extend the canonical response expectation and runtime contract assertions for required `LastAnnouncementSummary.expiresAt` with `format: date-time` in `specs/001-app-quality-readiness/contracts/openapi.json` and `backend/test/openapi.contract.spec.ts`, without adding operations or changing unrelated schemas.
+- [x] T005 [P] Add mobile service regression coverage for both classroom-list GET functions, including `expiresAt` pass-through and the unchanged `search` query parameter, in `mobile/tests/services/classroom.service.spec.ts`.
 
 ### Contract implementation
 
-- [X] T006 Add `expiresAt` to `LastAnnouncementSummaryDto` and to both active-announcement Prisma projections/mappings in `backend/src/classrooms/dto/classroom-summary.dto.ts` and `backend/src/classrooms/classrooms.service.ts`, preserving the existing `expiresAt >= now`, `createdAt desc`, `take: 1`, membership, ownership, and search rules.
-- [X] T007 Add the required ISO string field inside non-null `lastAnnouncement` in `mobile/src/types/classroom.ts`, keeping `teacher` and `lastAnnouncement` nullable and leaving the existing classroom service endpoints unchanged.
+- [x] T006 Add `expiresAt` to `LastAnnouncementSummaryDto` and to both active-announcement Prisma projections/mappings in `backend/src/classrooms/dto/classroom-summary.dto.ts` and `backend/src/classrooms/classrooms.service.ts`, preserving the existing `expiresAt >= now`, `createdAt desc`, `take: 1`, membership, ownership, and search rules.
+- [x] T007 Add the required ISO string field inside non-null `lastAnnouncement` in `mobile/src/types/classroom.ts`, keeping `teacher` and `lastAnnouncement` nullable and leaving the existing classroom service endpoints unchanged.
 
 **Checkpoint**: The backend and mobile agree on the additive summary contract; no schema or migration is needed, and both list endpoints still return the same selected classroom/announcement records.
 
@@ -55,15 +57,15 @@ description: "Task list for feature implementation"
 
 ### Tests for User Story 1
 
-- [X] T008 [P] [US1] Add unit tests in `mobile/tests/lib/classroom-expiration.spec.ts` for local calendar calculations using the optional `now`: `Expira hoje`, `Expira em 1 dia`, `Expira em X dias`, invalid/past timestamps returning `null`, and no negative result across local date boundaries.
-- [X] T009 [P] [US1] Extend `mobile/tests/routes/home.spec.tsx` to cover the greeting/title hierarchy, populated cards, active/no announcement cases, loading, error with retry, success-empty CTA, exact expiration labels, and the absence of a negative or misleading expiration label.
+- [x] T008 [P] [US1] Add unit tests in `mobile/tests/lib/classroom-expiration.spec.ts` for local calendar calculations using the optional `now`: `Expira hoje`, `Expira em 1 dia`, `Expira em X dias`, invalid/past timestamps returning `null`, and no negative result across local date boundaries.
+- [x] T009 [P] [US1] Extend `mobile/tests/routes/home.spec.tsx` to cover the greeting/title hierarchy, populated cards, active/no announcement cases, loading, error with retry, success-empty CTA, exact expiration labels, and the absence of a negative or misleading expiration label.
 
 ### Implementation for User Story 1
 
-- [X] T010 [US1] Implement the pure `getClassroomAnnouncementExpirationLabel` helper in `mobile/src/lib/classroom-expiration.ts`, comparing local year/month/day values, accepting a testable `now`, returning `null` for invalid/past input, and emitting only the three labels defined by the contract.
-- [X] T011 [P] [US1] Update `HomeHeader` in `mobile/src/components/home/HomeHeader.tsx` with the existing theme/auth tokens, an accessible header boundary, natural text wrapping, and a greeting that is perceptibly smaller than `Bem-vindo ao Avisa Aí Professor`.
-- [X] T012 [US1] Extend `ClassroomCard` in `mobile/src/components/home/ClassroomCard.tsx` with an optional active-announcement expiration input/secondary label, preserving the classroom/teacher/announcement order, natural wrapping, separate open-card `Pressable`, and separate `Entrar`/`Sair`/`Excluir turma` action control.
-- [X] T013 [US1] Recompose Home in `mobile/app/(app)/(tabs)/index.tsx` to consume loading/error/refetch state, render `ScreenState` for loading and error, render the existing empty CTA only after successful empty data, and pass the selected announcement expiration to each `ClassroomCard` without changing the query or navigation.
+- [x] T010 [US1] Implement the pure `getClassroomAnnouncementExpirationLabel` helper in `mobile/src/lib/classroom-expiration.ts`, comparing local year/month/day values, accepting a testable `now`, returning `null` for invalid/past input, and emitting only the three labels defined by the contract.
+- [x] T011 [P] [US1] Update `HomeHeader` in `mobile/src/components/home/HomeHeader.tsx` with the existing theme/auth tokens, an accessible header boundary, natural text wrapping, and a greeting that is perceptibly smaller than `Bem-vindo ao Avisa Aí Professor`.
+- [x] T012 [US1] Extend `ClassroomCard` in `mobile/src/components/home/ClassroomCard.tsx` with an optional active-announcement expiration input/secondary label, preserving the classroom/teacher/announcement order, natural wrapping, separate open-card `Pressable`, and separate `Entrar`/`Sair`/`Excluir turma` action control.
+- [x] T013 [US1] Recompose Home in `mobile/app/(app)/(tabs)/index.tsx` to consume loading/error/refetch state, render `ScreenState` for loading and error, render the existing empty CTA only after successful empty data, and pass the selected announcement expiration to each `ClassroomCard` without changing the query or navigation.
 
 **Checkpoint**: Home is independently usable and testable for all four query states, exact expiration labels, and the P1 acceptance scenarios.
 
@@ -77,15 +79,15 @@ description: "Task list for feature implementation"
 
 ### Tests for User Story 2
 
-- [X] T014 [P] [US2] Extend `mobile/tests/components/FormField.spec.tsx` to verify the optional leading search icon is exactly one `search-outline`, decorative/non-announced, and does not change the input's label, value, callback, disabled state, helper, or error semantics.
-- [X] T015 [P] [US2] Extend `mobile/tests/routes/classrooms-list.spec.tsx` to verify visual order, Professor-only `Criar turma`, no reserved action space for Responsável, search value/callback preservation, and unchanged open/join/leave/delete labels and mutation wiring.
-- [X] T016 [P] [US2] Extend `mobile/tests/routes/primary-states.spec.tsx` to verify independent loading/error/empty states for Minhas turmas and Turmas disponíveis, accessible section headings, retry actions, and no mixing of the two lists.
+- [x] T014 [P] [US2] Extend `mobile/tests/components/FormField.spec.tsx` to verify the optional leading search icon is exactly one `search-outline`, decorative/non-announced, and does not change the input's label, value, callback, disabled state, helper, or error semantics.
+- [x] T015 [P] [US2] Extend `mobile/tests/routes/classrooms-list.spec.tsx` to verify visual order, Professor-only `Criar turma`, no reserved action space for Responsável, search value/callback preservation, and unchanged open/join/leave/delete labels and mutation wiring.
+- [x] T016 [P] [US2] Extend `mobile/tests/routes/primary-states.spec.tsx` to verify independent loading/error/empty states for Minhas turmas and Turmas disponíveis, accessible section headings, retry actions, and no mixing of the two lists.
 
 ### Implementation for User Story 2
 
-- [X] T017 [P] [US2] Add an optional decorative leading-icon prop to `FormField` in `mobile/src/components/ui/FormField.tsx`, rendering `Ionicons` with `search-outline` support while preserving the existing label/input/error/helper/accessibility contract and touch target.
-- [X] T018 [P] [US2] Add contextual title/description options to `EmptyClassroomState` in `mobile/src/components/home/EmptyClassroomState.tsx`, preserving current defaults, explicit section association, accessible summary/header semantics, and the optional `Ver turmas` action.
-- [X] T019 [US2] Compose the Turmas hierarchy in `mobile/app/(app)/(tabs)/classrooms.tsx` with accessible introduction and section headers, the decorative search icon, contextual empty states, and token-based responsive styles, while preserving query keys, `search`, loading/error/results, role visibility, confirmations, mutations, navigation, and ownership action selection.
+- [x] T017 [P] [US2] Add an optional decorative leading-icon prop to `FormField` in `mobile/src/components/ui/FormField.tsx`, rendering `Ionicons` with `search-outline` support while preserving the existing label/input/error/helper/accessibility contract and touch target.
+- [x] T018 [P] [US2] Add contextual title/description options to `EmptyClassroomState` in `mobile/src/components/home/EmptyClassroomState.tsx`, preserving current defaults, explicit section association, accessible summary/header semantics, and the optional `Ver turmas` action.
+- [x] T019 [US2] Compose the Turmas hierarchy in `mobile/app/(app)/(tabs)/classrooms.tsx` with accessible introduction and section headers, the decorative search icon, contextual empty states, and token-based responsive styles, while preserving query keys, `search`, loading/error/results, role visibility, confirmations, mutations, navigation, and ownership action selection.
 
 **Checkpoint**: Turmas is independently testable for both profiles and both lists without any functional search or classroom-action change.
 
@@ -99,12 +101,12 @@ description: "Task list for feature implementation"
 
 ### Tests for User Story 3
 
-- [X] T020 [P] [US3] Add cross-surface assertions in `mobile/tests/routes/home.spec.tsx` and `mobile/tests/routes/classrooms-list.spec.tsx` for long content, missing teacher/announcement, consistent card information order, contextual empty text, and distinct open versus enter/leave/delete controls.
-- [X] T021 [P] [US3] Extend `mobile/tests/accessibility/touch-targets.spec.tsx` to cover the altered classroom card, empty-state, header, and search controls for project platform minimums, roles, names, visible focus/pressed treatment, and non-color-only action/expiration semantics.
+- [x] T020 [P] [US3] Add cross-surface assertions in `mobile/tests/routes/home.spec.tsx` and `mobile/tests/routes/classrooms-list.spec.tsx` for long content, missing teacher/announcement, consistent card information order, contextual empty text, and distinct open versus enter/leave/delete controls.
+- [x] T021 [P] [US3] Extend `mobile/tests/accessibility/touch-targets.spec.tsx` to cover the altered classroom card, empty-state, header, and search controls for project platform minimums, roles, names, visible focus/pressed treatment, and non-color-only action/expiration semantics.
 
 ### Implementation for User Story 3
 
-- [X] T022 [US3] Refine the shared layout and accessibility behavior in `mobile/src/components/home/ClassroomCard.tsx` and `mobile/src/components/home/EmptyClassroomState.tsx` so variable text wraps naturally with no fixed content height or unjustified `numberOfLines`, actions stay in their own subtree, essential content remains readable, and empty-state meaning is explicit without changing domain actions.
+- [x] T022 [US3] Refine the shared layout and accessibility behavior in `mobile/src/components/home/ClassroomCard.tsx` and `mobile/src/components/home/EmptyClassroomState.tsx` so variable text wraps naturally with no fixed content height or unjustified `numberOfLines`, actions stay in their own subtree, essential content remains readable, and empty-state meaning is explicit without changing domain actions.
 
 **Checkpoint**: The same shared primitives serve all primary surfaces consistently, while every existing classroom action remains distinguishable and operable.
 
@@ -114,11 +116,11 @@ description: "Task list for feature implementation"
 
 **Purpose**: Validate the complete feature, capture available evidence, and make scope/evidence limitations explicit.
 
-- [X] T023 Create the feature evidence matrix in `specs/003-primary-surfaces-visual-polish/evidence/primary-surfaces-validation.md`, with rows for Home/Turmas profiles, four Home states, expiration cases, search regressions, classroom actions, long content, enlarged text, and statuses `PASS`, `WARN`, `FAIL`, `NOT RUN`, or `NOT MEASURED`.
-- [X] T024 Run the directed backend unit, integration, contract, typecheck, lint, format, and build commands from `specs/003-primary-surfaces-visual-polish/quickstart.md` against `backend/package.json`, and record results and any pre-existing/global failures in `specs/003-primary-surfaces-visual-polish/evidence/primary-surfaces-validation.md`.
-- [X] T025 Run the directed mobile Jest, typecheck, lint, format, Expo Doctor, and export commands from `specs/003-primary-surfaces-visual-polish/quickstart.md` against `mobile/package.json`, and record results without treating export or Doctor as manual usability evidence in `specs/003-primary-surfaces-visual-polish/evidence/primary-surfaces-validation.md`.
-- [X] T026 Execute the Android walkthrough described in `specs/003-primary-surfaces-visual-polish/quickstart.md` against `mobile/app/(app)/(tabs)/index.tsx` and `mobile/app/(app)/(tabs)/classrooms.tsx`, covering `PARENT`/`PROFESSOR`, states, expiration, search regression, actions, long content, narrow width, and enlarged text; record observations in `specs/003-primary-surfaces-visual-polish/evidence/primary-surfaces-validation.md`.
-- [X] T027 Perform the final scope and contract audit against `specs/003-primary-surfaces-visual-polish/spec.md`, `specs/003-primary-surfaces-visual-polish/plan.md`, `specs/003-primary-surfaces-visual-polish/contracts/primary-surfaces.md`, `backend/prisma/schema.prisma`, and `specs/001-app-quality-readiness/contracts/openapi.json`, confirming no out-of-scope detail/Profile/theme/search/domain changes and marking unavailable iOS or human-audit evidence as `NOT MEASURED`.
+- [x] T023 Create the feature evidence matrix in `specs/003-primary-surfaces-visual-polish/evidence/primary-surfaces-validation.md`, with rows for Home/Turmas profiles, four Home states, expiration cases, search regressions, classroom actions, long content, enlarged text, and statuses `PASS`, `WARN`, `FAIL`, `NOT RUN`, or `NOT MEASURED`.
+- [x] T024 Run the directed backend unit, integration, contract, typecheck, lint, format, and build commands from `specs/003-primary-surfaces-visual-polish/quickstart.md` against `backend/package.json`, and record results and any pre-existing/global failures in `specs/003-primary-surfaces-visual-polish/evidence/primary-surfaces-validation.md`.
+- [x] T025 Run the directed mobile Jest, typecheck, lint, format, Expo Doctor, and export commands from `specs/003-primary-surfaces-visual-polish/quickstart.md` against `mobile/package.json`, and record results without treating export or Doctor as manual usability evidence in `specs/003-primary-surfaces-visual-polish/evidence/primary-surfaces-validation.md`.
+- [x] T026 Execute the Android walkthrough described in `specs/003-primary-surfaces-visual-polish/quickstart.md` against `mobile/app/(app)/(tabs)/index.tsx` and `mobile/app/(app)/(tabs)/classrooms.tsx`, covering `PARENT`/`PROFESSOR`, states, expiration, search regression, actions, long content, narrow width, and enlarged text; record observations in `specs/003-primary-surfaces-visual-polish/evidence/primary-surfaces-validation.md`.
+- [x] T027 Perform the final scope and contract audit against `specs/003-primary-surfaces-visual-polish/spec.md`, `specs/003-primary-surfaces-visual-polish/plan.md`, `specs/003-primary-surfaces-visual-polish/contracts/primary-surfaces.md`, `backend/prisma/schema.prisma`, and `specs/001-app-quality-readiness/contracts/openapi.json`, confirming no out-of-scope detail/Profile/theme/search/domain changes and marking unavailable iOS or human-audit evidence as `NOT MEASURED`.
 
 ## Dependencies & Execution Order
 

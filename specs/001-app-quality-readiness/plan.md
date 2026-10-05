@@ -1,5 +1,7 @@
 # Implementation Plan: Consolidação de Experiência e Qualidade do Aplicativo
 
+**Escopo de validação vigente — decisão de 2026-10-04:** [política permanente](../../.specify/memory/validation-scope.md). Automação e walkthrough funcional pelo próprio usuário são suficientes para o escopo manual. Campanhas nativas especializadas Android/iOS, TalkBack/VoiceOver e participantes independentes estão dispensados; exigências antigas desses itens abaixo são históricas e não bloqueiam conclusão nem geram follow-ups. Semântica básica de UI e gates automatizados permanecem aplicáveis.
+
 **Branch**: `feat/account-and-resourse-management` | **Feature ID**: `001-app-quality-readiness` | **Date**: 2026-08-22 | **Spec**: [spec.md](./spec.md)
 
 **Input**: Feature specification from `specs/001-app-quality-readiness/spec.md`
@@ -34,14 +36,14 @@ O backend existente é a base: ownership, deleção e cascatas de turma e o PATC
 
 ### Pre-design gate
 
-| Principle/gate | Status | Design response |
-|---|---|---|
-| I. Domain-Modular Architecture | PASS | Preserva `Controller → DTO → Service → PrismaService` e `app → components/hooks/providers/services/validations/types/config/storage/theme`; refactors ficam limitados aos domínios tocados. |
-| II. Secure, Explicit API Contracts | PASS | Mantém `/api/v1`, whitelist estrito, Zod no mobile, JWT/roles/ownership no servidor e adiciona contratos OpenAPI completos com testes estruturais. |
-| III. Testable Delivery | PASS | Exige unitários, integração/e2e para boundaries, testes comportamentais mobile e todos os gates da constituição. |
-| IV. Data Integrity and Safe Evolution | PASS | Preserva FKs `ON DELETE CASCADE` e adiciona migration revisada para sessões por dispositivo e recibos mínimos de exclusão, com transformação dos refresh tokens existentes e testes de rollback/cascata. Também verifica a migration histórica de `ownerId` antes da entrega. |
-| V. Predictable and Accessible UX | PASS | Define estados explícitos, confirmação reutilizável, conteúdo em português, semântica acessível e tokens/componentes compartilhados. |
-| Workflow and quality gates | PASS | Mantém Spec Kit, registra contratos e testes, usa Conventional Commits e exige tanto os gates versionáveis quanto rulesets/branch protection ativos; sem evidência do enforcement externo, a feature permanece incompleta. |
+| Principle/gate                        | Status | Design response                                                                                                                                                                                                                                                               |
+| ------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| I. Domain-Modular Architecture        | PASS   | Preserva `Controller → DTO → Service → PrismaService` e `app → components/hooks/providers/services/validations/types/config/storage/theme`; refactors ficam limitados aos domínios tocados.                                                                                   |
+| II. Secure, Explicit API Contracts    | PASS   | Mantém `/api/v1`, whitelist estrito, Zod no mobile, JWT/roles/ownership no servidor e adiciona contratos OpenAPI completos com testes estruturais.                                                                                                                            |
+| III. Testable Delivery                | PASS   | Exige unitários, integração/e2e para boundaries, testes comportamentais mobile e todos os gates da constituição.                                                                                                                                                              |
+| IV. Data Integrity and Safe Evolution | PASS   | Preserva FKs `ON DELETE CASCADE` e adiciona migration revisada para sessões por dispositivo e recibos mínimos de exclusão, com transformação dos refresh tokens existentes e testes de rollback/cascata. Também verifica a migration histórica de `ownerId` antes da entrega. |
+| V. Predictable and Accessible UX      | PASS   | Define estados explícitos, confirmação reutilizável, conteúdo em português, semântica acessível e tokens/componentes compartilhados.                                                                                                                                          |
+| Workflow and quality gates            | PASS   | Mantém Spec Kit, registra contratos e testes, usa Conventional Commits e exige tanto os gates versionáveis quanto rulesets/branch protection ativos; sem evidência do enforcement externo, a feature permanece incompleta.                                                    |
 
 As falhas observadas no baseline — rota `GET /api` não versionada, profile DTO aceitando senha, refresh token único sem revogação imediata de access tokens por sessão, DELETE repetido retornando `404`, owner capaz de sair da turma, ausência de comportamento mobile automatizado e e2e fora do CI — são itens de remediação desta feature, não exceções ao desenho.
 

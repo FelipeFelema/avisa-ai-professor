@@ -1,5 +1,7 @@
 # Quickstart Validation Guide
 
+**Escopo de validação vigente — decisão de 2026-10-04:** [política permanente](../../.specify/memory/validation-scope.md). Automação e walkthrough funcional pelo próprio usuário são suficientes para o escopo manual. Campanhas nativas especializadas Android/iOS, TalkBack/VoiceOver e participantes independentes estão dispensados; exigências antigas desses itens abaixo são históricas e não bloqueiam conclusão nem geram follow-ups. Semântica básica de UI e gates automatizados permanecem aplicáveis.
+
 Use este roteiro depois da implementação para validar a feature 002. Os
 comandos abaixo não foram executados durante o planejamento.
 
@@ -16,9 +18,9 @@ comandos abaixo não foram executados durante o planejamento.
 
 No diretório mobile:
 
-~~~powershell
+```powershell
 npm test -- --runInBand tests/components/BackButton.spec.tsx tests/components/AuthScreen.spec.tsx tests/routes/auth-navigation-ux.spec.tsx tests/routes/secondary-navigation.spec.tsx
-~~~
+```
 
 Esperado:
 
@@ -31,14 +33,14 @@ Esperado:
 
 ## 2. Gates completos do mobile
 
-~~~powershell
+```powershell
 npm run typecheck
 npm run lint
 npm run format:check
 npm run doctor
 npm run test:ci
 npm run export:ci
-~~~
+```
 
 Classifique resultados como PASS, WARN, FAIL, NOT RUN ou NOT MEASURED. Um
 problema de rede ao consultar o Expo Doctor deve ser separado de falha de
@@ -49,9 +51,9 @@ manual nem teste de iOS.
 
 Inicie o app:
 
-~~~powershell
+```powershell
 npm run android
-~~~
+```
 
 1. Abra Login e conte as ações visíveis Criar conta; deve existir exatamente uma,
    associada a Não possui uma conta?.
@@ -75,15 +77,15 @@ npm run android
 
 Monte uma matriz de evidência com uma linha para cada rota:
 
-| Tela | Abrir a partir de | Verificações |
-|---|---|---|
-| Cadastro | Login | Voltar visual, fallback Login e voltar nativo |
-| Criar turma | Turmas como Professor | Voltar para Turmas, inclusive durante erro de envio |
-| Detalhe da turma | Home e Turmas | retorno à origem imediata e fallback Turmas em entrada direta |
-| Novo comunicado | Detalhe da turma | retorno à turma, durante envio/erro e sem duplicação |
-| Detalhe do comunicado | lista da turma | retorno à origem, fallback da turma quando classroomId for conhecido |
-| Editar comunicado | detalhe do comunicado | retorno ao detalhe, inclusive conteúdo indisponível |
-| Editar perfil | Perfil | retorno ao Perfil, preservando o formulário ao sair conforme o comportamento atual |
+| Tela                  | Abrir a partir de     | Verificações                                                                       |
+| --------------------- | --------------------- | ---------------------------------------------------------------------------------- |
+| Cadastro              | Login                 | Voltar visual, fallback Login e voltar nativo                                      |
+| Criar turma           | Turmas como Professor | Voltar para Turmas, inclusive durante erro de envio                                |
+| Detalhe da turma      | Home e Turmas         | retorno à origem imediata e fallback Turmas em entrada direta                      |
+| Novo comunicado       | Detalhe da turma      | retorno à turma, durante envio/erro e sem duplicação                               |
+| Detalhe do comunicado | lista da turma        | retorno à origem, fallback da turma quando classroomId for conhecido               |
+| Editar comunicado     | detalhe do comunicado | retorno ao detalhe, inclusive conteúdo indisponível                                |
+| Editar perfil         | Perfil                | retorno ao Perfil, preservando o formulário ao sair conforme o comportamento atual |
 
 Para cada linha:
 

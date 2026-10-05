@@ -28,8 +28,17 @@
     "test:contract": "jest --config ./test/jest-integration.json --runInBand --runTestsByPath test/openapi.contract.spec.ts"
   },
   "overrides": {
-    "fast-uri": "3.1.6",
-    "qs": "6.16.0"
+    "fast-uri": "3.1.8",
+    "qs": "6.16.0",
+    "@nestjs/swagger": {
+      "js-yaml": "5.4.2"
+    },
+    "@prisma/config": {
+      "deepmerge-ts": "8.0.2"
+    },
+    "prisma": {
+      "mysql2": "3.24.5"
+    }
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

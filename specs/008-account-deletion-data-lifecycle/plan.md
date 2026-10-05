@@ -1,5 +1,7 @@
 # Implementation Plan: Account Deletion and Data Lifecycle
 
+**Escopo de validação vigente — decisão de 2026-10-04:** [política permanente](../../.specify/memory/validation-scope.md). Automação e walkthrough funcional pelo próprio usuário são suficientes para o escopo manual. Campanhas nativas especializadas Android/iOS, TalkBack/VoiceOver e participantes independentes estão dispensados; exigências antigas desses itens abaixo são históricas e não bloqueiam conclusão nem geram follow-ups. Semântica básica de UI e gates automatizados permanecem aplicáveis.
+
 **Branch**: `008-account-deletion-data-lifecycle` | **Date**: 2026-10-03 | **Spec**: [spec.md](./spec.md)
 
 **Input**: `specs/008-account-deletion-data-lifecycle/spec.md`
@@ -34,13 +36,13 @@ Após sucesso, limpar tokens, identidade, caches e formulários; retornar à aut
 
 _Gate anterior à pesquisa. PASS descreve aderência do desenho, não execução._
 
-| Princípio | Resultado | Aplicação |
-| --- | --- | --- |
-| I. Domain-Modular Architecture | PASS | Serviço users dedicado; Controller/DTO/Prisma e camadas mobile separados; sem ciclo users/auth. |
-| II. Secure, Explicit API Contracts | PASS | REST versionado, JWT/sid, whitelist fechada, rate limit existente e entradas write-only. |
-| III. Testable Delivery | PASS | Unitários, HTTP, matriz de relações, rollback, races e gates definidos. |
-| IV. Data Integrity and Safe Evolution | PASS | FKs/cascades atuais e exclusões explícitas atômicas; writer de receipt coordenado; sem schema novo. |
-| V. Predictable and Accessible UX | PASS | Português, confirmação ativa, pending, temas, teclado, texto ampliado e evidência manual. |
+| Princípio                             | Resultado | Aplicação                                                                                           |
+| ------------------------------------- | --------- | --------------------------------------------------------------------------------------------------- |
+| I. Domain-Modular Architecture        | PASS      | Serviço users dedicado; Controller/DTO/Prisma e camadas mobile separados; sem ciclo users/auth.     |
+| II. Secure, Explicit API Contracts    | PASS      | REST versionado, JWT/sid, whitelist fechada, rate limit existente e entradas write-only.            |
+| III. Testable Delivery                | PASS      | Unitários, HTTP, matriz de relações, rollback, races e gates definidos.                             |
+| IV. Data Integrity and Safe Evolution | PASS      | FKs/cascades atuais e exclusões explícitas atômicas; writer de receipt coordenado; sem schema novo. |
+| V. Predictable and Accessible UX      | PASS      | Português, confirmação ativa, pending, temas, teclado, texto ampliado e evidência manual.           |
 
 ## Research and Design Decisions
 
@@ -119,29 +121,33 @@ backend/README.md / mobile/README.md                       # capacidade nova
 
 ## Validation and Handoff
 
-| Checkpoint futuro | Entrega | Cobertura |
-| --- | --- | --- |
-| Preparação | Baseline, banco seguro e fixtures/matriz | FR-026; SC-002/010 |
-| Fundação | Locks, sessões, receipt e DTO/contratos | FR-002/006/009/014–019 |
-| US1 / P1 | Resumo, ação/tela, senha/frase, cancelar e bloqueio | FR-001–008/015/024/025; SC-001/006/009 |
-| US2 / P2 | Exclusão integral, e-mail reutilizável e OpenAPI | FR-009–019; SC-002–005 |
-| US3 / P3 | Sem replay, limpeza/geração e resposta perdida | FR-017/020–023; SC-004/007/008 |
-| Fechamento | Regressão, gates, walkthrough e AT | FR-024–026; SC-006/009/010 |
+| Checkpoint futuro | Entrega                                             | Cobertura                              |
+| ----------------- | --------------------------------------------------- | -------------------------------------- |
+| Preparação        | Baseline, banco seguro e fixtures/matriz            | FR-026; SC-002/010                     |
+| Fundação          | Locks, sessões, receipt e DTO/contratos             | FR-002/006/009/014–019                 |
+| US1 / P1          | Resumo, ação/tela, senha/frase, cancelar e bloqueio | FR-001–008/015/024/025; SC-001/006/009 |
+| US2 / P2          | Exclusão integral, e-mail reutilizável e OpenAPI    | FR-009–019; SC-002–005                 |
+| US3 / P3          | Sem replay, limpeza/geração e resposta perdida      | FR-017/020–023; SC-004/007/008         |
+| Fechamento        | Regressão, gates, walkthrough e AT                  | FR-024–026; SC-006/009/010             |
 
 Fundação/contrato antecedem envio real; US1 é verificável sem concluir exclusão. Não declarar US2/US3 completas sem rollback, concorrência e recuperação. Detalhar tarefas no próximo workflow; não iniciar implementação.
 
 ## Post-Design Constitution Check
 
-| Gate | Resultado | Evidência de design |
-| --- | --- | --- |
-| Arquitetura | PASS | Serviço users sem ciclo, camadas mobile existentes. |
-| Contratos/autorização | PASS | Self-only/sid, DTO fechado, segredo transitório, sucesso vazio. |
-| Testabilidade | PASS | Matriz de relações, HTTP, rollback/races e resultado incerto. |
-| Dados | PASS | Schema preservado, transação, gate ADMIN e receipt coordenado. |
-| UX/acessibilidade | PASS | Confirmação, estados, guardas, temas e evidência manual. |
+| Gate                  | Resultado | Evidência de design                                             |
+| --------------------- | --------- | --------------------------------------------------------------- |
+| Arquitetura           | PASS      | Serviço users sem ciclo, camadas mobile existentes.             |
+| Contratos/autorização | PASS      | Self-only/sid, DTO fechado, segredo transitório, sucesso vazio. |
+| Testabilidade         | PASS      | Matriz de relações, HTTP, rollback/races e resultado incerto.   |
+| Dados                 | PASS      | Schema preservado, transação, gate ADMIN e receipt coordenado.  |
+| UX/acessibilidade     | PASS      | Confirmação, estados, guardas, temas e evidência manual.        |
 
 Resultado pós-design: **PASS**, sem exceções. Testes/gates de implementação não executados nesta etapa.
 
 ## Complexity Tracking
 
 Sem violação constitucional. Gate advisory serializa uma operação infrequente sem tabela adicional; geração/fila local fecha a race de refresh/limpeza sem novo mecanismo de autenticação.
+
+## Fechamento de copy e evidência — 2026-10-05
+
+A solicitação explícita do usuário em 2026-10-05 ajusta somente a apresentação do aviso na rota de exclusão: resumo por papel, sem detalhes internos e sem atribuir publicação de comunicado a PARENT. Relações atuais do servidor, confirmação, bloqueio do último ADMIN e política backend permanecem inalterados. As regressões da rota e os gates mobile afetados validam a alteração; T064 está dispensada, T065 está concluída via 009:T073. A consolidação transversal 009:T074 registra separadamente T057/T069 ainda ativas. Ver [validation.md](./validation.md).

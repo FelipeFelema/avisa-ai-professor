@@ -1,5 +1,7 @@
 # Validation — Spec 008, phases 1–3
 
+**Status vigente — 2026-10-04:** Aplica-se a [política permanente](../../.specify/memory/validation-scope.md). Android/TalkBack, iOS/VoiceOver, auditorias físicas especializadas e participantes independentes não são exigidos, agora ou nas specs futuras. Relatos funcionais individuais continuam válidos. Menções antigas a esses itens como pendência, bloqueio ou follow-up abaixo são registros históricos, substituídos por esta decisão; gates automatizados, dependências e CI permanecem aplicáveis.
+
 Scope: T001–T028. Stop before T029 / Phase 4. No account DELETE endpoint or live destructive mobile submission is authorized at this checkpoint.
 
 ## Baseline (2026-10-03)
@@ -168,8 +170,43 @@ The authorized scope was T058–T065. T058–T062 are implemented and validated.
 - Repository `git diff --check` exited 0. Markdown formatting was checked for the affected READMEs, tasks and evidence files. The final working-tree audit found no schema/migration/package/lockfile change and no `AccountDeletionReceipt` model or table. Existing `ClassroomDeletionReceipt` behavior is covered by the Phase 4 integrity tests.
 - The final query against `avisa_ai_test` found zero users, classrooms, announcements and sessions after the serialized test runs. `.expo-ci-export` is ignored. No preexisting WIP was discarded, staged, committed or pushed.
 
-### Outstanding manual evidence
+### Historical manual evidence before scope adjustment
 
 The Android functional walkthrough is `PASS (user-reported)` in [android-walkthrough.md](./android-walkthrough.md); device metadata and the two-minute comprehension measurement remain `NOT MEASURED`. Keyboard/text-scale/contrast/TalkBack remain `NOT MEASURED`, and iOS/VoiceOver remains `NOT RUN / NOT MEASURED`; see [accessibility-validation.md](./accessibility-validation.md). T064 and its dependent T065 remain open until their required evidence and consolidation are complete.
 
 T058–T063 are marked complete in `tasks.md`. The reported Android walkthrough is attributed to the user; assistive-technology evidence is not inferred from that report.
+
+## Historical cross-spec convergence — before scope adjustment (2026-10-04)
+
+The user authorized the remaining Spec 009 tasks, including the accumulated Spec 008 evidence backlog. Responsibility maps explicitly as `008:T064 → 009:T062` and `008:T065 → 009:T073`; the SC-006 timing/comprehension gap is covered by `009:T070`. These mappings do not complete the original tasks.
+
+Current full local regression results are [009 backend-validation.md](../009-admin-teacher-invite-management/backend-validation.md) (Prisma/config/migrations, format/lint/typecheck, 221 unit tests, 146 integration tests, 9 contract tests, 56 E2E tests and build, each exit 0) and [009 mobile-validation.md](../009-admin-teacher-invite-management/mobile-validation.md) (typecheck/lint/format, natural `test:ci` exit 0 with 484 tests, Doctor 21/21 and all-platform export). Database suites ran sequentially after exact loopback `avisa_ai_test` verification. React Query test GC/disposal fixes preserve session cleanup assertions and change no production cache behavior.
+
+The Android SDK is present, but the current device list and configured-emulator list are both empty. No keyboard-open, enlarged-text, rendered contrast, TalkBack or timed comprehension measurements were supplied or performed. T063 remains `PASS (user-reported)`; T064 and T065 remain open. FR-025 and SC-006 are still partial for those specialized outcomes, and iOS/VoiceOver remains NOT MEASURED. This partial consolidation does not bypass T062/T070 dependencies.
+
+The convergence changes are test infrastructure, documentation and dependency fixes owned by Spec 009; its manifest/lockfile updates are not represented as changes from the historical Spec 008 implementation phase. Prisma schema/migrations and account-deletion product code remain unchanged in this run, with no new account receipt or retention policy. `git diff --check` and the affected-path audit pass. Existing WIP and origin task markers are preserved; current GitHub CI and native evidence remain separate from local checks.
+
+## Checkpoint histórico da decisão de escopo — 2026-10-04
+
+008:T064 e seu follow-up 009:T062 são **DISPENSADA POR ESCOPO**. A ausência de campanha Android/TalkBack, iOS/VoiceOver, metadados físicos ou participantes independentes não é pendência atual e não torna a implementação parcial por esses motivos. A semântica básica e os testes estruturais de UI continuam aplicáveis e aprovados conforme os gates registrados.
+
+008:T063 permanece **PASS (user-reported)**. 009:T070 aceita somente uma complementação funcional pelo próprio usuário sobre compreensão do aviso e localização/cancelamento/conclusão da exclusão, sem estudo independente ou protocolo obrigatório de tempo. 008:T065/009:T073 consolidam os resultados aplicáveis após essa complementação; não dependem de T064/T062 dispensadas. As exigências antigas acima são históricas e foram substituídas pela [política permanente](../../.specify/memory/validation-scope.md).
+
+## Fechamento aplicável da Spec 008 — 2026-10-05
+
+**T070/009:T073 e origem 008:T065 concluídas.** A Spec 008 possui **64 tarefas executadas, 1 dispensada (T064), nenhuma task ativa pendente**. O aceite funcional anterior de T063 é mantido. O usuário confirmou compreender o impacto no perfil PROFESSOR e apontou excesso de texto; a nova copy atende ao pedido sem declarar uma nova execução manual de exclusão ou aprovação visual da versão revisada.
+
+| Requisito                    | Resultado/evidência aplicável                                                                                                                                                                                                                         |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR-001/003/004; SC-006       | Texto curto por papel e vínculos vigentes. PARENT vê saída das turmas sem remoção de comunicados próprios; PROFESSOR vê turmas/conteúdos; ADMIN vê acesso administrativo. Compreensão PASS (user-reported), correção de copy PASS automatizado.       |
+| FR-015/024                   | Último ADMIN continua bloqueado, com aviso simples, campos/revisão/exclusão desabilitados e cancelamento disponível; teste da rota aprovado.                                                                                                          |
+| Confirmação/segurança/sessão | Suite da rota 15/15 preserva senha/frase exata, revisão, cancelamento, bloqueio pendente, limpeza e recuperação sem novo DELETE automático.                                                                                                           |
+| Integridade backend/contrato | Nenhuma alteração de API, hook/serviço de exclusão, schema ou migration neste ajuste. As suites reais de banco/contrato/e2e do checkpoint 009 de 2026-10-04 continuam sendo a evidência, não novas execuções atribuídas a hoje.                       |
+| Regressões mobile            | Typecheck/lint, 64 suites / 485 testes com cobertura e export all-platform: exit 0. Detalhes em [009/mobile-validation.md](../009-admin-teacher-invite-management/mobile-validation.md).                                                              |
+| Escopo/WIP                   | Mudança de produto restrita à copy da rota e regressões; demais alterações anteriores do WIP preservadas. Nenhum staging/commit/push/PR, schema/migration, recibo de conta ou mudança de retenção. Whitespace e referências conferidos no fechamento. |
+
+Registros completos: [relato individual](./android-walkthrough.md), [copy aprovada](./spec.md#ajuste-de-linguagem-aprovado-pelo-usuário--2026-10-05) e [consolidação 009](../009-admin-teacher-invite-management/validation.md). T064 é dispensada definitivamente; não bloqueia FR/SC aplicáveis ou T065. Pendências transversais de bibliotecas/CI permanecem em 009:T057/T069 e não são representadas como resolvidas pela documentação.
+
+## Aceite da copy revisada — 2026-10-05
+
+**PASS (user-reported).** Após a implementação, o usuário informou que acabou de validar as mudanças e aprovou o resultado da nova apresentação de exclusão. Este relato complementa a compreensão e o aceite funcional anteriores; não informa nova execução destrutiva, duração ou matriz individual de cenários/perfis. A aprovação manual da versão revisada está agora registrada, sem alterar os resultados automatizados ou recriar campanhas dispensadas.

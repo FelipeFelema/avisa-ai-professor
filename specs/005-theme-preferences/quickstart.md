@@ -1,5 +1,7 @@
 # Quickstart: Theme Preferences
 
+**Escopo de validação vigente — decisão de 2026-10-04:** [política permanente](../../.specify/memory/validation-scope.md). Automação e walkthrough funcional pelo próprio usuário são suficientes para o escopo manual. Campanhas nativas especializadas Android/iOS, TalkBack/VoiceOver e participantes independentes estão dispensados; exigências antigas desses itens abaixo são históricas e não bloqueiam conclusão nem geram follow-ups. Semântica básica de UI e gates automatizados permanecem aplicáveis.
+
 Roteiro para validar a implementação futura da [spec](./spec.md) conforme [contrato de UI](./contracts/theme-preferences.md) e [modelo de estado](./data-model.md). Não é evidência de execução. Execute a partir de `C:\src\avisa-ai-professor`; registre comando, saída, data e ambiente no relatório da feature. Use `PASS`, `WARN`, `FAIL`, `NOT RUN` ou `NOT MEASURED` por cenário.
 
 ## Pré-requisitos

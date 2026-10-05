@@ -108,6 +108,12 @@ export async function cleanupClassroomSearchState(
 ) {
   observers.forEach(({ dispose }) => dispose());
   await queryClient.cancelQueries();
+  // MutationCache.clear() removes entries but does not destroy their GC timers.
+  // Pending controlled mutations otherwise keep rescheduling even after cleanup.
+  queryClient
+    .getMutationCache()
+    .getAll()
+    .forEach((mutation) => mutation.destroy());
   queryClient.clear();
   clearTimers();
 }

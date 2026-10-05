@@ -1,5 +1,7 @@
 # Evidencia Android - Auth Navigation UX Polish
 
+**Status vigente — 2026-10-04:** Aplica-se a [política permanente](../../../.specify/memory/validation-scope.md). Android/TalkBack, iOS/VoiceOver, auditorias físicas especializadas e participantes independentes não são exigidos, agora ou nas specs futuras. Relatos funcionais individuais continuam válidos. Menções antigas a esses itens como pendência, bloqueio ou follow-up abaixo são registros históricos, substituídos por esta decisão; gates automatizados, dependências e CI permanecem aplicáveis.
+
 **Data do walkthrough:** 2026-09-26
 
 **Fonte:** relato manual fornecido pelo usuario apos walkthrough completo executado no Android atraves do Expo Go.
@@ -10,15 +12,15 @@
 
 ## Matriz manual das sete rotas
 
-| Tela/fluxo | Origem esperada | Verificacoes manuais | Resultado |
-|---|---|---|---|
-| Cadastro | Login | Voltar visual/fallback Login; teclado em Responsavel e Professor; campos, erros, Cadastrar e troca de perfil | PASS - usuario confirmou o teclado correto nos dois perfis e o fluxo geral preservado |
-| Criar turma | Turmas como Professor | Voltar, estados de envio/erro e retorno nativo | PASS - usuario confirmou o funcionamento dos botoes de voltar e do fluxo |
-| Detalhe da turma | Home ou Turmas | Origem imediata, fallback Turmas e estados de carregamento/erro | PASS - usuario confirmou o funcionamento dos botoes de voltar e do fluxo |
-| Novo comunicado | Detalhe da turma | Retorno a turma, envio/erro e toque rapido | PASS - usuario confirmou o funcionamento dos botoes de voltar e do fluxo |
-| Detalhe do comunicado | Lista/detalhe da turma | Retorno a origem, fallback dinamico e conteudo indisponivel | PASS - usuario confirmou o funcionamento dos botoes de voltar e do fluxo |
-| Editar comunicado | Detalhe do comunicado | Retorno, conteudo indisponivel e retorno nativo | PASS - usuario confirmou o funcionamento dos botoes de voltar e do fluxo |
-| Editar perfil | Perfil | Retorno, preservacao do comportamento do formulario e retorno nativo | PASS - usuario confirmou o funcionamento dos botoes de voltar e do fluxo |
+| Tela/fluxo            | Origem esperada        | Verificacoes manuais                                                                                         | Resultado                                                                             |
+| --------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------- |
+| Cadastro              | Login                  | Voltar visual/fallback Login; teclado em Responsavel e Professor; campos, erros, Cadastrar e troca de perfil | PASS - usuario confirmou o teclado correto nos dois perfis e o fluxo geral preservado |
+| Criar turma           | Turmas como Professor  | Voltar, estados de envio/erro e retorno nativo                                                               | PASS - usuario confirmou o funcionamento dos botoes de voltar e do fluxo              |
+| Detalhe da turma      | Home ou Turmas         | Origem imediata, fallback Turmas e estados de carregamento/erro                                              | PASS - usuario confirmou o funcionamento dos botoes de voltar e do fluxo              |
+| Novo comunicado       | Detalhe da turma       | Retorno a turma, envio/erro e toque rapido                                                                   | PASS - usuario confirmou o funcionamento dos botoes de voltar e do fluxo              |
+| Detalhe do comunicado | Lista/detalhe da turma | Retorno a origem, fallback dinamico e conteudo indisponivel                                                  | PASS - usuario confirmou o funcionamento dos botoes de voltar e do fluxo              |
+| Editar comunicado     | Detalhe do comunicado  | Retorno, conteudo indisponivel e retorno nativo                                                              | PASS - usuario confirmou o funcionamento dos botoes de voltar e do fluxo              |
+| Editar perfil         | Perfil                 | Retorno, preservacao do comportamento do formulario e retorno nativo                                         | PASS - usuario confirmou o funcionamento dos botoes de voltar e do fluxo              |
 
 ## Confirmacoes do walkthrough
 

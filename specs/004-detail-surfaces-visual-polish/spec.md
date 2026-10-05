@@ -1,5 +1,7 @@
 # Feature Specification: Detail Surfaces Visual Polish
 
+**Escopo de validação vigente — decisão de 2026-10-04:** [política permanente](../../.specify/memory/validation-scope.md). Automação e walkthrough funcional pelo próprio usuário são suficientes para o escopo manual. Campanhas nativas especializadas Android/iOS, TalkBack/VoiceOver e participantes independentes estão dispensados; exigências antigas desses itens abaixo são históricas e não bloqueiam conclusão nem geram follow-ups. Semântica básica de UI e gates automatizados permanecem aplicáveis.
+
 **Feature Branch**: `[004-detail-surfaces-visual-polish]`
 
 **Created**: 2026-10-01
@@ -8,7 +10,7 @@
 
 **Input**: User description: "Melhorar a hierarquia visual, a legibilidade e a consistência do detalhe da turma, do detalhe do comunicado e do Perfil, preservando comportamentos, permissões e identidade visual existentes e sem antecipar tema, gestão de conta ou novas capacidades de produto."
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Consultar os comunicados de uma turma (Priority: P1)
 
@@ -75,16 +77,16 @@ Como pessoa autenticada, quero que meu Perfil compartilhe a mesma linguagem visu
 - Nome e e-mail longos são exibidos em tela estreita ou com texto ampliado.
 - A pessoa usa tecnologia assistiva; a ordem de leitura e os nomes das ações não devem depender apenas de cor, ícone ou posição visual.
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### In-Scope Surface Inventory
 
-| Superfície | Elementos abrangidos |
-|---|---|
-| Detalhe da turma | Contexto da turma, seção de comunicados, cards, estados da lista, ação de novo comunicado e ação destrutiva contextual |
-| Detalhe do comunicado | Título, autoria, datas de publicação e expiração, conteúdo, estados e ações autorais existentes |
-| Perfil | Cabeçalho, identidade, nome, e-mail, perfil, estados e ações existentes de edição e saída |
-| Elementos compartilhados | Somente elementos visuais usados diretamente por essas superfícies e necessários para sua consistência |
+| Superfície               | Elementos abrangidos                                                                                                   |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| Detalhe da turma         | Contexto da turma, seção de comunicados, cards, estados da lista, ação de novo comunicado e ação destrutiva contextual |
+| Detalhe do comunicado    | Título, autoria, datas de publicação e expiração, conteúdo, estados e ações autorais existentes                        |
+| Perfil                   | Cabeçalho, identidade, nome, e-mail, perfil, estados e ações existentes de edição e saída                              |
+| Elementos compartilhados | Somente elementos visuais usados diretamente por essas superfícies e necessários para sua consistência                 |
 
 ### Functional Requirements
 
@@ -130,7 +132,7 @@ Como pessoa autenticada, quero que meu Perfil compartilhe a mesma linguagem visu
 - Novos dados, endpoints, contratos, migrações, regras de autorização ou dependências externas.
 - Alterações nas superfícies primárias concluídas pela spec `003-primary-surfaces-visual-polish`, salvo reutilização estritamente necessária de um elemento visual compartilhado.
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

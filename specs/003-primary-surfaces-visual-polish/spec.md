@@ -1,5 +1,7 @@
 # Feature Specification: Primary Surfaces Visual Polish
 
+**Escopo de validação vigente — decisão de 2026-10-04:** [política permanente](../../.specify/memory/validation-scope.md). Automação e walkthrough funcional pelo próprio usuário são suficientes para o escopo manual. Campanhas nativas especializadas Android/iOS, TalkBack/VoiceOver e participantes independentes estão dispensados; exigências antigas desses itens abaixo são históricas e não bloqueiam conclusão nem geram follow-ups. Semântica básica de UI e gates automatizados permanecem aplicáveis.
+
 **Feature Branch**: `[003-primary-surfaces-visual-polish]`
 
 **Created**: 2026-09-26
@@ -8,7 +10,7 @@
 
 **Input**: User description: "Melhorar a hierarquia visual, a legibilidade e a consistência da Home e da tela de Turmas, preservando a identidade clean e minimalista atual e sem antecipar as melhorias das telas de detalhe, tema escuro ou correção funcional da pesquisa."
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Compreender a Home rapidamente (Priority: P1)
 
@@ -72,15 +74,15 @@ Como pessoa consultando Home ou Turmas, quero que cards, conteúdos longos e est
 - Uma operação de entrar, sair ou excluir está pendente ou falha; os feedbacks e bloqueios existentes devem continuar funcionando.
 - A pessoa troca entre os perfis Professor e Responsável em sessões diferentes; a composição visual deve continuar coerente com as ações permitidas a cada perfil.
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### In-Scope Surface Inventory
 
-| Superfície | Elementos abrangidos |
-|---|---|
-| Home | Cumprimento, título principal, lista de cards, prazo do último comunicado e estados de carregamento, erro e vazio |
-| Turmas | Título, descrição, "Criar turma", busca visual, "Minhas turmas", "Turmas disponíveis", cards e estados associados |
-| Elementos compartilhados | Card de turma e estados vazios usados exclusivamente ou diretamente pelas superfícies primárias |
+| Superfície               | Elementos abrangidos                                                                                              |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| Home                     | Cumprimento, título principal, lista de cards, prazo do último comunicado e estados de carregamento, erro e vazio |
+| Turmas                   | Título, descrição, "Criar turma", busca visual, "Minhas turmas", "Turmas disponíveis", cards e estados associados |
+| Elementos compartilhados | Card de turma e estados vazios usados exclusivamente ou diretamente pelas superfícies primárias                   |
 
 ### Functional Requirements
 
@@ -124,7 +126,7 @@ Como pessoa consultando Home ou Turmas, quero que cards, conteúdos longos e est
 - Alterações na barra de abas, nos formulários de criar turma ou comunicado e nas telas de edição.
 - Funcionalidades administrativas, segurança de conta ou notificações.
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

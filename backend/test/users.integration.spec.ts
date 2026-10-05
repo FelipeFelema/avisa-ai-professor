@@ -6,6 +6,7 @@ import { PrismaService } from '../src/prisma/prisma.service';
 import { UsersService } from '../src/users/users.service';
 import { createTestApp } from './helpers/test-app.helper';
 import { createTransactionFaultInjector } from './helpers/profile-password.helper';
+import { createAdminUserAndLogin } from './helpers/admin-user.helper';
 
 type AuthResponse = {
   id: string;
@@ -34,13 +35,29 @@ describe('Users Integration Tests', () => {
 
   const registerAsRole = async (role: Role, label: string) => {
     const email = makeEmail(`${role.toLowerCase()}-${label}`);
+    if (role === Role.ADMIN) {
+      const provisioned = await createAdminUserAndLogin(app, prisma, {
+        email,
+        password: testPassword,
+        name: 'Perfil Original',
+      });
+      return {
+        email,
+        auth: {
+          id: provisioned.user.id,
+          access_token: provisioned.accessToken,
+          refresh_token: provisioned.refreshToken,
+          role: Role.ADMIN,
+        } satisfies AuthResponse,
+      };
+    }
     const body: Record<string, string> = {
       name: 'Perfil Original',
       email,
       password: testPassword,
     };
 
-    if (role !== Role.PARENT) {
+    if (role === Role.PROFESSOR) {
       const code = `PROFILE-${testPrefix}-${role}-${label}`;
       await prisma.inviteCode.create({
         data: {

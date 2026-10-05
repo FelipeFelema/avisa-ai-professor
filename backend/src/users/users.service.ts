@@ -1,7 +1,9 @@
 import {
   BadRequestException,
   ConflictException,
+  HttpException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -56,9 +58,8 @@ export class UsersService {
   }
 
   async createUser(createUserDto: CreateUserDto) {
+    const { teacherCode, ...userData } = createUserDto;
     try {
-      const { teacherCode, ...userData } = createUserDto;
-
       const normalizedName = normalizeUserName(userData.name);
       const normalizedEmail = normalizeUserEmail(userData.email);
       const existingUser = await this.findByEmail(normalizedEmail);
@@ -68,30 +69,35 @@ export class UsersService {
       }
 
       const hashedPassword = await hashPassword(userData.password);
+      const data = {
+        ...userData,
+        name: normalizedName,
+        email: normalizedEmail,
+        password: hashedPassword,
+      };
 
-      let role: Role = Role.PARENT;
-
-      if (teacherCode) {
-        role = await this.inviteCodeService.validateInviteCode(teacherCode);
+      if (!teacherCode) {
+        return await this.prisma.user.create({
+          data: { ...data, role: Role.PARENT },
+          select: this.userSelect,
+        });
       }
 
-      const user = await this.prisma.user.create({
-        data: {
-          ...userData,
-          name: normalizedName,
-          email: normalizedEmail,
-          password: hashedPassword,
-          role,
-        },
-        select: this.userSelect,
+      return await this.prisma.$transaction(async (tx) => {
+        await this.inviteCodeService.consumeInviteCode(tx, teacherCode);
+        return tx.user.create({
+          data: { ...data, role: Role.PROFESSOR },
+          select: this.userSelect,
+        });
       });
-
-      return user;
     } catch (error) {
       if (isPrismaError(error) && error.code === 'P2002') {
         throw new ConflictException('Esse email já existe');
       }
 
+      if (error instanceof HttpException) throw error;
+      if (teacherCode)
+        throw new InternalServerErrorException('Não foi possível cadastrar.');
       throw error;
     }
   }

@@ -21,7 +21,7 @@ API REST do Avisa Aí Professor. A aplicação centraliza autenticação, regras
 - Atualização self-service de nome/e-mail com revogação seletiva das demais sessões.
 - Consulta de impacto e exclusão permanente da própria conta, com revogação de todas as sessões.
 - Perfis `PARENT`, `PROFESSOR` e `ADMIN`.
-- Códigos de convite para o cadastro de perfis privilegiados.
+- Convites de PROFESSOR gerados por ADMIN; o cadastro público não provisiona ADMIN.
 - Criação de turmas por professores e participação de usuários em turmas.
 - Comunicados com prazo de expiração e operações de criação, leitura, atualização e exclusão.
 - Validação de entradas por DTOs e controle de acesso por guards e funções.
@@ -33,6 +33,7 @@ Todas as rotas têm o prefixo `/api/v1`.
 | Recurso               | Rotas                                                                                                                     | Acesso                                                |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
 | Autenticação          | `POST /auth/register`, `POST /auth/login`, `POST /auth/refresh`                                                           | Público                                               |
+| Convite de professor  | `POST /invite-codes`                                                                                                      | ADMIN autenticado                                     |
 | Perfil                | `GET /users/profile`, `PATCH /users/profile`                                                                              | Autenticado                                           |
 | Turmas                | `GET /classrooms`, `GET /classrooms/my`, `GET /classrooms/:id`, `POST /classrooms/:id/join`, `POST /classrooms/:id/leave` | Autenticado                                           |
 | Criação de turma      | `POST /classrooms`                                                                                                        | Professor                                             |
@@ -40,6 +41,12 @@ Todas as rotas têm o prefixo `/api/v1`.
 | Comunicados           | `GET /announcements`, `GET /announcements/:id`, `GET /announcements/classrooms/:classroomId`                              | Autenticado e participante da turma                   |
 | Gestão de comunicados | `POST /announcements`, `PATCH /announcements/:id`, `DELETE /announcements/:id`                                            | Professor autor do comunicado                         |
 | Exclusão de conta     | `GET /users/account-deletion`, `DELETE /users/account`                                                                    | Própria conta; todos os papéis, exceto o último ADMIN |
+
+## Convites de professor
+
+`POST /api/v1/invite-codes` exige a sessão atual de um `ADMIN` e aceita somente o papel `PROFESSOR`; o servidor fixa a validade em sete dias e permite um cadastro. `POST /api/v1/auth/register` continua criando `PARENT` sem convite ou `PROFESSOR` com um convite válido. Papel enviado pelo cliente não é aceito, e o cadastro público nunca cria `ADMIN`.
+
+Uma nova geração deliberada cria um convite distinto e não revoga convites anteriores. O contrato anterior que aceitava convites `ADMIN` ou `expiresInDays` foi removido de propósito; login, refresh, cadastro `PARENT` e convites `PROFESSOR` existentes compatíveis permanecem disponíveis. Erros e exemplos não expõem códigos operacionais; exemplos OpenAPI são fictícios.
 
 ## Exclusão de conta
 

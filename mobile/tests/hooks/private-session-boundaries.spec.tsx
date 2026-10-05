@@ -24,7 +24,12 @@ function deferred<T>() {
 
 function setup() {
   const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    // clear() intentionally runs while observers are mounted in these scenarios.
+    // Their later detach must not schedule timers on entries removed by clear().
+    defaultOptions: {
+      queries: { retry: false, gcTime: Infinity },
+      mutations: { retry: false, gcTime: Infinity },
+    },
   });
   const wrapper = ({ children }: PropsWithChildren) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>

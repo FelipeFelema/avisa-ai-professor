@@ -1,5 +1,7 @@
 # Feature Specification: Classroom Search Fix
 
+**Escopo de validação vigente — decisão de 2026-10-04:** [política permanente](../../.specify/memory/validation-scope.md). Automação e walkthrough funcional pelo próprio usuário são suficientes para o escopo manual. Campanhas nativas especializadas Android/iOS, TalkBack/VoiceOver e participantes independentes estão dispensados; exigências antigas desses itens abaixo são históricas e não bloqueiam conclusão nem geram follow-ups. Semântica básica de UI e gates automatizados permanecem aplicáveis.
+
 **Feature Branch**: `[006-classroom-search-fix]`
 
 **Created**: 2026-10-02
@@ -8,7 +10,7 @@
 
 **Input**: User description: "Corrigir a pesquisa de turmas após investigar o fluxo atual de ponta a ponta, definir uma busca clara por nome em Turmas disponíveis e garantir estados e resultados consistentes antes e depois das ações de participação."
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Encontrar uma turma disponível pelo nome (Priority: P1)
 
@@ -79,17 +81,17 @@ Como pessoa que entra, sai ou exclui uma turma, quero que a busca atual reflita 
 - A sessão expira durante a pesquisa; o fluxo de autenticação existente deve continuar sendo a autoridade.
 - O tema é alternado durante a digitação, loading, erro ou exibição dos resultados.
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### In-Scope Flow Inventory
 
-| Parte do fluxo | Comportamento abrangido |
-|---|---|
-| Entrada | Texto de busca, normalização, limite, espera após digitação, limpeza e acessibilidade |
-| Consulta | Critério por nome, envio do termo normalizado, autenticação e exclusão das turmas já associadas à pessoa |
-| Apresentação | Carregamento, resultados, nenhuma correspondência, erro, retry e preservação do termo |
-| Consistência | Atualização de "Minhas turmas" e de todas as buscas de disponíveis após entrar, sair ou excluir |
-| Regressão | Cards, ações, temas, permissões e navegação existentes na tela de Turmas |
+| Parte do fluxo | Comportamento abrangido                                                                                  |
+| -------------- | -------------------------------------------------------------------------------------------------------- |
+| Entrada        | Texto de busca, normalização, limite, espera após digitação, limpeza e acessibilidade                    |
+| Consulta       | Critério por nome, envio do termo normalizado, autenticação e exclusão das turmas já associadas à pessoa |
+| Apresentação   | Carregamento, resultados, nenhuma correspondência, erro, retry e preservação do termo                    |
+| Consistência   | Atualização de "Minhas turmas" e de todas as buscas de disponíveis após entrar, sair ou excluir          |
+| Regressão      | Cards, ações, temas, permissões e navegação existentes na tela de Turmas                                 |
 
 ### Functional Requirements
 
@@ -136,7 +138,7 @@ Como pessoa que entra, sai ou exclui uma turma, quero que a busca atual reflita 
 - Novo endpoint, novo formato de resposta, migration, alteração de schema ou pacote adicional.
 - Alterações nas telas Home, detalhes, Perfil, autenticação ou preferências de tema além da regressão necessária para manter o comportamento atual.
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 
