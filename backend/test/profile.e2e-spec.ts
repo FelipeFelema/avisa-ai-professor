@@ -5,10 +5,12 @@ import { App } from 'supertest/types';
 
 import { PrismaService } from '../src/prisma/prisma.service';
 import { createTestApp } from './helpers/test-app.helper';
+import { createAdminUserAndLogin } from './helpers/admin-user.helper';
 
 type AuthResponse = {
   id: string;
   email: string;
+  role?: string;
   access_token: string;
   refresh_token: string;
 };
@@ -32,12 +34,26 @@ describe('Profile self-service (e2e)', () => {
 
   const registerAsRole = async (role: Role, label: string) => {
     const email = makeEmail(label);
+    if (role === Role.ADMIN) {
+      const provisioned = await createAdminUserAndLogin(app, prisma, {
+        email,
+        password,
+        name: 'Perfil de Teste',
+      });
+      return {
+        id: provisioned.user.id,
+        email: provisioned.user.email,
+        role: Role.ADMIN,
+        access_token: provisioned.accessToken,
+        refresh_token: provisioned.refreshToken,
+      } satisfies AuthResponse;
+    }
     const body: Record<string, string> = {
       name: 'Perfil de Teste',
       email,
       password,
     };
-    if (role !== Role.PARENT) {
+    if (role === Role.PROFESSOR) {
       const code = `PROFILE-${testPrefix}-${role}-${label}`;
       await prisma.inviteCode.create({
         data: {

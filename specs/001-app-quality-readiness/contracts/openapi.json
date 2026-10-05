@@ -291,7 +291,7 @@
         "operationId": "auth.register",
         "tags": ["auth"],
         "summary": "Cadastrar usuário",
-        "description": "Cria PARENT por padrão; um invite code válido cria PROFESSOR ou ADMIN. Limitado por IP.",
+        "description": "Cria PARENT por padrão; somente convite PROFESSOR válido cria PROFESSOR. ADMIN não pode ser provisionado pelo cadastro público. Convite inválido, expirado, usado ou de outro papel retorna erro genérico. Resposta sem cache. Limitado por IP.",
         "requestBody": {
           "required": true,
           "content": {
@@ -303,6 +303,7 @@
         "responses": {
           "201": {
             "description": "Usuário e sessão criados",
+            "headers": { "Cache-Control": { "description": "no-store", "schema": { "type": "string" } } },
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/RegisterResponse" }
@@ -699,7 +700,7 @@
         "operationId": "inviteCodes.create",
         "tags": ["invite-codes"],
         "summary": "Criar código de convite",
-        "description": "Requer role ADMIN. Códigos reais nunca aparecem nos exemplos da documentação.",
+        "description": "Requer sessão ativa e papel ADMIN atual. Emite apenas convites PROFESSOR válidos por sete dias. Resposta sem cache; códigos reais nunca aparecem nos exemplos da documentação.",
         "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
@@ -712,6 +713,7 @@
         "responses": {
           "201": {
             "description": "Código criado",
+            "headers": { "Cache-Control": { "description": "no-store", "schema": { "type": "string" } } },
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/InviteCodeResponse" }
@@ -720,7 +722,9 @@
           },
           "400": { "$ref": "#/components/responses/ValidationError" },
           "401": { "$ref": "#/components/responses/Unauthorized" },
-          "403": { "$ref": "#/components/responses/Forbidden" }
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "500": { "description": "Falha interna sanitizada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "503": { "description": "Colisões esgotadas; emissão não confirmada para o cliente", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
         }
       }
     }
@@ -1128,10 +1132,9 @@
       "CreateInviteCodeRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["role", "expiresInDays"],
+        "required": ["role"],
         "properties": {
-          "role": { "type": "string", "enum": ["PROFESSOR", "ADMIN"] },
-          "expiresInDays": { "type": "integer", "minimum": 1 }
+          "role": { "type": "string", "enum": ["PROFESSOR"] }
         }
       },
       "InviteCodeResponse": {
@@ -1141,7 +1144,7 @@
         "properties": {
           "id": { "type": "string", "format": "uuid" },
           "code": { "type": "string", "example": "PROF-EXAMPLE" },
-          "role": { "type": "string", "enum": ["PROFESSOR", "ADMIN"] },
+          "role": { "type": "string", "enum": ["PROFESSOR"] },
           "isActive": { "type": "boolean" },
           "expiresAt": { "type": "string", "format": "date-time" },
           "createdAt": { "type": "string", "format": "date-time" },

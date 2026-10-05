@@ -7,6 +7,7 @@ import * as passwordHasher from '../common/security/password-hasher';
 import {
   BadRequestException,
   ConflictException,
+  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -27,6 +28,7 @@ const mockPrisma = {
 
 const mockInviteCodeService = {
   validateInviteCode: jest.fn(),
+  consumeInviteCode: jest.fn(),
 };
 
 describe('UsersService', () => {
@@ -213,28 +215,36 @@ describe('UsersService', () => {
       );
 
       mockPrisma.user.findUnique.mockResolvedValue(null);
-      mockInviteCodeService.validateInviteCode.mockResolvedValue('PROFESSOR');
-      mockPrisma.user.create.mockResolvedValue({
-        id: 'teacher-id',
-        name: createUserDto.name,
-        email: createUserDto.email,
-        role: 'PROFESSOR',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
+      const tx = {
+        user: {
+          create: jest.fn().mockResolvedValue({
+            id: 'teacher-id',
+            name: createUserDto.name,
+            email: createUserDto.email,
+            role: 'PROFESSOR',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          }),
+        },
+      };
+      mockInviteCodeService.consumeInviteCode.mockResolvedValue('PROFESSOR');
+      mockPrisma.$transaction.mockImplementation(
+        async (callback: (client: typeof tx) => Promise<unknown>) =>
+          callback(tx),
+      );
 
       const result = await service.createUser(createUserDto);
 
-      expect(mockInviteCodeService.validateInviteCode).toHaveBeenCalledTimes(1);
-      expect(mockInviteCodeService.validateInviteCode).toHaveBeenCalledWith(
+      expect(mockInviteCodeService.consumeInviteCode).toHaveBeenCalledWith(
+        tx,
         createUserDto.teacherCode,
       );
       expect(passwordHasher.hashPassword).toHaveBeenCalledTimes(1);
       const hashCalls = (passwordHasher.hashPassword as jest.Mock).mock
         .calls as unknown as Array<[string]>;
       expect(hashCalls[0]?.[0] === createUserDto.password).toBe(true);
-      expect(mockPrisma.user.create).toHaveBeenCalledTimes(1);
-      expect(mockPrisma.user.create).toHaveBeenCalledWith(
+      expect(tx.user.create).toHaveBeenCalledTimes(1);
+      expect(tx.user.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: {
             name: createUserDto.name,
@@ -254,6 +264,46 @@ describe('UsersService', () => {
       );
     });
 
+    it('sanitizes unexpected persistence errors on invited PROFESSOR registration', async () => {
+      const sentinel = 'SYNTHETIC_INVITE_DRIVER_PAYLOAD';
+      const createUserDto = {
+        name: 'Teacher User',
+        email: 'teacher@example.com',
+        password: 'password123',
+        teacherCode: 'synthetic-code',
+      };
+      (passwordHasher.hashPassword as jest.Mock).mockResolvedValue(
+        'scrypt-hash',
+      );
+      mockPrisma.user.findUnique.mockResolvedValue(null);
+      mockInviteCodeService.consumeInviteCode.mockResolvedValue('PROFESSOR');
+      const tx = {
+        user: {
+          create: jest.fn().mockRejectedValue(
+            Object.assign(new Error(sentinel), {
+              cause: { driver: sentinel },
+              meta: { code: sentinel },
+            }),
+          ),
+        },
+      };
+      mockPrisma.$transaction.mockImplementation(
+        async (callback: (client: typeof tx) => Promise<unknown>) =>
+          callback(tx),
+      );
+
+      let caught: unknown;
+      try {
+        await service.createUser(createUserDto);
+      } catch (error) {
+        caught = error;
+      }
+
+      expect(caught).toBeInstanceOf(InternalServerErrorException);
+      expect(JSON.stringify(caught)).not.toContain(sentinel);
+      expect(JSON.stringify((caught as Error).message)).not.toContain(sentinel);
+    });
+
     it('should throw BadRequestException when invite code is invalid', async () => {
       const createUserDto = {
         name: 'Teacher User',
@@ -267,15 +317,20 @@ describe('UsersService', () => {
       );
 
       mockPrisma.user.findUnique.mockResolvedValue(null);
-      mockInviteCodeService.validateInviteCode.mockRejectedValue(
-        new BadRequestException('Código de convite inválido'),
+      mockInviteCodeService.consumeInviteCode.mockRejectedValue(
+        new BadRequestException('Código de convite inválido ou indisponível.'),
+      );
+      const tx = { user: { create: jest.fn() } };
+      mockPrisma.$transaction.mockImplementation(
+        async (callback: (client: typeof tx) => Promise<unknown>) =>
+          callback(tx),
       );
 
       await expect(service.createUser(createUserDto)).rejects.toThrow(
         BadRequestException,
       );
 
-      expect(mockPrisma.user.create).not.toHaveBeenCalled();
+      expect(tx.user.create).not.toHaveBeenCalled();
     });
 
     it('should not consume invite code when email already exists', async () => {
@@ -295,7 +350,7 @@ describe('UsersService', () => {
         ConflictException,
       );
 
-      expect(mockInviteCodeService.validateInviteCode).not.toHaveBeenCalled();
+      expect(mockInviteCodeService.consumeInviteCode).not.toHaveBeenCalled();
       expect(mockPrisma.user.create).not.toHaveBeenCalled();
     });
   });

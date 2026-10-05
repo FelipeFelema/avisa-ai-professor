@@ -1,4 +1,4 @@
-import { IsIn, IsInt, Min } from 'class-validator';
+import { IsIn, IsString } from 'class-validator';
 import { ApiProperty, ApiSchema, ApiSchemaOptions } from '@nestjs/swagger';
 import * as inviteCodeRoleTypes from '../types/invite-code-role.types';
 
@@ -18,19 +18,13 @@ export class CreateInviteCodeDto {
   @ApiProperty({
     type: 'string',
     enum: [...inviteCodeRoleTypes.INVITE_CODE_ROLES],
+    description: 'Papel fixo para novas emissões: PROFESSOR.',
   })
   @IsIn(inviteCodeRoleTypes.INVITE_CODE_ROLES, {
-    message: 'O convite só pode ser criado para PROFESSOR ou ADMIN',
+    message: 'O convite só pode ser criado para PROFESSOR',
   })
+  @IsString()
   role!: inviteCodeRoleTypes.InviteCodeRole;
-
-  @ApiProperty({
-    type: 'integer',
-    minimum: 1,
-  })
-  @IsInt()
-  @Min(1)
-  expiresInDays!: number;
 }
 
 @closedSchema({
@@ -46,7 +40,8 @@ export class InviteCodeResponseDto {
 
   @ApiProperty({
     type: 'string',
-    enum: [...inviteCodeRoleTypes.INVITE_CODE_ROLES],
+    enum: ['PROFESSOR'],
+    description: 'Papel fixo do convite recém-criado.',
   })
   role!: inviteCodeRoleTypes.InviteCodeRole;
 

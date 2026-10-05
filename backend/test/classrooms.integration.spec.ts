@@ -9,6 +9,7 @@ import { AppModule } from '../src/app.module';
 import { ClassroomsService } from '../src/classrooms/classrooms.service';
 import { configureApp } from '../src/configure-app';
 import { PrismaService } from '../src/prisma/prisma.service';
+import { createAdminUserAndLogin } from './helpers/admin-user.helper';
 
 type AuthResponse = {
   access_token: string;
@@ -123,28 +124,12 @@ describe('Classrooms Integration Tests', () => {
   };
 
   const createAdminToken = async (label: string) => {
-    const inviteCode = makeInviteCode(`admin-${label}`);
-
-    await prisma.inviteCode.create({
-      data: {
-        code: inviteCode,
-        role: Role.ADMIN,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-      },
+    const auth = await createAdminUserAndLogin(app, prisma, {
+      email: makeEmail(`admin-${label}`),
+      password: testPassword,
+      name: 'Admin Integration Test',
     });
-
-    const response = await request(app.getHttpServer())
-      .post('/api/v1/auth/register')
-      .set('X-Forwarded-For', `classrooms-admin-${testPrefix}-${label}`)
-      .send({
-        name: 'Admin Integration Test',
-        email: makeEmail(`admin-${label}`),
-        password: testPassword,
-        teacherCode: inviteCode,
-      })
-      .expect(201);
-
-    return (response.body as AuthResponse).access_token;
+    return auth.accessToken;
   };
 
   const createClassroom = async (professorToken: string, label: string) => {

@@ -17,6 +17,7 @@ import {
   cleanupAccountFixture,
   snapshotDatabase,
 } from './helpers/account-deletion.helper';
+import { createAdminUserAndLogin } from './helpers/admin-user.helper';
 
 describe('Account deletion HTTP contracts', () => {
   let app: INestApplication<App>;
@@ -232,7 +233,7 @@ describe('Account deletion HTTP contracts', () => {
   });
 
   it.each(Object.values(Role))(
-    'deletes only the authenticated %s identity with an empty 204 and allows a fresh registration',
+    'deletes only the authenticated %s identity with an empty 204 and allows a fresh identity',
     async (role) => {
       const f = await createAccountFixture(prisma, { role, adminCount: 2 });
       const oldToken = token(f.target.id, f.sessions[0].id);
@@ -264,28 +265,41 @@ describe('Account deletion HTTP contracts', () => {
         email: f.target.email,
         password: f.password,
       };
-      if (role !== Role.PARENT) {
-        let invite = await prisma.inviteCode.findUniqueOrThrow({
-          where: { id: f.inviteIds[0] },
+      if (role === Role.ADMIN) {
+        const historicalAdminInvite = await prisma.inviteCode.create({
+          data: {
+            code: `historical-admin-${Date.now()}-${Math.random()}`,
+            role: Role.ADMIN,
+            expiresAt: new Date(Date.now() + 60_000),
+          },
         });
-        if (role === Role.ADMIN) {
-          invite = await prisma.inviteCode.create({
-            data: {
-              code: `fresh-admin-${Date.now()}-${Math.random()}`,
-              role: Role.ADMIN,
-              expiresAt: new Date(Date.now() + 60_000),
-            },
+        // Preserve the legacy ADMIN invite row for the registration rejection coverage added in Phase 3.
+        expect(historicalAdminInvite.role).toBe(Role.ADMIN);
+        const provisioned = await createAdminUserAndLogin(app, prisma, {
+          email: f.target.email,
+          password: f.password,
+          name: 'Fresh identity',
+        });
+        expect(provisioned.user.id).not.toBe(f.target.id);
+        expect(provisioned.user.role).toBe(Role.ADMIN);
+        await request(app.getHttpServer())
+          .get('/api/v1/users/profile')
+          .set('Authorization', `Bearer ${provisioned.accessToken}`)
+          .expect(200);
+      } else {
+        if (role === Role.PROFESSOR) {
+          const invite = await prisma.inviteCode.findUniqueOrThrow({
+            where: { id: f.inviteIds[0] },
           });
-          f.inviteIds.push(invite.id);
+          registration.teacherCode = invite.code;
         }
-        registration.teacherCode = invite.code;
+        const fresh = await request(app.getHttpServer())
+          .post('/api/v1/auth/register')
+          .send(registration)
+          .expect(201);
+        expect((fresh.body as { id: string }).id).not.toBe(f.target.id);
+        expect((fresh.body as { role: Role }).role).toBe(role);
       }
-      const fresh = await request(app.getHttpServer())
-        .post('/api/v1/auth/register')
-        .send(registration)
-        .expect(201);
-      expect((fresh.body as { id: string }).id).not.toBe(f.target.id);
-      expect((fresh.body as { role: Role }).role).toBe(role);
       await request(app.getHttpServer())
         .get('/api/v1/users/profile')
         .auth(oldToken, { type: 'bearer' })

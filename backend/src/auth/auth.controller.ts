@@ -3,6 +3,7 @@ import {
   Controller,
   HttpCode,
   HttpStatus,
+  Header,
   Post,
   UseGuards,
   Request,
@@ -120,16 +121,28 @@ export class AuthController {
   @UseGuards(RateLimitGuard)
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
+  @Header('Cache-Control', 'no-store')
   @ApiOperation({
     operationId: 'auth.register',
     summary: 'Cadastrar usuário',
     description:
-      'Cria PARENT por padrão; um invite code válido cria PROFESSOR ou ADMIN. Limitado por IP.',
+      'Cria PARENT por padrão; somente convite PROFESSOR válido cria PROFESSOR. ADMIN não pode ser provisionado pelo cadastro público. Convite inválido, expirado, usado ou de outro papel retorna erro genérico. Resposta sem cache. Limitado por IP.',
   })
   @ApiBody({ schema: { $ref: getSchemaPath(CreateUserDto) } })
   @ApiRegisterResponse('Usuário e sessão criados')
+  @ApiResponse({
+    status: 201,
+    headers: {
+      'Cache-Control': { schema: { type: 'string' }, description: 'no-store' },
+    },
+  })
   @ApiValidationErrorResponse()
   @ApiConflictResponse()
+  @ApiResponseDto(
+    400,
+    ErrorResponseDto,
+    'Código de convite inválido ou indisponível.',
+  )
   @ApiTooManyRequestsResponse()
   register(@Body() createUserDto: CreateUserDto) {
     return this.authService.register(createUserDto);
