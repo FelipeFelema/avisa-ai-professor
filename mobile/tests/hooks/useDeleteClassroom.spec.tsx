@@ -145,7 +145,7 @@ describe('useDeleteClassroom', () => {
     expect(queryClient.getQueryData(classroomKeys.available('mat'))).toEqual([]);
     expect(queryClient.getQueryData(classroomKeys.my())).toEqual([]);
 
-    unmount();
+    await unmount();
     myObserver.dispose();
     await variants.dispose();
     await cleanupClassroomSearchState(queryClient);
@@ -178,7 +178,7 @@ describe('useDeleteClassroom', () => {
     expect(result.current.isError).toBe(false);
     expect(variants.observers[0]!.observer.getCurrentResult().isError).toBe(true);
 
-    unmount();
+    await unmount();
     await variants.dispose();
     await cleanupClassroomSearchState(queryClient);
   });

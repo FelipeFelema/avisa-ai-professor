@@ -1,9 +1,12 @@
+import { MutationObserver } from '@tanstack/react-query';
+
 import {
   CLASSROOM_SEARCH_STALE_TIME,
   cacheAvailableClassroomVariants,
   cleanupClassroomSearchState,
   createClassroomSearchQueryClient,
   createControlledAvailableClassroomService,
+  createDeferred,
   observeAvailableClassroomVariants,
 } from './classroom-search';
 
@@ -99,5 +102,25 @@ describe('classroom search test helpers', () => {
 
     expect(queryClient.getQueryCache().getAll()).toHaveLength(0);
     expect(jest.getTimerCount()).toBe(0);
+  });
+
+  it('stops GC polling after a pending mutation observer leaves the test', async () => {
+    jest.useFakeTimers();
+    const queryClient = createClassroomSearchQueryClient();
+    const request = createDeferred<void>();
+    const observer = new MutationObserver(queryClient, { mutationFn: () => request.promise });
+    const unsubscribe = observer.subscribe(() => undefined);
+    const pending = observer.mutate(undefined);
+    await Promise.resolve();
+    expect(observer.getCurrentResult().isPending).toBe(true);
+
+    unsubscribe();
+    await cleanupClassroomSearchState(queryClient);
+    await jest.advanceTimersByTimeAsync(1_000);
+    expect(queryClient.getMutationCache().getAll()).toHaveLength(0);
+    expect(jest.getTimerCount()).toBe(0);
+
+    request.resolve();
+    await pending;
   });
 });

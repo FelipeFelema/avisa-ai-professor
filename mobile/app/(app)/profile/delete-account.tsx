@@ -157,61 +157,53 @@ export default function DeleteAccountScreen() {
           ) : null}
           {impact ? (
             <>
-              <Text style={styles.body}>
-                Sua conta, credencial, todas as sessões e registros de exclusões anteriores de
-                turmas serão removidos.
-              </Text>
-              {impact.role === 'PARENT' ? (
+              <Text style={styles.body}>Sua conta será excluída e você sairá do aplicativo.</Text>
+              {impact.ownedClassroomsCount > 0 ? (
                 <Text style={styles.body}>
-                  Suas participações serão removidas. Turmas e conteúdos de outras pessoas serão
-                  preservados, exceto seus comunicados e recursos vinculados às suas turmas
-                  próprias.
+                  Suas turmas ({impact.ownedClassroomsCount}) serão excluídas com todos os
+                  comunicados e participações. As contas dos participantes serão mantidas.
                 </Text>
-              ) : impact.role === 'PROFESSOR' ? (
+              ) : impact.role !== 'PARENT' ? (
+                <Text style={styles.body}>Você não tem turmas próprias.</Text>
+              ) : null}
+              {impact.externalMembershipsCount > 0 ? (
                 <Text style={styles.body}>
-                  Suas turmas e todos os conteúdos e participações nelas serão removidos. Contas dos
-                  participantes serão preservadas.
+                  Você sairá de {impact.externalMembershipsCount}{' '}
+                  {impact.externalMembershipsCount === 1 ? 'turma' : 'turmas'} de outras pessoas.
                 </Text>
-              ) : (
-                <Text style={styles.body}>Você perderá também seu acesso administrativo.</Text>
-              )}
-              <Text style={styles.body}>Turmas próprias: {impact.ownedClassroomsCount}</Text>
+              ) : impact.role === 'PARENT' ? (
+                <Text style={styles.body}>Você não participa de nenhuma turma.</Text>
+              ) : null}
+              {impact.role !== 'PARENT' &&
+              impact.authoredAnnouncementsInOtherClassroomsCount > 0 ? (
+                <Text style={styles.body}>
+                  Os comunicados que você publicou em outras turmas (
+                  {impact.authoredAnnouncementsInOtherClassroomsCount}) também serão removidos.
+                </Text>
+              ) : null}
               <Text style={styles.body}>
-                Comunicados nas suas turmas: {impact.announcementsInOwnedClassroomsCount}
+                {impact.role === 'PARENT'
+                  ? 'As turmas e os comunicados das outras pessoas continuarão disponíveis.'
+                  : 'Em outras turmas, os demais participantes e comunicados serão mantidos.'}
               </Text>
-              <Text style={styles.body}>
-                Participações em turmas de outras pessoas: {impact.externalMembershipsCount}
-              </Text>
-              <Text style={styles.body}>
-                Seus comunicados em turmas de outras pessoas:{' '}
-                {impact.authoredAnnouncementsInOtherClassroomsCount}
-              </Text>
-              <Text style={styles.body}>
-                Turmas próprias serão excluídas com todos os comunicados, inclusive expirados e de
-                outras pessoas, e todas as participações. Em turmas de outras pessoas, apenas suas
-                participações e seus comunicados serão removidos; os demais membros e conteúdos
-                permanecerão.
-              </Text>
-              <Text style={styles.body}>
-                Códigos de convite e a preferência de tema deste dispositivo serão preservados.
-                Contas de outras pessoas e recursos sem vínculo com você permanecerão.
-              </Text>
-              <Text style={styles.body}>
-                Este resumo pode mudar. Os vínculos vigentes serão recalculados no momento da
-                exclusão.
-              </Text>
+              {impact.role === 'ADMIN' ? (
+                <Text style={styles.body}>
+                  Você perderá o acesso administrativo. As outras contas do aplicativo serão
+                  mantidas.
+                </Text>
+              ) : null}
               {!impact.canDelete ? (
                 <Text
                   accessibilityRole="alert"
                   accessibilityLiveRegion="polite"
                   style={styles.warning}
                 >
-                  Sua conta é a última ADMIN. A exclusão está bloqueada para preservar o acesso
-                  administrativo.
+                  Você é o último administrador. Sua conta não pode ser excluída enquanto não houver
+                  outro administrador.
                 </Text>
               ) : null}
               <Text style={styles.body}>
-                Para confirmar, informe sua senha atual e digite exatamente EXCLUIR MINHA CONTA.
+                Para confirmar, informe sua senha e digite EXCLUIR MINHA CONTA.
               </Text>
               {(['currentPassword', 'confirmationPhrase'] as const).map((name) => (
                 <Controller
@@ -260,8 +252,7 @@ export default function DeleteAccountScreen() {
                   accessibilityLiveRegion="polite"
                   style={styles.body}
                 >
-                  Confirmação revisada. Pressione Excluir minha conta para enviar uma única
-                  solicitação.
+                  Confirmação revisada. Toque em Excluir minha conta para concluir.
                 </Text>
               ) : null}
               {feedback ? (
@@ -277,7 +268,7 @@ export default function DeleteAccountScreen() {
                 <ScreenState
                   kind="loading"
                   title={flowState === 'pending' ? 'Exclusão em andamento' : 'Verificando sessão'}
-                  message="Aguarde. A solicitação de exclusão não será reenviada automaticamente."
+                  message="Aguarde enquanto confirmamos o resultado."
                 />
               ) : null}
               {flowState === 'indeterminate' ? (
@@ -295,7 +286,7 @@ export default function DeleteAccountScreen() {
                 accessibilityHint={
                   isPending
                     ? 'Aguarde a confirmação da solicitação atual'
-                    : 'Envia uma única solicitação irreversível após nova confirmação'
+                    : 'Exclui sua conta permanentemente após a confirmação'
                 }
               />
               <Button

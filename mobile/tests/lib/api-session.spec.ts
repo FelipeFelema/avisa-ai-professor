@@ -84,10 +84,12 @@ describe('API session bridge', () => {
   });
 
   it.each([401, 503])(
-    'never refreshes, replays or retains an opted-out DELETE on %s',
+    'never refreshes, replays or retains an opted-out invite POST on %s',
     async (status) => {
       const previousAdapter = api.defaults.adapter;
       const refresh = jest.spyOn(authApi, 'post');
+      const expireSession = jest.fn().mockResolvedValue(undefined);
+      setSessionExpiredHandler(expireSession);
       const adapter = jest.fn(
         async (request: InternalAxiosRequestConfig): Promise<AxiosResponse> => {
           throw new AxiosError('untrusted', undefined, request, undefined, {
@@ -102,16 +104,20 @@ describe('API session bridge', () => {
       api.defaults.adapter = adapter;
       try {
         await expect(
-          api.delete('/users/account', {
-            noAuthReplay: true,
-            data: { currentPassword: 'synthetic', confirmationPhrase: 'EXCLUIR MINHA CONTA' },
-          }),
+          api.post(
+            '/invite-codes',
+            { role: 'PROFESSOR' },
+            {
+              noAuthReplay: true,
+            },
+          ),
         ).rejects.toBeInstanceOf(AxiosError);
         expect(adapter).toHaveBeenCalledTimes(1);
         expect(refresh).not.toHaveBeenCalled();
+        expect(expireSession).not.toHaveBeenCalled();
         expect(storage.saveTokens).not.toHaveBeenCalled();
         expect(storage.clearTokens).not.toHaveBeenCalled();
-        // An ordinary request after reconnection cannot resurrect the failed DELETE.
+        // An ordinary request after reconnection cannot resurrect the failed invite POST.
         adapter.mockImplementationOnce(async (request) => ({
           data: {},
           status: 200,
