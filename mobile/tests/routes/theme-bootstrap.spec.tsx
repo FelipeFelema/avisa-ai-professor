@@ -57,6 +57,12 @@ jest.mock('@/providers/AuthProvider', () => {
   };
 });
 
+jest.mock('@/providers/PushProvider', () => {
+  return {
+    PushProvider: ({ children }: { children: ReactNode }) => children,
+  };
+});
+
 jest.mock('@/hooks/useAuth', () => ({ useAuth: jest.fn() }));
 
 const mockGetItem = jest.mocked(AsyncStorage.getItem);

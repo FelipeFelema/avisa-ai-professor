@@ -11,8 +11,25 @@ import {
 } from '@/lib/session-generation';
 
 type SessionExpiredHandler = (generation: number) => void | Promise<void>;
+type ConnectivityListener = () => void | Promise<void>;
 
 let sessionExpiredHandler: SessionExpiredHandler | undefined;
+const connectivityListeners = new Set<ConnectivityListener>();
+
+export function addConnectivityListener(listener: ConnectivityListener): () => void {
+  connectivityListeners.add(listener);
+  return () => connectivityListeners.delete(listener);
+}
+
+function notifyConnectivityAvailable(request?: { url?: string }): void {
+  // Push responses must not trigger the reconciliation that produced them, including 429s.
+  if (request?.url?.startsWith('/push/')) return;
+  for (const listener of connectivityListeners) {
+    void Promise.resolve()
+      .then(listener)
+      .catch(() => undefined);
+  }
+}
 
 export function setSessionExpiredHandler(handler?: SessionExpiredHandler) {
   sessionExpiredHandler = handler;
@@ -51,9 +68,13 @@ api.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
 });
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    notifyConnectivityAvailable(response.config);
+    return response;
+  },
 
   async (error: AxiosError) => {
+    if (error.response) notifyConnectivityAvailable(error.config);
     const originalRequest = error.config;
 
     if (!originalRequest) {

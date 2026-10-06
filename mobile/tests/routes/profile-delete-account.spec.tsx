@@ -178,6 +178,19 @@ describe('read-only account confirmation route', () => {
     expect(view.getByLabelText('Frase de confirmação').props.value).toBe('');
     expect(view.queryClient.getMutationCache().getAll()).toEqual([]);
   });
+  it('expires the account session after confirmed deletion and keeps the selected theme', async () => {
+    const view = await screen();
+    await fireEvent.press(view.getByText('Select Escuro'));
+    expect(view.getByTestId('active-theme').props.children).toBe('dark');
+    await fill(view);
+    await fireEvent.press(view.getByRole('button', { name: /Revisar confirma/ }));
+    await fireEvent.press(view.getByRole('button', { name: 'Excluir minha conta' }));
+
+    await waitFor(() => expect(removeAccount).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(auth.expireSession).toHaveBeenCalledWith(expect.any(Number)));
+    expect(auth.logout).not.toHaveBeenCalled();
+    expect(view.getByTestId('active-theme').props.children).toBe('dark');
+  });
   it('blocks cancel, hardware back and gestures while the one DELETE is pending', async () => {
     let resolveDelete!: (value: void) => void;
     removeAccount.mockReturnValue(

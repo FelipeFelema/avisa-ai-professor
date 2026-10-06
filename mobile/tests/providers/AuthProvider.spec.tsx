@@ -6,6 +6,7 @@ import * as apiLib from '@/lib';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthProvider } from '@/providers/AuthProvider';
 import * as authService from '@/services/auth';
+import * as pushLifecycle from '@/services/push/push-lifecycle';
 import * as storage from '@/storage';
 import { queryClient } from '@/config';
 import {
@@ -109,6 +110,8 @@ describe('AuthProvider profile/session boundaries', () => {
       refreshToken: 'refresh-token',
     });
     jest.mocked(authService.getProfile).mockResolvedValue(currentUser);
+    jest.spyOn(pushLifecycle, 'preparePushLogout').mockResolvedValue(null);
+    jest.spyOn(pushLifecycle, 'completePushLogoutCleanup').mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -293,6 +296,76 @@ describe('AuthProvider profile/session boundaries', () => {
     expect(getByText('READY')).toBeTruthy();
     finishCleanup({ accessTokenRemoved: true, refreshTokenRemoved: true, complete: true });
     await waitFor(() => expect(getByText('STORAGE_READY')).toBeTruthy());
+  });
+
+  it('persists capability-only logout cleanup before clearing auth and does not await network cleanup', async () => {
+    const pending = {
+      installationId: '00000000-0000-4000-8000-000000000101',
+      capability: 'A'.repeat(43),
+      bindingId: '00000000-0000-4000-8000-000000000102',
+      lifecycleVersion: 1,
+      reason: 'LOGOUT' as const,
+    };
+    let finishPushPreparation!: (value: typeof pending) => void;
+    const prepare = jest
+      .spyOn(pushLifecycle, 'preparePushLogout')
+      .mockReturnValue(new Promise((resolve) => (finishPushPreparation = resolve)));
+    const complete = jest.spyOn(pushLifecycle, 'completePushLogoutCleanup');
+    let actions!: ReturnType<typeof useAuth>;
+    const onActions = (value: ReturnType<typeof useAuth>) => {
+      actions = value;
+    };
+    const { getByText } = await render(
+      <AuthProvider>
+        <>
+          <AuthProbe updatedUser={updatedUser} />
+          <AuthActionsProbe onActions={onActions} />
+        </>
+      </AuthProvider>,
+    );
+    await waitFor(() => expect(getByText(currentUser.name)).toBeTruthy());
+
+    let logout!: Promise<void>;
+    await act(async () => {
+      logout = actions.logout();
+      await Promise.resolve();
+    });
+    expect(storage.clearTokens).not.toHaveBeenCalled();
+    expect(getByText(currentUser.name)).toBeTruthy();
+    expect(prepare).toHaveBeenCalledTimes(1);
+    expect(complete).not.toHaveBeenCalled();
+    finishPushPreparation(pending);
+    await act(async () => logout);
+    expect(getByText('NO_USER')).toBeTruthy();
+    expect(storage.clearTokens).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(complete).toHaveBeenCalledWith(pending));
+  });
+
+  it('finishes logout and auth storage cleanup when push cleanup persistence fails', async () => {
+    const prepare = jest
+      .spyOn(pushLifecycle, 'preparePushLogout')
+      .mockRejectedValue(new Error('secure store unavailable'));
+    const complete = jest.spyOn(pushLifecycle, 'completePushLogoutCleanup');
+    let actions!: ReturnType<typeof useAuth>;
+    const onActions = (value: ReturnType<typeof useAuth>) => {
+      actions = value;
+    };
+    const { getByText } = await render(
+      <AuthProvider>
+        <>
+          <AuthProbe updatedUser={updatedUser} />
+          <AuthActionsProbe onActions={onActions} />
+        </>
+      </AuthProvider>,
+    );
+    await waitFor(() => expect(getByText(currentUser.name)).toBeTruthy());
+
+    await act(async () => actions.logout());
+
+    expect(prepare).toHaveBeenCalledTimes(1);
+    expect(complete).toHaveBeenCalledWith(null);
+    expect(getByText('NO_USER')).toBeTruthy();
+    expect(storage.clearTokens).toHaveBeenCalledTimes(1);
   });
 
   it('ignores a profile restore that resolves after session invalidation', async () => {
