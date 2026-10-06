@@ -27,7 +27,7 @@ export async function createTestApp(
 
   const moduleFixture: TestingModule = await builder.compile();
 
-  const app = moduleFixture.createNestApplication();
+  const app = moduleFixture.createNestApplication({ bodyParser: false });
   configureApp(app);
   configureOpenApi(app);
   await app.init();

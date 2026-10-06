@@ -4,11 +4,12 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { performance } from 'node:perf_hooks';
 import { Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { AccountDeletionService } from '../src/users/account-deletion.service';
+import { PushRegistrationService } from '../src/push/push-registration.service';
 import { ClassroomsService } from '../src/classrooms/classrooms.service';
 import {
   assertSafeTestDatabase,
@@ -896,6 +897,142 @@ describe('Account deletion PostgreSQL concurrency', () => {
     } finally {
       heldLocks.release();
       await clean(secondFixture);
+    }
+  });
+
+  it('serializes account deletion against push rotation and preserves other accounts', async () => {
+    const f = await fixture({ role: Role.PROFESSOR, empty: true });
+    const previousEnabled = process.env.EXPO_PUSH_ENABLED;
+    const previousAccessToken = process.env.EXPO_PUSH_ACCESS_TOKEN;
+    process.env.EXPO_PUSH_ENABLED = 'true';
+    process.env.EXPO_PUSH_ACCESS_TOKEN = 'synthetic-backend-only-token';
+    const push = new PushRegistrationService(prisma);
+    const targetIdentity = {
+      installationId: randomUUID(),
+      capability: randomBytes(32).toString('base64url'),
+    };
+    const revokeIdentity = {
+      installationId: randomUUID(),
+      capability: randomBytes(32).toString('base64url'),
+    };
+    const otherIdentity = {
+      installationId: randomUUID(),
+      capability: randomBytes(32).toString('base64url'),
+    };
+    const targetActor = {
+      userId: f.target.id,
+      sessionId: f.sessions[0].id,
+    };
+    const otherActor = {
+      userId: f.thirdParty.id,
+      sessionId: f.sessions[2].id,
+    };
+
+    try {
+      const targetBinding = await push.reserve(targetActor, targetIdentity);
+      const revokeBinding = await push.reserve(targetActor, revokeIdentity);
+      const otherBinding = await push.reserve(otherActor, otherIdentity);
+      await push.activate(targetActor, targetIdentity, {
+        bindingId: targetBinding.bindingId,
+        lifecycleVersion: targetBinding.lifecycleVersion,
+        expectedTokenRevision: 0,
+        platform: 'ANDROID',
+        expoToken: 'ExpoPushToken[synthetic-delete-race-old-01]',
+        permission: 'GRANTED',
+      });
+      await push.activate(targetActor, revokeIdentity, {
+        bindingId: revokeBinding.bindingId,
+        lifecycleVersion: revokeBinding.lifecycleVersion,
+        expectedTokenRevision: 0,
+        platform: 'ANDROID',
+        expoToken: 'ExpoPushToken[synthetic-delete-race-revoke-04]',
+        permission: 'GRANTED',
+      });
+      await push.activate(otherActor, otherIdentity, {
+        bindingId: otherBinding.bindingId,
+        lifecycleVersion: otherBinding.lifecycleVersion,
+        expectedTokenRevision: 0,
+        platform: 'IOS',
+        expoToken: 'ExpoPushToken[synthetic-delete-race-other-02]',
+        permission: 'GRANTED',
+      });
+      const targetRegistration =
+        await prisma.pushRegistration.findUniqueOrThrow({
+          where: { id: targetBinding.bindingId },
+        });
+      await prisma.pushTestAttempt.create({
+        data: {
+          installationId: targetIdentity.installationId,
+          registrationId: targetRegistration.id,
+          tokenRevision: targetRegistration.tokenRevision,
+          tokenFingerprint: createHash('sha256')
+            .update('synthetic-delete-race-old-01')
+            .digest('hex'),
+        },
+      });
+
+      const deletion = new AccountDeletionService(prisma).deleteOwnAccount(
+        f.target.id,
+        f.sessions[0].id,
+        {
+          currentPassword: f.password,
+          confirmationPhrase: 'EXCLUIR MINHA CONTA',
+        },
+      );
+      const rotation = push.activate(targetActor, targetIdentity, {
+        bindingId: targetBinding.bindingId,
+        lifecycleVersion: targetBinding.lifecycleVersion,
+        expectedTokenRevision: 1,
+        platform: 'ANDROID',
+        expoToken: 'ExpoPushToken[synthetic-delete-race-next-03]',
+        permission: 'GRANTED',
+      });
+      const revocation = push.revoke(revokeIdentity, {
+        bindingId: revokeBinding.bindingId,
+        lifecycleVersion: revokeBinding.lifecycleVersion,
+        reason: 'USER_DISABLED',
+      });
+      const [deleteResult, rotationResult, revocationResult] =
+        await Promise.allSettled([deletion, rotation, revocation]);
+
+      expect(deleteResult.status).toBe('fulfilled');
+      expect(revocationResult.status).toBe('fulfilled');
+      if (rotationResult.status === 'rejected') {
+        expect(rotationResult.reason).toBeInstanceOf(UnauthorizedException);
+      }
+      expect(
+        await prisma.user.findUnique({ where: { id: f.target.id } }),
+      ).toBeNull();
+      expect(
+        await prisma.pushRegistration.findUnique({
+          where: { id: targetBinding.bindingId },
+        }),
+      ).toBeNull();
+      expect(
+        await prisma.pushRegistration.findUnique({
+          where: { id: revokeBinding.bindingId },
+        }),
+      ).toBeNull();
+      expect(
+        await prisma.pushTestAttempt.count({
+          where: { installationId: targetIdentity.installationId },
+        }),
+      ).toBe(0);
+      expect(
+        await prisma.pushRegistration.findUnique({
+          where: { id: otherBinding.bindingId },
+        }),
+      ).toMatchObject({
+        state: 'ACTIVE',
+        expoToken: 'ExpoPushToken[synthetic-delete-race-other-02]',
+      });
+    } finally {
+      if (previousEnabled === undefined) delete process.env.EXPO_PUSH_ENABLED;
+      else process.env.EXPO_PUSH_ENABLED = previousEnabled;
+      if (previousAccessToken === undefined)
+        delete process.env.EXPO_PUSH_ACCESS_TOKEN;
+      else process.env.EXPO_PUSH_ACCESS_TOKEN = previousAccessToken;
+      await clean(f);
     }
   });
 });

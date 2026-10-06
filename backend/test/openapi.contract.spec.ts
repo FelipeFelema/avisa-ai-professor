@@ -47,6 +47,7 @@ type OpenApiOperation = {
       description?: string;
     }
   >;
+  [key: string]: unknown;
 };
 
 type OpenApiDocument = {
@@ -92,6 +93,14 @@ function operationEntries(
           [path, method, operation] as [string, string, OpenApiOperation],
       ),
   );
+}
+
+function sortParameters(
+  parameters: Array<Record<string, any>>,
+): Array<Record<string, any>> {
+  return parameters
+    .slice()
+    .sort((left, right) => String(left.name).localeCompare(String(right.name)));
 }
 
 function resolveRef(
@@ -321,7 +330,9 @@ describe('OpenAPI runtime contract', () => {
       );
       const actualParameters = actual.parameters ?? [];
       expect(actualParameters).toHaveLength(expectedParameters.length);
-      expect(actualParameters).toEqual(expectedParameters);
+      expect(sortParameters(actualParameters)).toEqual(
+        sortParameters(expectedParameters),
+      );
 
       const expectedRequestSchema =
         expected.requestBody?.content?.['application/json']?.schema?.$ref;
@@ -358,6 +369,206 @@ describe('OpenAPI runtime contract', () => {
           );
         }
       }
+    }
+
+    for (const document of [runtime, designContract]) {
+      const pushOperations = operationEntries(document).filter(([path]) =>
+        path.startsWith('/api/v1/push/'),
+      );
+      expect(
+        pushOperations.map(([path, method]) => `${method} ${path}`).sort(),
+      ).toEqual(
+        [
+          'delete /api/v1/push/installation',
+          'get /api/v1/push/installation',
+          'post /api/v1/push/installation/reserve',
+          'post /api/v1/push/installation/test',
+          'put /api/v1/push/installation',
+        ].sort(),
+      );
+
+      for (const [path, method, operation] of pushOperations) {
+        expect(operation['x-max-request-bytes']).toBe(2048);
+        expect(sortParameters(operation.parameters ?? [])).toEqual(
+          sortParameters([
+            {
+              name: 'X-Push-Installation',
+              in: 'header',
+              required: true,
+              schema: { type: 'string', format: 'uuid' },
+            },
+            {
+              name: 'X-Push-Capability',
+              in: 'header',
+              description: 'Capability privada base64url de 32 bytes.',
+              required: true,
+              schema: { type: 'string' },
+            },
+          ]),
+        );
+        if (method === 'delete') {
+          expect(operation.security).toBeUndefined();
+          expect(operation.responses).not.toHaveProperty('401');
+        } else {
+          expect(operation.security).toEqual([{ bearerAuth: [] }]);
+        }
+        for (const response of Object.values(operation.responses)) {
+          expect(response.headers?.['Cache-Control']).toEqual({
+            description: 'no-store',
+            schema: { type: 'string' },
+          });
+        }
+        if (method === 'get') {
+          expect(operation.requestBody).toBeUndefined();
+          expect(
+            operation.responses['200'].content?.['application/json']?.schema
+              ?.$ref,
+          ).toBe('#/components/schemas/PushInstallationView');
+        }
+        if (method === 'delete') {
+          expect(
+            operation.requestBody?.content?.['application/json']?.schema?.$ref,
+          ).toBe('#/components/schemas/RevokePushRequest');
+          expect(Object.keys(operation.responses).sort()).toEqual([
+            '204',
+            '400',
+            '403',
+            '429',
+          ]);
+        }
+        if (method === 'post') {
+          expect(
+            operation.requestBody?.content?.['application/json']?.schema?.$ref,
+          ).toBe('#/components/schemas/EmptyPushRequest');
+          if (path.endsWith('/reserve')) {
+            expect(
+              operation.responses['200'].content?.['application/json']?.schema
+                ?.$ref,
+            ).toBe('#/components/schemas/PushBindingView');
+          } else {
+            expect(path).toBe('/api/v1/push/installation/test');
+            expect(operation.operationId).toBe('push.testInstallation');
+            expect(operation.description).toMatch(
+              /aceite do ticket.*n[aã]o a exibi[cç][aã]o/i,
+            );
+            expect(
+              operation.responses['202'].content?.['application/json']?.schema
+                ?.$ref,
+            ).toBe('#/components/schemas/PushTestAccepted');
+            expect(operation.responses['429'].headers?.['Retry-After']).toEqual(
+              {
+                description: 'Segundos até uma nova intenção ser permitida.',
+                schema: { type: 'integer', minimum: 1 },
+              },
+            );
+            expect(Object.keys(operation.responses).sort()).toEqual([
+              '202',
+              '400',
+              '401',
+              '403',
+              '409',
+              '429',
+              '503',
+            ]);
+          }
+        }
+        if (method === 'put') {
+          expect(operation.description).toMatch(
+            /expectedTokenRevision.*compare-and-swap/i,
+          );
+          expect(operation.description).toMatch(
+            /REVOKED\/INVALID.*nova reserva/i,
+          );
+          expect(
+            operation.requestBody?.content?.['application/json']?.schema?.$ref,
+          ).toBe('#/components/schemas/ActivatePushRequest');
+          expect(
+            operation.responses['200'].content?.['application/json']?.schema
+              ?.$ref,
+          ).toBe('#/components/schemas/PushBindingView');
+        }
+      }
+
+      const emptyRequest = document.components.schemas.EmptyPushRequest;
+      expect(emptyRequest).toMatchObject({
+        type: 'object',
+        additionalProperties: false,
+      });
+      expect(emptyRequest.properties ?? {}).toEqual({});
+
+      const activation = document.components.schemas.ActivatePushRequest;
+      expect(activation).toMatchObject({
+        type: 'object',
+        additionalProperties: false,
+        required: [
+          'bindingId',
+          'lifecycleVersion',
+          'expectedTokenRevision',
+          'platform',
+          'expoToken',
+          'permission',
+        ],
+      });
+      expect(activation.properties?.expoToken).toMatchObject({
+        type: 'string',
+        minLength: 1,
+        maxLength: 512,
+      });
+      expect(activation.properties?.lifecycleVersion).toMatchObject({
+        type: 'integer',
+        minimum: 1,
+        maximum: 2147483647,
+      });
+      expect(activation.properties?.expectedTokenRevision).toMatchObject({
+        type: 'integer',
+        minimum: 0,
+        maximum: 2147483647,
+      });
+      expect(document.components.schemas.RevokePushRequest).toMatchObject({
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          reason: {
+            type: 'string',
+            enum: ['USER_DISABLED', 'LOGOUT', 'PERMISSION_REVOKED'],
+          },
+        },
+      });
+      const view = document.components.schemas.PushInstallationView;
+      expect(
+        view.properties?.binding?.oneOf?.map((part) => part.type ?? part.$ref),
+      ).toEqual(['#/components/schemas/PushBindingView', 'null']);
+      expect(view.properties?.reason?.oneOf?.map((part) => part.type)).toEqual([
+        'string',
+        'null',
+      ]);
+      for (const schemaName of ['PushBindingView', 'PushInstallationView']) {
+        const schema = document.components.schemas[schemaName];
+        expect(schema?.additionalProperties).toBe(false);
+        const properties = Object.keys(schema?.properties ?? {});
+        expect(
+          properties.some((name) =>
+            [
+              'expoToken',
+              'userId',
+              'sessionId',
+              'capability',
+              'secretHash',
+              'providerTicketId',
+            ].includes(name),
+          ),
+        ).toBe(false);
+      }
+      expect(document.components.schemas.PushTestAccepted).toMatchObject({
+        type: 'object',
+        additionalProperties: false,
+        required: ['attemptId', 'status', 'acceptedAt', 'nextTestAvailableAt'],
+        properties: {
+          status: { type: 'string', enum: ['ACCEPTED'] },
+          acceptedAt: { type: 'string', format: 'date-time' },
+          nextTestAvailableAt: { type: 'string', format: 'date-time' },
+        },
+      });
     }
 
     const inviteRequest =

@@ -4,7 +4,7 @@ import { configureApp } from './configure-app';
 import { configureOpenApi } from './openapi/configure-openapi';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bodyParser: false });
 
   configureApp(app);
   configureOpenApi(app);

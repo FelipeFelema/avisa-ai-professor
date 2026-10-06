@@ -12,12 +12,34 @@
     }
   ],
   "tags": [
-    { "name": "health", "description": "Saúde da API" },
-    { "name": "auth", "description": "Cadastro e sessão JWT" },
-    { "name": "users", "description": "Perfil do usuário autenticado" },
-    { "name": "classrooms", "description": "Turmas, ownership e memberships" },
-    { "name": "announcements", "description": "Comunicados de turma" },
-    { "name": "invite-codes", "description": "Convites administrativos" }
+    {
+      "name": "health",
+      "description": "Saúde da API"
+    },
+    {
+      "name": "auth",
+      "description": "Cadastro e sessão JWT"
+    },
+    {
+      "name": "users",
+      "description": "Perfil do usuário autenticado"
+    },
+    {
+      "name": "classrooms",
+      "description": "Turmas, ownership e memberships"
+    },
+    {
+      "name": "announcements",
+      "description": "Comunicados de turma"
+    },
+    {
+      "name": "invite-codes",
+      "description": "Convites administrativos"
+    },
+    {
+      "name": "push",
+      "description": "Consentimento e vínculo de notificações push por instalação"
+    }
   ],
   "paths": {
     "/api/v1/users/account-deletion": {
@@ -243,14 +265,18 @@
     "/api/v1/health": {
       "get": {
         "operationId": "health.check",
-        "tags": ["health"],
+        "tags": [
+          "health"
+        ],
         "summary": "Verificar saúde da API",
         "responses": {
           "200": {
             "description": "API disponível",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/HealthResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
               }
             }
           }
@@ -260,14 +286,18 @@
     "/api/v1/auth/login": {
       "post": {
         "operationId": "auth.login",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "summary": "Entrar com e-mail e senha",
         "description": "Normaliza o e-mail e cria um par JWT. Limitado por IP.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/LoginRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
             }
           }
         },
@@ -276,57 +306,88 @@
             "description": "Sessão criada",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/AuthTokensResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/AuthTokensResponse"
+                }
               }
             }
           },
-          "400": { "$ref": "#/components/responses/ValidationError" },
-          "401": { "$ref": "#/components/responses/Unauthorized" },
-          "429": { "$ref": "#/components/responses/TooManyRequests" }
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          }
         }
       }
     },
     "/api/v1/auth/register": {
       "post": {
         "operationId": "auth.register",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "summary": "Cadastrar usuário",
         "description": "Cria PARENT por padrão; somente convite PROFESSOR válido cria PROFESSOR. ADMIN não pode ser provisionado pelo cadastro público. Convite inválido, expirado, usado ou de outro papel retorna erro genérico. Resposta sem cache. Limitado por IP.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/RegisterRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
             }
           }
         },
         "responses": {
           "201": {
             "description": "Usuário e sessão criados",
-            "headers": { "Cache-Control": { "description": "no-store", "schema": { "type": "string" } } },
+            "headers": {
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/RegisterResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/RegisterResponse"
+                }
               }
             }
           },
-          "400": { "$ref": "#/components/responses/ValidationError" },
-          "409": { "$ref": "#/components/responses/Conflict" },
-          "429": { "$ref": "#/components/responses/TooManyRequests" }
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          }
         }
       }
     },
     "/api/v1/auth/refresh": {
       "post": {
         "operationId": "auth.refresh",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "summary": "Renovar tokens JWT",
         "description": "Valida o refresh token rotativo e emite claims usando os dados atuais do usuário. Limitado por IP.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/RefreshTokenRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenRequest"
+              }
             }
           }
         },
@@ -335,46 +396,74 @@
             "description": "Tokens renovados",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/AuthTokensResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/AuthTokensResponse"
+                }
               }
             }
           },
-          "400": { "$ref": "#/components/responses/ValidationError" },
-          "401": { "$ref": "#/components/responses/Unauthorized" },
-          "429": { "$ref": "#/components/responses/TooManyRequests" }
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          }
         }
       }
     },
     "/api/v1/users/profile": {
       "get": {
         "operationId": "users.getProfile",
-        "tags": ["users"],
+        "tags": [
+          "users"
+        ],
         "summary": "Obter o próprio perfil",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Perfil público atual",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/UserProfile" }
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfile"
+                }
               }
             }
           },
-          "401": { "$ref": "#/components/responses/Unauthorized" },
-          "404": { "$ref": "#/components/responses/NotFound" }
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
         }
       },
       "patch": {
         "operationId": "users.updateProfile",
-        "tags": ["users"],
+        "tags": [
+          "users"
+        ],
         "summary": "Atualizar o próprio nome e/ou e-mail",
         "description": "Usa exclusivamente sub e sid da sessão JWT validada. Password, role, id e campos desconhecidos são rejeitados. Uma troca efetiva de e-mail mantém o sid atual e revoga todas as outras sessões do usuário; name-only e no-op não revogam sessões.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/UpdateProfileRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileRequest"
+              }
             }
           }
         },
@@ -383,29 +472,46 @@
             "description": "Perfil público atualizado ou perfil atual em no-op normalizado; a sessão atual permanece autenticada",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/UserProfile" }
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfile"
+                }
               }
             }
           },
-          "400": { "$ref": "#/components/responses/ValidationError" },
-          "401": { "$ref": "#/components/responses/Unauthorized" },
-          "409": { "$ref": "#/components/responses/Conflict" }
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
         }
       }
     },
     "/api/v1/classrooms": {
       "get": {
         "operationId": "classrooms.findAvailable",
-        "tags": ["classrooms"],
+        "tags": [
+          "classrooms"
+        ],
         "summary": "Listar turmas disponíveis",
         "description": "Exclui turmas das quais o usuário já participa.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "search",
             "in": "query",
             "required": false,
-            "schema": { "type": "string", "maxLength": 80 },
+            "schema": {
+              "type": "string",
+              "maxLength": 80
+            },
             "style": "form",
             "explode": true,
             "description": "Pesquisa por substring literal do nome, sem diferenciar maiúsculas/minúsculas e preservando acentos. Parâmetro escalar único com serialização form; valores repetidos são rejeitados. O limite de 80 pontos de código Unicode é aplicado após remover espaços externos. Vazio significa sem filtro."
@@ -418,26 +524,40 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/ClassroomSummary" }
+                  "items": {
+                    "$ref": "#/components/schemas/ClassroomSummary"
+                  }
                 }
               }
             }
           },
-          "400": { "$ref": "#/components/responses/ValidationError" },
-          "401": { "$ref": "#/components/responses/Unauthorized" }
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
         }
       },
       "post": {
         "operationId": "classrooms.create",
-        "tags": ["classrooms"],
+        "tags": [
+          "classrooms"
+        ],
         "summary": "Criar turma",
         "description": "Requer role PROFESSOR; o criador se torna owner e membro.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/CreateClassroomRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/CreateClassroomRequest"
+              }
             }
           }
         },
@@ -446,24 +566,40 @@
             "description": "Turma criada",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ClassroomWithMembers" }
+                "schema": {
+                  "$ref": "#/components/schemas/ClassroomWithMembers"
+                }
               }
             }
           },
-          "400": { "$ref": "#/components/responses/ValidationError" },
-          "401": { "$ref": "#/components/responses/Unauthorized" },
-          "403": { "$ref": "#/components/responses/Forbidden" },
-          "409": { "$ref": "#/components/responses/Conflict" }
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
         }
       }
     },
     "/api/v1/classrooms/my": {
       "get": {
         "operationId": "classrooms.findMine",
-        "tags": ["classrooms"],
+        "tags": [
+          "classrooms"
+        ],
         "summary": "Listar minhas turmas",
         "description": "Retorna ownerId explícito para decisões de apresentação; a API continua autoridade de acesso.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Turmas das quais o usuário participa",
@@ -471,79 +607,141 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/ClassroomSummary" }
+                  "items": {
+                    "$ref": "#/components/schemas/ClassroomSummary"
+                  }
                 }
               }
             }
           },
-          "401": { "$ref": "#/components/responses/Unauthorized" }
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
         }
       }
     },
     "/api/v1/classrooms/{id}/join": {
       "post": {
         "operationId": "classrooms.join",
-        "tags": ["classrooms"],
+        "tags": [
+          "classrooms"
+        ],
         "summary": "Entrar em uma turma",
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [{ "$ref": "#/components/parameters/ClassroomId" }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ClassroomId"
+          }
+        ],
         "responses": {
           "201": {
             "description": "Membership criada",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ClassroomWithMembers" }
+                "schema": {
+                  "$ref": "#/components/schemas/ClassroomWithMembers"
+                }
               }
             }
           },
-          "400": { "$ref": "#/components/responses/ValidationError" },
-          "401": { "$ref": "#/components/responses/Unauthorized" },
-          "404": { "$ref": "#/components/responses/NotFound" }
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
         }
       }
     },
     "/api/v1/classrooms/{id}/leave": {
       "post": {
         "operationId": "classrooms.leave",
-        "tags": ["classrooms"],
+        "tags": [
+          "classrooms"
+        ],
         "summary": "Sair de uma turma",
         "description": "Permitido somente a membro não-owner. O owner deve excluir a turma.",
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [{ "$ref": "#/components/parameters/ClassroomId" }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ClassroomId"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Membership removida",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ClassroomWithMembers" }
+                "schema": {
+                  "$ref": "#/components/schemas/ClassroomWithMembers"
+                }
               }
             }
           },
-          "400": { "$ref": "#/components/responses/ValidationError" },
-          "401": { "$ref": "#/components/responses/Unauthorized" },
-          "404": { "$ref": "#/components/responses/NotFound" },
-          "409": { "$ref": "#/components/responses/Conflict" }
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
         }
       }
     },
     "/api/v1/classrooms/{id}": {
       "delete": {
         "operationId": "classrooms.delete",
-        "tags": ["classrooms"],
+        "tags": [
+          "classrooms"
+        ],
         "summary": "Excluir turma própria",
         "description": "Requer PROFESSOR owner. A primeira exclusão remove permanentemente memberships e announcements por cascata PostgreSQL e registra um receipt mínimo. Uma repetição reconhecida do mesmo owner também retorna 204 sem novo efeito.",
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [{ "$ref": "#/components/parameters/ClassroomId" }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ClassroomId"
+          }
+        ],
         "responses": {
-          "204": { "description": "Turma e dependências excluídas permanentemente, ou repetição reconhecida do mesmo owner já concluída; resposta sem corpo" },
-          "400": { "$ref": "#/components/responses/ValidationError" },
-          "401": { "$ref": "#/components/responses/Unauthorized" },
-          "403": { "$ref": "#/components/responses/Forbidden" },
+          "204": {
+            "description": "Turma e dependências excluídas permanentemente, ou repetição reconhecida do mesmo owner já concluída; resposta sem corpo"
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
           "404": {
             "description": "Turma ausente sem receipt de exclusão correspondente ao usuário atual",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
@@ -553,9 +751,15 @@
     "/api/v1/announcements": {
       "get": {
         "operationId": "announcements.findAll",
-        "tags": ["announcements"],
+        "tags": [
+          "announcements"
+        ],
         "summary": "Listar comunicados ativos acessíveis",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Comunicados ativos das turmas do usuário",
@@ -563,25 +767,37 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/Announcement" }
+                  "items": {
+                    "$ref": "#/components/schemas/Announcement"
+                  }
                 }
               }
             }
           },
-          "401": { "$ref": "#/components/responses/Unauthorized" }
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
         }
       },
       "post": {
         "operationId": "announcements.create",
-        "tags": ["announcements"],
+        "tags": [
+          "announcements"
+        ],
         "summary": "Criar comunicado",
         "description": "Requer PROFESSOR membro da turma e respeita o limite de comunicados ativos.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/CreateAnnouncementRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/CreateAnnouncementRequest"
+              }
             }
           }
         },
@@ -590,25 +806,45 @@
             "description": "Comunicado criado",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Announcement" }
+                "schema": {
+                  "$ref": "#/components/schemas/Announcement"
+                }
               }
             }
           },
-          "400": { "$ref": "#/components/responses/ValidationError" },
-          "401": { "$ref": "#/components/responses/Unauthorized" },
-          "403": { "$ref": "#/components/responses/Forbidden" },
-          "404": { "$ref": "#/components/responses/NotFound" }
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
         }
       }
     },
     "/api/v1/announcements/classrooms/{classroomId}": {
       "get": {
         "operationId": "announcements.findByClassroom",
-        "tags": ["announcements"],
+        "tags": [
+          "announcements"
+        ],
         "summary": "Listar comunicados ativos de uma turma",
         "description": "Requer membership na turma.",
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [{ "$ref": "#/components/parameters/ClassroomIdNamed" }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ClassroomIdNamed"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Comunicados ativos da turma",
@@ -616,51 +852,89 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/Announcement" }
+                  "items": {
+                    "$ref": "#/components/schemas/Announcement"
+                  }
                 }
               }
             }
           },
-          "400": { "$ref": "#/components/responses/ValidationError" },
-          "401": { "$ref": "#/components/responses/Unauthorized" },
-          "404": { "$ref": "#/components/responses/NotFound" }
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
         }
       }
     },
     "/api/v1/announcements/{id}": {
       "get": {
         "operationId": "announcements.findOne",
-        "tags": ["announcements"],
+        "tags": [
+          "announcements"
+        ],
         "summary": "Obter um comunicado ativo",
         "description": "Requer membership na turma.",
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [{ "$ref": "#/components/parameters/AnnouncementId" }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AnnouncementId"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Comunicado",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Announcement" }
+                "schema": {
+                  "$ref": "#/components/schemas/Announcement"
+                }
               }
             }
           },
-          "400": { "$ref": "#/components/responses/ValidationError" },
-          "401": { "$ref": "#/components/responses/Unauthorized" },
-          "404": { "$ref": "#/components/responses/NotFound" }
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
         }
       },
       "patch": {
         "operationId": "announcements.update",
-        "tags": ["announcements"],
+        "tags": [
+          "announcements"
+        ],
         "summary": "Atualizar comunicado próprio",
         "description": "Requer PROFESSOR autor, membro da turma e comunicado não expirado.",
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [{ "$ref": "#/components/parameters/AnnouncementId" }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AnnouncementId"
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/UpdateAnnouncementRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAnnouncementRequest"
+              }
             }
           }
         },
@@ -669,62 +943,858 @@
             "description": "Comunicado atualizado",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Announcement" }
+                "schema": {
+                  "$ref": "#/components/schemas/Announcement"
+                }
               }
             }
           },
-          "400": { "$ref": "#/components/responses/ValidationError" },
-          "401": { "$ref": "#/components/responses/Unauthorized" },
-          "403": { "$ref": "#/components/responses/Forbidden" },
-          "404": { "$ref": "#/components/responses/NotFound" }
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
         }
       },
       "delete": {
         "operationId": "announcements.delete",
-        "tags": ["announcements"],
+        "tags": [
+          "announcements"
+        ],
         "summary": "Excluir comunicado próprio",
         "description": "Requer PROFESSOR autor e membro da turma.",
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [{ "$ref": "#/components/parameters/AnnouncementId" }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AnnouncementId"
+          }
+        ],
         "responses": {
-          "204": { "description": "Comunicado excluído" },
-          "400": { "$ref": "#/components/responses/ValidationError" },
-          "401": { "$ref": "#/components/responses/Unauthorized" },
-          "403": { "$ref": "#/components/responses/Forbidden" },
-          "404": { "$ref": "#/components/responses/NotFound" }
+          "204": {
+            "description": "Comunicado excluído"
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
         }
       }
     },
     "/api/v1/invite-codes": {
       "post": {
         "operationId": "inviteCodes.create",
-        "tags": ["invite-codes"],
+        "tags": [
+          "invite-codes"
+        ],
         "summary": "Criar código de convite",
         "description": "Requer sessão ativa e papel ADMIN atual. Emite apenas convites PROFESSOR válidos por sete dias. Resposta sem cache; códigos reais nunca aparecem nos exemplos da documentação.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/CreateInviteCodeRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/CreateInviteCodeRequest"
+              }
             }
           }
         },
         "responses": {
           "201": {
             "description": "Código criado",
-            "headers": { "Cache-Control": { "description": "no-store", "schema": { "type": "string" } } },
+            "headers": {
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/InviteCodeResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/InviteCodeResponse"
+                }
               }
             }
           },
-          "400": { "$ref": "#/components/responses/ValidationError" },
-          "401": { "$ref": "#/components/responses/Unauthorized" },
-          "403": { "$ref": "#/components/responses/Forbidden" },
-          "500": { "description": "Falha interna sanitizada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
-          "503": { "description": "Colisões esgotadas; emissão não confirmada para o cliente", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "500": {
+            "description": "Falha interna sanitizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Colisões esgotadas; emissão não confirmada para o cliente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/push/installation/reserve": {
+      "post": {
+        "operationId": "push.reserveInstallation",
+        "tags": [
+          "push"
+        ],
+        "summary": "Reservar vínculo para esta instalação",
+        "description": "Cria uma instalação apenas após intenção autenticada. A reserva não contém token e não é elegível para envio.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Push-Installation",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-Push-Capability",
+            "in": "header",
+            "description": "Capability privada base64url de 32 bytes.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "x-max-request-bytes": 2048,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmptyPushRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Vínculo RESERVED ou ACTIVE da sessão atual.",
+            "headers": {
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushBindingView"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida ou campo não permitido",
+            "headers": {
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada",
+            "headers": {
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role, ownership, autoria ou membership insuficiente",
+            "headers": {
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflito de unicidade, limite ou lifecycle",
+            "headers": {
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de requisições excedido",
+            "headers": {
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/push/installation/test": {
+      "post": {
+        "operationId": "push.testInstallation",
+        "tags": [
+          "push"
+        ],
+        "summary": "Enviar uma notificação neutra de teste para esta instalação",
+        "description": "Envia somente após revalidar a sessão e o vínculo corrente. 202 confirma o aceite do ticket pelo provedor, não a exibição no dispositivo. Timeout ou resultado ambíguo não é reenviado automaticamente.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Push-Installation",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-Push-Capability",
+            "in": "header",
+            "description": "Capability privada base64url de 32 bytes.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "x-max-request-bytes": 2048,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmptyPushRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Ticket aceito pelo provedor para uma mensagem neutra.",
+            "headers": {
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushTestAccepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida ou campo não permitido",
+            "headers": {
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada",
+            "headers": {
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Capability inválida",
+            "headers": {
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Vínculo inativo ou tentativa em andamento",
+            "headers": {
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Cooldown persistido da instalação.",
+            "headers": {
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Retry-After": {
+                "description": "Segundos até uma nova intenção ser permitida.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Configuração indisponível ou resultado ambíguo",
+            "headers": {
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/push/installation": {
+      "get": {
+        "operationId": "push.getInstallation",
+        "tags": [
+          "push"
+        ],
+        "summary": "Consultar estado do vínculo desta instalação",
+        "description": "Retorna somente o estado pertencente à conta e sessão autenticadas, sem devolver token ou identidade de outro vínculo.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Push-Installation",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-Push-Capability",
+            "in": "header",
+            "description": "Capability privada base64url de 32 bytes.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "x-max-request-bytes": 2048,
+        "responses": {
+          "200": {
+            "description": "Estado atual do vínculo desta instalação.",
+            "headers": {
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushInstallationView"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida ou campo não permitido",
+            "headers": {
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada",
+            "headers": {
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role, ownership, autoria ou membership insuficiente",
+            "headers": {
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de requisições excedido",
+            "headers": {
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "push.activateInstallation",
+        "tags": [
+          "push"
+        ],
+        "summary": "Ativar ou atualizar o token Expo deste vínculo",
+        "description": "Nenhum envio ao provedor ocorre neste endpoint. Token é recebido somente no corpo e não aparece em respostas. expectedTokenRevision aplica compare-and-swap; mudança de token/plataforma incrementa a revisão, retry idempotente preserva a revisão, e vínculos REVOKED/INVALID exigem nova reserva.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Push-Installation",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-Push-Capability",
+            "in": "header",
+            "description": "Capability privada base64url de 32 bytes.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "x-max-request-bytes": 2048,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivatePushRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Vínculo ativado ou atualizado.",
+            "headers": {
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushBindingView"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida ou campo não permitido",
+            "headers": {
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada",
+            "headers": {
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role, ownership, autoria ou membership insuficiente",
+            "headers": {
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflito de unicidade, limite ou lifecycle",
+            "headers": {
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de requisições excedido",
+            "headers": {
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "push.revokeInstallation",
+        "tags": [
+          "push"
+        ],
+        "summary": "Revogar vínculo usando somente a capability da instalação",
+        "description": "Não exige JWT para permitir cleanup após logout. A capability concede apenas revogação do binding informado.",
+        "parameters": [
+          {
+            "name": "X-Push-Installation",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-Push-Capability",
+            "in": "header",
+            "description": "Capability privada base64url de 32 bytes.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "x-max-request-bytes": 2048,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevokePushRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Revogado ou operação idempotente sem vínculo.",
+            "headers": {
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida ou campo não permitido",
+            "headers": {
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role, ownership, autoria ou membership insuficiente",
+            "headers": {
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de requisições excedido",
+            "headers": {
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
         }
       }
     }
@@ -743,21 +1813,30 @@
         "name": "id",
         "in": "path",
         "required": true,
-        "schema": { "type": "string", "format": "uuid" },
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        },
         "description": "ID da turma"
       },
       "ClassroomIdNamed": {
         "name": "classroomId",
         "in": "path",
         "required": true,
-        "schema": { "type": "string", "format": "uuid" },
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        },
         "description": "ID da turma"
       },
       "AnnouncementId": {
         "name": "id",
         "in": "path",
         "required": true,
-        "schema": { "type": "string", "format": "uuid" },
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        },
         "description": "ID do comunicado"
       }
     },
@@ -766,7 +1845,9 @@
         "description": "Entrada inválida ou campo não permitido",
         "content": {
           "application/json": {
-            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
           }
         }
       },
@@ -774,7 +1855,9 @@
         "description": "Credencial ausente, inválida ou expirada",
         "content": {
           "application/json": {
-            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
           }
         }
       },
@@ -782,7 +1865,9 @@
         "description": "Role, ownership, autoria ou membership insuficiente",
         "content": {
           "application/json": {
-            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
           }
         }
       },
@@ -790,7 +1875,9 @@
         "description": "Recurso inexistente ou não acessível",
         "content": {
           "application/json": {
-            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
           }
         }
       },
@@ -798,7 +1885,9 @@
         "description": "Conflito de unicidade, limite ou lifecycle",
         "content": {
           "application/json": {
-            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
           }
         }
       },
@@ -806,7 +1895,9 @@
         "description": "Limite de requisições excedido",
         "content": {
           "application/json": {
-            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
           }
         }
       }
@@ -918,84 +2009,186 @@
       "HealthResponse": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["status"],
+        "required": [
+          "status"
+        ],
         "properties": {
-          "status": { "type": "string", "enum": ["ok"], "example": "ok" }
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok"
+            ],
+            "example": "ok"
+          }
         }
       },
       "ErrorResponse": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["statusCode", "message"],
+        "required": [
+          "statusCode",
+          "message"
+        ],
         "properties": {
-          "statusCode": { "type": "integer", "minimum": 400, "maximum": 599 },
+          "statusCode": {
+            "type": "integer",
+            "minimum": 400,
+            "maximum": 599
+          },
           "message": {
             "oneOf": [
-              { "type": "string" },
-              { "type": "array", "items": { "type": "string" } }
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
             ]
           },
-          "error": { "type": "string" }
+          "error": {
+            "type": "string"
+          }
         }
       },
       "LoginRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["email", "password"],
+        "required": [
+          "email",
+          "password"
+        ],
         "properties": {
-          "email": { "type": "string", "format": "email", "maxLength": 255 },
-          "password": { "type": "string", "minLength": 6, "writeOnly": true }
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 255
+          },
+          "password": {
+            "type": "string",
+            "minLength": 6,
+            "writeOnly": true
+          }
         }
       },
       "RegisterRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["name", "email", "password"],
+        "required": [
+          "name",
+          "email",
+          "password"
+        ],
         "properties": {
-          "name": { "type": "string", "minLength": 3, "maxLength": 100 },
-          "email": { "type": "string", "format": "email", "maxLength": 255 },
-          "password": { "type": "string", "minLength": 6, "maxLength": 72, "writeOnly": true },
-          "teacherCode": { "type": "string", "writeOnly": true }
+          "name": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 100
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 255
+          },
+          "password": {
+            "type": "string",
+            "minLength": 6,
+            "maxLength": 72,
+            "writeOnly": true
+          },
+          "teacherCode": {
+            "type": "string",
+            "writeOnly": true
+          }
         }
       },
       "RefreshTokenRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["refreshToken"],
+        "required": [
+          "refreshToken"
+        ],
         "properties": {
-          "refreshToken": { "type": "string", "minLength": 1, "writeOnly": true }
+          "refreshToken": {
+            "type": "string",
+            "minLength": 1,
+            "writeOnly": true
+          }
         }
       },
       "AuthTokensResponse": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["access_token", "refresh_token"],
+        "required": [
+          "access_token",
+          "refresh_token"
+        ],
         "properties": {
-          "access_token": { "type": "string" },
-          "refresh_token": { "type": "string" }
+          "access_token": {
+            "type": "string"
+          },
+          "refresh_token": {
+            "type": "string"
+          }
         }
       },
       "RegisterResponse": {
         "allOf": [
-          { "$ref": "#/components/schemas/UserProfile" },
-          { "$ref": "#/components/schemas/AuthTokensResponse" }
+          {
+            "$ref": "#/components/schemas/UserProfile"
+          },
+          {
+            "$ref": "#/components/schemas/AuthTokensResponse"
+          }
         ]
       },
       "UserRole": {
         "type": "string",
-        "enum": ["PARENT", "PROFESSOR", "ADMIN"]
+        "enum": [
+          "PARENT",
+          "PROFESSOR",
+          "ADMIN"
+        ]
       },
       "UserProfile": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "name", "email", "role", "createdAt", "updatedAt"],
+        "required": [
+          "id",
+          "name",
+          "email",
+          "role",
+          "createdAt",
+          "updatedAt"
+        ],
         "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "name": { "type": "string", "minLength": 3, "maxLength": 100 },
-          "email": { "type": "string", "format": "email", "maxLength": 255 },
-          "role": { "$ref": "#/components/schemas/UserRole" },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" }
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 100
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 255
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
         }
       },
       "UpdateProfileRequest": {
@@ -1009,40 +2202,90 @@
             "maxLength": 100,
             "pattern": "^[A-Za-zÀ-ÿ\\s'-]+$"
           },
-          "email": { "type": "string", "format": "email", "maxLength": 255 }
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 255
+          }
         }
       },
       "TeacherSummary": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "name"],
+        "required": [
+          "id",
+          "name"
+        ],
         "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "name": { "type": "string" }
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          }
         }
       },
       "LastAnnouncementSummary": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "title", "createdAt", "expiresAt"],
+        "required": [
+          "id",
+          "title",
+          "createdAt",
+          "expiresAt"
+        ],
         "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "title": { "type": "string" },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "expiresAt": { "type": "string", "format": "date-time" }
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
         }
       },
       "ClassroomSummary": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "name", "ownerId", "teacher", "lastAnnouncement"],
+        "required": [
+          "id",
+          "name",
+          "ownerId",
+          "teacher",
+          "lastAnnouncement"
+        ],
         "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "name": { "type": "string", "minLength": 3, "maxLength": 80 },
-          "ownerId": { "type": "string", "format": "uuid" },
-          "teacher": { "$ref": "#/components/schemas/TeacherSummary" },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 80
+          },
+          "ownerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "teacher": {
+            "$ref": "#/components/schemas/TeacherSummary"
+          },
           "lastAnnouncement": {
-            "allOf": [{ "$ref": "#/components/schemas/LastAnnouncementSummary" }],
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LastAnnouncementSummary"
+              }
+            ],
             "nullable": true
           }
         }
@@ -1050,105 +2293,456 @@
       "CreateClassroomRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["name"],
+        "required": [
+          "name"
+        ],
         "properties": {
-          "name": { "type": "string", "minLength": 3, "maxLength": 80 }
+          "name": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 80
+          }
         }
       },
       "ClassroomMember": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "name"],
+        "required": [
+          "id",
+          "name"
+        ],
         "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "name": { "type": "string" }
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          }
         }
       },
       "ClassroomWithMembers": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "name", "ownerId", "members", "createdAt", "updatedAt"],
+        "required": [
+          "id",
+          "name",
+          "ownerId",
+          "members",
+          "createdAt",
+          "updatedAt"
+        ],
         "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "name": { "type": "string" },
-          "ownerId": { "type": "string", "format": "uuid" },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "ownerId": {
+            "type": "string",
+            "format": "uuid"
+          },
           "members": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/ClassroomMember" }
+            "items": {
+              "$ref": "#/components/schemas/ClassroomMember"
+            }
           },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" }
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
         }
       },
       "AnnouncementAuthor": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "name"],
+        "required": [
+          "id",
+          "name"
+        ],
         "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "name": { "type": "string" }
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          }
         }
       },
       "Announcement": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "classroomId", "title", "content", "expiresAt", "author", "createdAt", "updatedAt"],
+        "required": [
+          "id",
+          "classroomId",
+          "title",
+          "content",
+          "expiresAt",
+          "author",
+          "createdAt",
+          "updatedAt"
+        ],
         "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "classroomId": { "type": "string", "format": "uuid" },
-          "title": { "type": "string", "minLength": 3, "maxLength": 120 },
-          "content": { "type": "string", "minLength": 3, "maxLength": 2000 },
-          "expiresAt": { "type": "string", "format": "date-time" },
-          "author": { "$ref": "#/components/schemas/AnnouncementAuthor" },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" }
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "classroomId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 120
+          },
+          "content": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 2000
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "author": {
+            "$ref": "#/components/schemas/AnnouncementAuthor"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
         }
       },
       "AnnouncementDuration": {
         "type": "integer",
-        "enum": [1, 3, 7, 15, 30]
+        "enum": [
+          1,
+          3,
+          7,
+          15,
+          30
+        ]
       },
       "CreateAnnouncementRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["classroomId", "title", "content", "durationInDays"],
+        "required": [
+          "classroomId",
+          "title",
+          "content",
+          "durationInDays"
+        ],
         "properties": {
-          "classroomId": { "type": "string", "format": "uuid" },
-          "title": { "type": "string", "minLength": 3, "maxLength": 120 },
-          "content": { "type": "string", "minLength": 3, "maxLength": 2000 },
-          "durationInDays": { "$ref": "#/components/schemas/AnnouncementDuration" }
+          "classroomId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 120
+          },
+          "content": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 2000
+          },
+          "durationInDays": {
+            "$ref": "#/components/schemas/AnnouncementDuration"
+          }
         }
       },
       "UpdateAnnouncementRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["title", "content", "durationInDays"],
+        "required": [
+          "title",
+          "content",
+          "durationInDays"
+        ],
         "properties": {
-          "title": { "type": "string", "minLength": 3, "maxLength": 120 },
-          "content": { "type": "string", "minLength": 3, "maxLength": 2000 },
-          "durationInDays": { "$ref": "#/components/schemas/AnnouncementDuration" }
+          "title": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 120
+          },
+          "content": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 2000
+          },
+          "durationInDays": {
+            "$ref": "#/components/schemas/AnnouncementDuration"
+          }
         }
       },
       "CreateInviteCodeRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["role"],
+        "required": [
+          "role"
+        ],
         "properties": {
-          "role": { "type": "string", "enum": ["PROFESSOR"] }
+          "role": {
+            "type": "string",
+            "enum": [
+              "PROFESSOR"
+            ]
+          }
         }
       },
       "InviteCodeResponse": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "code", "role", "isActive", "expiresAt", "createdAt", "updatedAt"],
+        "required": [
+          "id",
+          "code",
+          "role",
+          "isActive",
+          "expiresAt",
+          "createdAt",
+          "updatedAt"
+        ],
         "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "code": { "type": "string", "example": "PROF-EXAMPLE" },
-          "role": { "type": "string", "enum": ["PROFESSOR"] },
-          "isActive": { "type": "boolean" },
-          "expiresAt": { "type": "string", "format": "date-time" },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" }
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string",
+            "example": "PROF-EXAMPLE"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "PROFESSOR"
+            ]
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "EmptyPushRequest": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "ActivatePushRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "bindingId",
+          "lifecycleVersion",
+          "expectedTokenRevision",
+          "platform",
+          "expoToken",
+          "permission"
+        ],
+        "properties": {
+          "bindingId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lifecycleVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "expectedTokenRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "platform": {
+            "type": "string",
+            "enum": [
+              "ANDROID",
+              "IOS"
+            ]
+          },
+          "expoToken": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "pattern": "^(?:ExpoPushToken|ExponentPushToken)\\[[A-Za-z0-9_-]{8,256}\\]$"
+          },
+          "permission": {
+            "type": "string",
+            "enum": [
+              "GRANTED"
+            ]
+          }
+        }
+      },
+      "RevokePushRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "bindingId",
+          "lifecycleVersion",
+          "reason"
+        ],
+        "properties": {
+          "bindingId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lifecycleVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "USER_DISABLED",
+              "LOGOUT",
+              "PERMISSION_REVOKED"
+            ]
+          }
+        }
+      },
+      "PushBindingView": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "bindingId",
+          "lifecycleVersion",
+          "tokenRevision",
+          "state"
+        ],
+        "properties": {
+          "bindingId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lifecycleVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "tokenRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "RESERVED",
+              "ACTIVE"
+            ]
+          }
+        }
+      },
+      "PushInstallationView": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "available",
+          "state",
+          "binding",
+          "reason",
+          "testAvailableAt"
+        ],
+        "properties": {
+          "available": {
+            "type": "boolean"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "ABSENT",
+              "RESERVED",
+              "ACTIVE",
+              "INACTIVE"
+            ]
+          },
+          "binding": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/PushBindingView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reason": {
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "CONFIGURATION_UNAVAILABLE",
+                  "REGISTRATION_INACTIVE",
+                  "TOKEN_INVALID"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "testAvailableAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "PushTestAccepted": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "attemptId",
+          "status",
+          "acceptedAt",
+          "nextTestAvailableAt"
+        ],
+        "properties": {
+          "attemptId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACCEPTED"
+            ]
+          },
+          "acceptedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "nextTestAvailableAt": {
+            "type": "string",
+            "format": "date-time"
+          }
         }
       }
     }
