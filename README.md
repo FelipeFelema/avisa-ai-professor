@@ -14,6 +14,7 @@ Plataforma de comunicação escolar que conecta professores e responsáveis por 
 - Exibição de comunicados ativos para participantes da turma.
 - Perfil da conta no aplicativo mobile.
 - Convites de PROFESSOR, gerados somente por ADMIN, com validade fixa de sete dias e uso único.
+- Ativação opcional de notificações push por dispositivo e envio de um teste neutro, sem notificações de comunicados ou outras regras de negócio.
 
 Somente uma conta `ADMIN` autenticada pode gerar um convite de PROFESSOR. Cadastro público continua criando `PARENT` sem convite ou `PROFESSOR` com convite válido; ele nunca cria `ADMIN`. Cada geração deliberada cria outro convite e não revoga os anteriores. O aplicativo mantém código e feedback apenas durante a visita à tela e copia o código somente após ação explícita. Timeout ou falha de cópia não provocam repetição automática. O contrato anterior de geração de convites para `ADMIN` e de `expiresInDays` foi removido; login e os fluxos existentes de `PARENT` e `PROFESSOR` continuam disponíveis. A documentação usa apenas exemplos fictícios, nunca códigos operacionais.
 
@@ -81,6 +82,18 @@ Para emuladores ou web local, use `http://localhost:3000/api/v1` quando esse end
 - Tokens de acesso e refresh pertencem ao Secure Store do dispositivo e não devem aparecer em código, commits, logs, screenshots ou exemplos.
 - A referência OpenAPI fica disponível fora de produção em `/api/v1/docs`; o backend a bloqueia incondicionalmente quando `NODE_ENV=production`.
 - Todo deploy deve definir `NODE_ENV=production`, manter a documentação desabilitada e publicar a API por HTTPS. O PostgreSQL e as credenciais do `docker-compose.yml` existem somente para desenvolvimento local e não devem ser expostos nem reutilizados em ambiente compartilhado.
+
+### Notificações push de teste
+
+O recurso é opcional e começa desativado. O aplicativo solicita permissão somente após ação explícita no Perfil; a única mensagem enviada por esta fundação é um teste neutro iniciado pelo próprio usuário. Cadastro, comunicados, convites, turmas e lembretes não disparam push.
+
+- No backend, mantenha `EXPO_PUSH_ENABLED=false` enquanto o transporte não estiver configurado. Para habilitá-lo, defina `EXPO_PUSH_ENABLED=true` e `EXPO_PUSH_ACCESS_TOKEN` somente no ambiente privado do servidor. O token de acesso Expo nunca pertence ao app, ao EAS mobile profile ou a uma variável `EXPO_PUBLIC_*`.
+- Na build mobile, configure `EXPO_PUBLIC_EAS_PROJECT_ID`, `EXPO_PUBLIC_ANDROID_APPLICATION_ID` e `EXPO_PUBLIC_IOS_BUNDLE_IDENTIFIER`. São identificadores públicos incorporados à configuração da app. Configure FCM V1 para a identidade Android e APNs para a identidade Apple correspondentes ao mesmo projeto EAS. O conteúdo de `GOOGLE_SERVICES_FILE` deve vir do ambiente de build; mantenha o arquivo de credenciais fora do Git.
+- `mobile/eas.json` fornece o perfil `preview` para distribuição interna. Push requer uma build nativa independente e credenciais correspondentes; Expo Go, web, simuladores e configurações ausentes informam indisponibilidade sem bloquear os outros fluxos.
+- O plugin de backup exclui o banco inteiro do AsyncStorage de backups Android e iOS para não restaurar a identidade push de uma instalação anterior. Isso também significa que a preferência de tema não é restaurada por backup do dispositivo; durante o uso normal, o tema continua persistido.
+- Para recuperação operacional, desligue `EXPO_PUSH_ENABLED`, revogue os vínculos push afetados e reverta a versão da aplicação se necessário. Preserve as tabelas da migration; não as remova durante rollback.
+
+Consulte o [quickstart da spec 010](specs/010-push-notification-foundation/quickstart.md) para configuração, gates e walkthrough individual. Os nomes de variáveis e regras de runtime estão em [mobile-and-provider.md](specs/010-push-notification-foundation/contracts/mobile-and-provider.md).
 
 ## Qualidade
 
