@@ -28,4 +28,36 @@ describe('RateLimitGuard', () => {
       'Muitas requisições. Tente novamente mais tarde.',
     );
   });
+
+  it('shares the unchanged IP budget across push reads, registration and tests', () => {
+    const contextFor = (method: string, path: string) =>
+      ({
+        switchToHttp: () => ({
+          getRequest: () => ({ ip: '127.0.0.1', method, path }),
+        }),
+      }) as ExecutionContext;
+    for (let index = 0; index < 5; index += 1) {
+      expect(
+        guard.canActivate(contextFor('POST', '/push/installation/reserve')),
+      ).toBe(true);
+      expect(guard.canActivate(contextFor('PUT', '/push/installation'))).toBe(
+        true,
+      );
+    }
+    for (const [method, path] of [
+      ['GET', '/push/installation'],
+      ['POST', '/push/installation/reserve'],
+      ['PUT', '/push/installation'],
+      ['POST', '/push/installation/test'],
+      ['DELETE', '/push/installation'],
+    ]) {
+      expect(() => guard.canActivate(contextFor(method, path))).toThrow(
+        'Muitas requisições. Tente novamente mais tarde.',
+      );
+    }
+    jest.advanceTimersByTime(60_000);
+    expect(guard.canActivate(contextFor('GET', '/push/installation'))).toBe(
+      true,
+    );
+  });
 });
