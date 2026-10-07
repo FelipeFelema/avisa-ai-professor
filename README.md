@@ -14,7 +14,7 @@ Plataforma de comunicação escolar que conecta professores e responsáveis por 
 - Exibição de comunicados ativos para participantes da turma.
 - Perfil da conta no aplicativo mobile.
 - Convites de PROFESSOR, gerados somente por ADMIN, com validade fixa de sete dias e uso único.
-- Ativação opcional de notificações push por dispositivo e envio de um teste neutro, sem notificações de comunicados ou outras regras de negócio.
+- Ativação opcional de notificações push por dispositivo e envio de um teste neutro, com novos comunicados e lembretes de expiração habilitados separadamente no backend (Spec 011).
 
 Somente uma conta `ADMIN` autenticada pode gerar um convite de PROFESSOR. Cadastro público continua criando `PARENT` sem convite ou `PROFESSOR` com convite válido; ele nunca cria `ADMIN`. Cada geração deliberada cria outro convite e não revoga os anteriores. O aplicativo mantém código e feedback apenas durante a visita à tela e copia o código somente após ação explícita. Timeout ou falha de cópia não provocam repetição automática. O contrato anterior de geração de convites para `ADMIN` e de `expiresInDays` foi removido; login e os fluxos existentes de `PARENT` e `PROFESSOR` continuam disponíveis. A documentação usa apenas exemplos fictícios, nunca códigos operacionais.
 
@@ -85,7 +85,7 @@ Para emuladores ou web local, use `http://localhost:3000/api/v1` quando esse end
 
 ### Notificações push de teste
 
-O recurso é opcional e começa desativado. O aplicativo solicita permissão somente após ação explícita no Perfil; a única mensagem enviada por esta fundação é um teste neutro iniciado pelo próprio usuário. Cadastro, comunicados, convites, turmas e lembretes não disparam push.
+O recurso é opcional e começa desativado. O aplicativo solicita permissão somente após ação explícita no Perfil. A fundação da Spec 010 mantém o teste neutro iniciado pelo próprio usuário; a Spec 011 acrescenta o envio de novo comunicado quando habilitado separadamente no backend.
 
 - No backend, mantenha `EXPO_PUSH_ENABLED=false` enquanto o transporte não estiver configurado. Para habilitá-lo, defina `EXPO_PUSH_ENABLED=true` e `EXPO_PUSH_ACCESS_TOKEN` somente no ambiente privado do servidor. O token de acesso Expo nunca pertence ao app, ao EAS mobile profile ou a uma variável `EXPO_PUBLIC_*`.
 - Na build mobile, configure `EXPO_PUBLIC_EAS_PROJECT_ID`, `EXPO_PUBLIC_ANDROID_APPLICATION_ID` e `EXPO_PUBLIC_IOS_BUNDLE_IDENTIFIER`. São identificadores públicos incorporados à configuração da app. Configure FCM V1 para a identidade Android e APNs para a identidade Apple correspondentes ao mesmo projeto EAS. O conteúdo de `GOOGLE_SERVICES_FILE` deve vir do ambiente de build; mantenha o arquivo de credenciais fora do Git.
@@ -94,6 +94,14 @@ O recurso é opcional e começa desativado. O aplicativo solicita permissão som
 - Para recuperação operacional, desligue `EXPO_PUSH_ENABLED`, revogue os vínculos push afetados e reverta a versão da aplicação se necessário. Preserve as tabelas da migration; não as remova durante rollback.
 
 Consulte o [quickstart da spec 010](specs/010-push-notification-foundation/quickstart.md) para configuração, gates e walkthrough individual. Os nomes de variáveis e regras de runtime estão em [mobile-and-provider.md](specs/010-push-notification-foundation/contracts/mobile-and-provider.md).
+
+### Push de novos comunicados
+
+Depois de revisar/aplicar a migration aditiva da Spec 011 e reiniciar o backend, `ANNOUNCEMENT_PUSH_ENABLED=true` habilita a publicação com recuperação durável, usando o transporte autenticado da 010. O valor padrão é `false`. `ANNOUNCEMENT_PUSH_REMINDERS_ENABLED` também começa `false`; `true` habilita o reminder aproximadamente 24 horas antes do `expiresAt` atual. Aplique também a migration `20261007120000_announcement_expiration_occurrences` antes de usar esse backend. O lembrete usa o mesmo transporte e valida membros/instalações atuais; mudança de expiração suprime pendências antigas. Reinício, concorrência e resultado incerto não reenviam a mesma ocorrência.
+
+O primeiro fanout seleciona membros atuais da turma com instalações elegíveis, excluindo o autor; cada vínculo é verificado novamente antes do envio. Falhas de push não desfazem a publicação. Depois da fronteira `SENDING`, resultados incertos não provocam reenvio automático; tickets aceitos são consultados pelo worker de receipts existente. A mensagem contém texto genérico e identificadores públicos do comunicado/despacho. O toque exige uma consulta autenticada nova; o identificador recebido nunca concede acesso.
+
+Consulte o [quickstart da Spec 011](specs/011-release-critical-notifications/quickstart.md) para validação, recuperação e walkthrough. Preserve as tabelas e os registros de unicidade em rollback; desligar o flag e reiniciar é a forma de interromper novos envios. Cadastro, convites e turmas não ganham outros gatilhos nesta spec.
 
 ## Qualidade
 
