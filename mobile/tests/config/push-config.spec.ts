@@ -1,4 +1,5 @@
-import { resolvePushRuntimeConfig } from '@/config/push-config';
+import { resolvePushRuntimeConfig, resolvePushTestActionEnabled } from '@/config/push-config';
+import appConfig from '../../app.config';
 
 describe('push runtime configuration', () => {
   const base = {
@@ -90,5 +91,44 @@ describe('push runtime configuration', () => {
       constants: { ...base.constants, appOwnership: 'expo' },
     });
     expect(expoGo).toMatchObject({ available: false, reason: 'DEVICE_UNAVAILABLE' });
+  });
+});
+
+describe('push diagnostic action configuration', () => {
+  it.each([
+    [true, undefined, true],
+    [false, true, true],
+    [false, false, false],
+    [false, undefined, false],
+    [false, 'true', false],
+  ])('development=%s, configured=%s gives visible=%s', (development, configured, visible) => {
+    expect(resolvePushTestActionEnabled(development, configured)).toBe(visible);
+  });
+
+  it.each([
+    ['preview', true],
+    ['development', true],
+    ['production', false],
+    [undefined, false],
+    ['other', false],
+  ])('build profile %s produces diagnostic visibility %s', (profile, visible) => {
+    const previous = process.env.EAS_BUILD_PROFILE;
+    try {
+      if (profile === undefined) delete process.env.EAS_BUILD_PROFILE;
+      else process.env.EAS_BUILD_PROFILE = profile;
+      const config = appConfig({
+        projectRoot: 'synthetic-project',
+        staticConfigPath: null,
+        packageJsonPath: null,
+        config: { name: 'mobile', slug: 'mobile', extra: { pushDiagnosticsEnabled: true } },
+      });
+      expect(config.extra?.pushDiagnosticsEnabled).toBe(visible);
+      expect(resolvePushTestActionEnabled(false, config.extra?.pushDiagnosticsEnabled)).toBe(
+        visible,
+      );
+    } finally {
+      if (previous === undefined) delete process.env.EAS_BUILD_PROFILE;
+      else process.env.EAS_BUILD_PROFILE = previous;
+    }
   });
 });

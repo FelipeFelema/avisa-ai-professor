@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRootNavigationState, useRouter } from 'expo-router';
 import type { PropsWithChildren } from 'react';
 import { getPushRuntimeConfig } from '@/config/push-config';
 import { addConnectivityListener } from '@/lib/api';
@@ -12,19 +12,33 @@ import {
   isPushTestNotification,
   parsePushTestAttemptId,
 } from '@/services/push/push-presentation';
+import { AnnouncementPushFeedback } from '@/components/announcements/AnnouncementPushFeedback';
+import {
+  bindAnnouncementPushSession,
+  consumeAnnouncementPush,
+} from '@/services/push/announcement-push-navigation';
+import {
+  parseAnnouncementPush,
+  rememberAnnouncementReceipt,
+} from '@/services/push/announcement-push-presentation';
 
 export function PushProvider({ children }: PropsWithChildren) {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const router = useRouter();
+  const navigation = useRootNavigationState();
+  const navigationReady = !!navigation?.key;
   const userId = user?.id;
 
   useEffect(() => {
-    if (!userId || !getPushRuntimeConfig().available) return;
+    if (isLoading || !navigationReady || !getPushRuntimeConfig().available) return;
+    bindAnnouncementPushSession(userId ?? null, getSessionGeneration(), (path) =>
+      router.push(path),
+    );
     const generation = getSessionGeneration();
     let active = true;
     let cleanupNotifications: (() => void) | undefined;
     const reconcileCurrentSession = () => {
-      if (!active || !isSessionGenerationCurrent(generation)) return;
+      if (!userId || !active || !isSessionGenerationCurrent(generation)) return;
       void reconcilePushNotifications(generation);
     };
 
@@ -39,7 +53,13 @@ export function PushProvider({ children }: PropsWithChildren) {
 
       notificationsSdk.setNotificationHandler({
         handleNotification: async (notification) => {
-          const shouldPresent = isPushTestNotification(notification.request.content.data);
+          const data = notification.request.content.data;
+          const business = parseAnnouncementPush(data);
+          const shouldPresent =
+            active &&
+            isSessionGenerationCurrent(generation) &&
+            (isPushTestNotification(data) ||
+              (!!business && rememberAnnouncementReceipt(business.dispatchId)));
           return {
             shouldShowBanner: shouldPresent,
             shouldShowList: shouldPresent,
@@ -50,13 +70,23 @@ export function PushProvider({ children }: PropsWithChildren) {
       });
 
       const received = notificationsSdk.addNotificationReceivedListener((notification) => {
+        if (!active || !isSessionGenerationCurrent(generation)) return;
         handlePushTestNotification(notification.request.content.data);
       });
-      const response = notificationsSdk.addNotificationResponseReceivedListener((event) => {
+      const handleResponse = (event: import('expo-notifications').NotificationResponse) => {
+        if (!active || !isSessionGenerationCurrent(generation)) return;
         const data = event.notification.request.content.data;
+        if (consumeAnnouncementPush(data)) return;
         if (!parsePushTestAttemptId(data)) return;
         handlePushTestNotification(data);
         router.push('/(app)/profile/notifications');
+      };
+      const clearLast = () => {
+        void notificationsSdk.clearLastNotificationResponseAsync().catch(() => undefined);
+      };
+      const response = notificationsSdk.addNotificationResponseReceivedListener((event) => {
+        handleResponse(event);
+        clearLast();
       });
       const pushToken = notificationsSdk.addPushTokenListener(() => {
         // The native token is never sent to the server; reconciliation reads a fresh Expo token.
@@ -80,13 +110,27 @@ export function PushProvider({ children }: PropsWithChildren) {
         pushToken.remove();
         removeConnectivityListener();
       };
+      try {
+        const last = await notificationsSdk.getLastNotificationResponseAsync();
+        if (last && active && isSessionGenerationCurrent(generation)) {
+          handleResponse(last);
+          clearLast();
+        }
+      } catch {
+        /* native response unavailable */
+      }
     })();
 
     return () => {
       active = false;
       cleanupNotifications?.();
     };
-  }, [router, userId]);
+  }, [isLoading, navigationReady, router, userId]);
 
-  return children;
+  return (
+    <>
+      {children}
+      <AnnouncementPushFeedback />
+    </>
+  );
 }

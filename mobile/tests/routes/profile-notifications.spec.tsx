@@ -2,6 +2,7 @@ import { fireEvent } from '@testing-library/react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { getPushTestActionEnabled } from '@/config/push-config';
 import NotificationsScreen from '../../app/(app)/profile/notifications';
 import { renderWithProviders } from '../helpers/render';
 import { StyleSheet } from 'react-native';
@@ -9,12 +10,14 @@ import { StyleSheet } from 'react-native';
 jest.mock('expo-router', () => ({ useRouter: jest.fn() }));
 jest.mock('@/hooks/useAuth', () => ({ useAuth: jest.fn() }));
 jest.mock('@/hooks/usePushNotifications', () => ({ usePushNotifications: jest.fn() }));
+jest.mock('@/config/push-config', () => ({ getPushTestActionEnabled: jest.fn() }));
 
 const pushRoute = jest.fn();
 const backRoute = jest.fn();
 const useRouterMock = jest.mocked(useRouter);
 const useAuthMock = jest.mocked(useAuth);
 const usePushMock = jest.mocked(usePushNotifications);
+const diagnosticsMock = jest.mocked(getPushTestActionEnabled);
 
 function pushState(
   status: string,
@@ -39,6 +42,7 @@ function pushState(
 
 beforeEach(() => {
   jest.clearAllMocks();
+  diagnosticsMock.mockReturnValue(true);
   useRouterMock.mockReturnValue({ push: pushRoute, replace: jest.fn(), back: backRoute } as never);
   useAuthMock.mockReturnValue({
     user: { id: 'user-1', name: 'Pessoa', email: 'pessoa@example.test', role: 'PARENT' },
@@ -108,6 +112,18 @@ describe('profile notifications route', () => {
       view.getByRole('button', { name: 'Aguarde para enviar teste' }).props.accessibilityState
         .disabled,
     ).toBe(true);
+  });
+
+  it('hides the diagnostic action and feedback in production while preserving opt-out', async () => {
+    diagnosticsMock.mockReturnValue(false);
+    const state = pushState('ACTIVE', { testMessage: 'Diagnostic feedback' });
+    usePushMock.mockReturnValue(state);
+    const view = await renderWithProviders(<NotificationsScreen />);
+    expect(view.queryByRole('button', { name: 'Enviar teste de notificação' })).toBeNull();
+    expect(view.queryByText('Diagnostic feedback')).toBeNull();
+    expect(state.sendTest).not.toHaveBeenCalled();
+    await fireEvent.press(view.getByRole('button', { name: 'Desativar notificações' }));
+    expect(state.deactivate).toHaveBeenCalledTimes(1);
   });
 
   it('shows distinct status, safe feedback, and system settings action for denial', async () => {

@@ -173,6 +173,8 @@ export class AnnouncementsService {
         expiresAt,
         authorId: userId,
         classroomId: dto.classroomId,
+        notificationPending:
+          process.env.ANNOUNCEMENT_PUSH_ENABLED === 'true' ? true : null,
       },
       select: {
         id: true,

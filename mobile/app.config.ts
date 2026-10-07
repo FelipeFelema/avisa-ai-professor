@@ -47,6 +47,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     plugins: [...plugins, 'expo-notifications', './plugins/with-push-storage-backup'],
     extra: {
       ...config.extra,
+      pushDiagnosticsEnabled:
+        process.env.EAS_BUILD_PROFILE === 'preview' ||
+        process.env.EAS_BUILD_PROFILE === 'development',
       eas: {
         ...config.extra?.eas,
         ...(projectId ? { projectId } : {}),

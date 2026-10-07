@@ -21,6 +21,8 @@ const mockPushNotifications = {
   addNotificationResponseReceivedListener: jest.fn<() => { remove: () => void }>(),
   addPushTokenListener: jest.fn<() => { remove: () => void }>(),
   removeNotificationSubscription: jest.fn<() => void>(),
+  getLastNotificationResponseAsync: jest.fn<() => Promise<unknown>>(),
+  clearLastNotificationResponseAsync: jest.fn<() => Promise<void>>(),
 };
 
 const mockPushDevice = {
@@ -110,12 +112,16 @@ export function resetPushMocks(): void {
     mockPushNotifications.addNotificationResponseReceivedListener,
     mockPushNotifications.addPushTokenListener,
     mockPushNotifications.removeNotificationSubscription,
+    mockPushNotifications.getLastNotificationResponseAsync,
+    mockPushNotifications.clearLastNotificationResponseAsync,
     mockPushCrypto.randomUUID,
     mockPushCrypto.getRandomBytes,
     mockPushCrypto.getRandomBytesAsync,
     mockPushCrypto.digestStringAsync,
   ].forEach((mock) => mock.mockReset());
   mockBlockedFetch.mockReset();
+  mockPushNotifications.getLastNotificationResponseAsync.mockResolvedValue(null);
+  mockPushNotifications.clearLastNotificationResponseAsync.mockResolvedValue(undefined);
   mockPushNotifications.getPermissionsAsync.mockResolvedValue({
     granted: false,
     status: 'undetermined',

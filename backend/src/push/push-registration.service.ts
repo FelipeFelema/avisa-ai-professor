@@ -742,6 +742,37 @@ export class PushRegistrationService {
     });
   }
 
+  // Business ledger FKs and classroom deletion require User before Classroom;
+  // reuse the installation/registration protocol only after those parent locks.
+  async withAnnouncementLocks<T>(
+    input: {
+      userIds: string[];
+      classroomId: string;
+      sessionIds: string[];
+      installationIds: string[];
+    },
+    operation: (transaction: Prisma.TransactionClient) => Promise<T>,
+  ): Promise<T> {
+    const ids = this.normalizeInstallationIds(input.installationIds);
+    return this.runInTransaction(async (transaction) => {
+      for (const userId of [...new Set(input.userIds)].sort()) {
+        await transaction.$queryRaw`
+          SELECT "id" FROM "User" WHERE "id" = ${userId} FOR UPDATE
+        `;
+      }
+      await transaction.$queryRaw`
+        SELECT "id" FROM "Classroom" WHERE "id" = ${input.classroomId} FOR SHARE
+      `;
+      for (const sessionId of [...new Set(input.sessionIds)].sort()) {
+        await transaction.$queryRaw`
+          SELECT "id" FROM "AuthSession" WHERE "id" = ${sessionId} FOR UPDATE
+        `;
+      }
+      await this.lockInstallationsAndRegistrations(transaction, ids);
+      return operation(transaction);
+    });
+  }
+
   async withAuthenticatedProofLocks<T>(
     actor: PushActor,
     input: PushProofInput,

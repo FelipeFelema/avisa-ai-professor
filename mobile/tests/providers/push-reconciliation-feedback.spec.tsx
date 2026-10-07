@@ -11,7 +11,10 @@ import * as device from '@/services/push/push-device.service';
 import { pushMocks } from '../helpers/push';
 
 const mockRouter = { push: jest.fn() };
-jest.mock('expo-router', () => ({ useRouter: () => mockRouter }));
+jest.mock('expo-router', () => ({
+  useRouter: () => mockRouter,
+  useRootNavigationState: () => ({ key: 'ready' }),
+}));
 jest.mock('@/config/push-config', () => ({ getPushRuntimeConfig: jest.fn() }));
 jest.mock('@/storage', () => ({ getTokens: jest.fn(async () => null) }));
 jest.mock('@/storage/push.storage', () => ({

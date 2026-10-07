@@ -70,6 +70,13 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+function notificationText(
+  value: string | null | undefined,
+  limit: number,
+): string {
+  return (value ?? '').replace(/\s+/g, ' ').trim().slice(0, limit);
+}
+
 @Injectable()
 export class ExpoPushAdapter {
   private readonly logger = new Logger(ExpoPushAdapter.name);
@@ -83,10 +90,6 @@ export class ExpoPushAdapter {
   }
 
   async send(expoToken: string, attemptId: string): Promise<ExpoSendResult> {
-    if (!this.config.enabled || !this.config.accessToken) {
-      throw new ExpoPushOutcomeUnknownError();
-    }
-
     const payload = {
       to: expoToken,
       title: 'Teste de notificações',
@@ -97,10 +100,74 @@ export class ExpoPushAdapter {
       ttl: 60,
     };
 
+    return this.sendPayload(payload);
+  }
+
+  async sendAnnouncement(
+    expoToken: string,
+    intent: {
+      announcementId: string;
+      dispatchId: string;
+      ttl: number;
+      classroomName?: string | null;
+      announcementTitle?: string | null;
+      type?: 'announcement-created' | 'announcement-expiring';
+    },
+    signal?: AbortSignal,
+  ): Promise<ExpoSendResult> {
+    const uuid =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (
+      (intent.type !== undefined &&
+        intent.type !== 'announcement-created' &&
+        intent.type !== 'announcement-expiring') ||
+      !uuid.test(intent.announcementId) ||
+      !uuid.test(intent.dispatchId) ||
+      !Number.isInteger(intent.ttl) ||
+      intent.ttl < 1 ||
+      intent.ttl > 3600
+    ) {
+      throw new ExpoPushOutcomeUnknownError();
+    }
+    const classroomName =
+      notificationText(intent.classroomName, 80) || 'Sua turma';
+    const announcementTitle = notificationText(intent.announcementTitle, 120);
+    return this.sendPayload(
+      {
+        to: expoToken,
+        title:
+          intent.type === 'announcement-expiring'
+            ? `Comunicado próximo da expiração • ${classroomName}`
+            : `Novo comunicado • ${classroomName}`,
+        body:
+          intent.type === 'announcement-expiring'
+            ? `${announcementTitle || 'Um comunicado'} expira em breve.`
+            : announcementTitle || 'Novo comunicado disponível',
+        data: {
+          version: 1,
+          type: intent.type ?? 'announcement-created',
+          announcementId: intent.announcementId,
+          dispatchId: intent.dispatchId,
+        },
+        sound: 'default',
+        channelId: 'push-test',
+        ttl: intent.ttl,
+      },
+      signal,
+    );
+  }
+
+  private async sendPayload(
+    payload: unknown,
+    signal?: AbortSignal,
+  ): Promise<ExpoSendResult> {
+    if (!this.config.enabled || !this.config.accessToken)
+      throw new ExpoPushOutcomeUnknownError();
+
     let response: Response;
     let body: unknown;
     try {
-      ({ response, body } = await this.request(SEND_URL, payload));
+      ({ response, body } = await this.request(SEND_URL, payload, signal));
     } catch {
       throw new ExpoPushOutcomeUnknownError();
     }
