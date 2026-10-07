@@ -70,6 +70,13 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+function notificationText(
+  value: string | null | undefined,
+  limit: number,
+): string {
+  return (value ?? '').replace(/\s+/g, ' ').trim().slice(0, limit);
+}
+
 @Injectable()
 export class ExpoPushAdapter {
   private readonly logger = new Logger(ExpoPushAdapter.name);
@@ -102,6 +109,8 @@ export class ExpoPushAdapter {
       announcementId: string;
       dispatchId: string;
       ttl: number;
+      classroomName?: string | null;
+      announcementTitle?: string | null;
       type?: 'announcement-created' | 'announcement-expiring';
     },
     signal?: AbortSignal,
@@ -120,17 +129,20 @@ export class ExpoPushAdapter {
     ) {
       throw new ExpoPushOutcomeUnknownError();
     }
+    const classroomName =
+      notificationText(intent.classroomName, 80) || 'Sua turma';
+    const announcementTitle = notificationText(intent.announcementTitle, 120);
     return this.sendPayload(
       {
         to: expoToken,
         title:
           intent.type === 'announcement-expiring'
-            ? 'Comunicado próximo da expiração'
-            : 'Novo comunicado',
+            ? `Comunicado próximo da expiração • ${classroomName}`
+            : `Novo comunicado • ${classroomName}`,
         body:
           intent.type === 'announcement-expiring'
-            ? 'Um comunicado da sua turma expira em breve.'
-            : 'Há um novo comunicado disponível. Abra o aplicativo para consultar.',
+            ? `${announcementTitle || 'Um comunicado'} expira em breve.`
+            : announcementTitle || 'Novo comunicado disponível',
         data: {
           version: 1,
           type: intent.type ?? 'announcement-created',

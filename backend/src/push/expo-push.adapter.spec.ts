@@ -88,7 +88,7 @@ describe('ExpoPushAdapter', () => {
     );
   });
 
-  it('uses the same authenticated transport for a closed generic announcement notice', async () => {
+  it('uses the same authenticated transport with only classroom name and announcement title', async () => {
     const fetch = jest.spyOn(globalThis, 'fetch').mockResolvedValue(
       jsonResponse({
         data: [{ status: 'ok', id: 'synthetic-business-ticket' }],
@@ -100,6 +100,8 @@ describe('ExpoPushAdapter', () => {
         announcementId,
         dispatchId: attemptId,
         ttl: 120,
+        classroomName: 'Turma A',
+        announcementTitle: 'Reunião de responsáveis',
       }),
     ).resolves.toEqual({
       kind: 'accepted',
@@ -111,8 +113,8 @@ describe('ExpoPushAdapter', () => {
     );
     expect(JSON.parse(requestBody(init?.body))).toEqual({
       to: expoToken,
-      title: 'Novo comunicado',
-      body: 'Há um novo comunicado disponível. Abra o aplicativo para consultar.',
+      title: 'Novo comunicado • Turma A',
+      body: 'Reunião de responsáveis',
       data: {
         version: 1,
         type: 'announcement-created',
@@ -126,7 +128,7 @@ describe('ExpoPushAdapter', () => {
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 
-  it('sends the minimal reminder copy without school content, recipients or expiry in data', async () => {
+  it('sends contextual reminder copy with no full content, recipients or expiry in data or logs', async () => {
     const fetch = jest
       .spyOn(globalThis, 'fetch')
       .mockResolvedValue(
@@ -137,14 +139,16 @@ describe('ExpoPushAdapter', () => {
       dispatchId: attemptId,
       ttl: 120,
       type: 'announcement-expiring',
+      classroomName: 'Turma A',
+      announcementTitle: 'Reunião de responsáveis',
     });
     const payload = JSON.parse(requestBody(fetch.mock.calls[0][1]?.body)) as {
       data: unknown;
     };
     expect(payload).toEqual({
       to: expoToken,
-      title: 'Comunicado próximo da expiração',
-      body: 'Um comunicado da sua turma expira em breve.',
+      title: 'Comunicado próximo da expiração • Turma A',
+      body: 'Reunião de responsáveis expira em breve.',
       data: {
         version: 1,
         type: 'announcement-expiring',
@@ -165,6 +169,67 @@ describe('ExpoPushAdapter', () => {
       JSON.stringify([...log.mock.calls, ...warn.mock.calls]),
     ).not.toContain(expoToken);
     expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([undefined, null, '', ' \n\t '])(
+    'uses safe copy when contextual metadata is absent or blank (%s)',
+    async (value) => {
+      const fetch = jest
+        .spyOn(globalThis, 'fetch')
+        .mockImplementation(() =>
+          Promise.resolve(
+            jsonResponse({ data: { status: 'ok', id: 'synthetic-fallback' } }),
+          ),
+        );
+      for (const type of [
+        'announcement-created',
+        'announcement-expiring',
+      ] as const) {
+        await adapter.sendAnnouncement(expoToken, {
+          announcementId: attemptId,
+          dispatchId: attemptId,
+          ttl: 60,
+          type,
+          classroomName: value,
+          announcementTitle: value,
+        });
+        expect(
+          JSON.parse(requestBody(fetch.mock.calls.at(-1)?.[1]?.body)),
+        ).toMatchObject({
+          title:
+            type === 'announcement-created'
+              ? 'Novo comunicado • Sua turma'
+              : 'Comunicado próximo da expiração • Sua turma',
+          body:
+            type === 'announcement-created'
+              ? 'Novo comunicado disponível'
+              : 'Um comunicado expira em breve.',
+        });
+      }
+    },
+  );
+
+  it('normalizes whitespace and bounds permitted metadata without logging it', async () => {
+    const fetch = jest
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(
+        jsonResponse({ data: { status: 'ok', id: 'synthetic-bounded' } }),
+      );
+    await adapter.sendAnnouncement(expoToken, {
+      announcementId: attemptId,
+      dispatchId: attemptId,
+      ttl: 60,
+      classroomName: '  Turma\n A  ',
+      announcementTitle: 'Título '.repeat(1000),
+    });
+    const body = requestBody(fetch.mock.calls[0][1]?.body);
+    const payload = JSON.parse(body) as { title: string; body: string };
+    expect(payload.title).toBe('Novo comunicado • Turma A');
+    expect(payload.body).toHaveLength(120);
+    expect(Buffer.byteLength(body)).toBeLessThan(4096);
+    expect(JSON.stringify([...log.mock.calls, ...warn.mock.calls])).not.toMatch(
+      /Turma|Título/,
+    );
   });
 
   it('applies the same five-second timeout to reminders with no HTTP retry', async () => {

@@ -74,6 +74,8 @@ describe('announcement worker boundaries', () => {
     const snapshot = {
       id: 'dispatch',
       announcementId: 'announcement',
+      classroomName: 'Current classroom',
+      announcementTitle: 'Current title',
       expoToken: 'synthetic',
       ttl: 30,
       type: 'announcement-created',
@@ -89,6 +91,8 @@ describe('announcement worker boundaries', () => {
       'synthetic',
       {
         announcementId: 'announcement',
+        classroomName: 'Current classroom',
+        announcementTitle: 'Current title',
         dispatchId: 'dispatch',
         ttl: 30,
         type: 'announcement-created',

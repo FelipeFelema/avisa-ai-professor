@@ -99,6 +99,8 @@ export class AnnouncementPushWorker implements OnModuleInit, OnModuleDestroy {
           snapshot.expoToken,
           {
             announcementId: snapshot.announcementId,
+            classroomName: snapshot.classroomName,
+            announcementTitle: snapshot.announcementTitle,
             dispatchId: snapshot.id,
             ttl: snapshot.ttl,
             type: snapshot.type,

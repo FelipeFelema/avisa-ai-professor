@@ -12,6 +12,8 @@ function setup() {
   const announcement = {
     id: '00000000-0000-4000-8000-000000000101',
     classroomId: 'classroom',
+    classroom: { name: 'Current classroom name' },
+    title: 'Current announcement title',
     authorId: 'author',
     notificationPending: true,
     expiresAt: new Date(now.getTime() + 10000),
@@ -216,6 +218,8 @@ describe('business dispatch fencing and recovery', () => {
       id: s.row.id,
       expoToken: s.binding.expoToken,
       ttl: 10,
+      classroomName: 'Current classroom name',
+      announcementTitle: 'Current announcement title',
       claimVersion: 1,
     });
     expect(s.tx.announcementPushDispatch.update).toHaveBeenCalledWith({
@@ -230,6 +234,8 @@ describe('business dispatch fencing and recovery', () => {
       const snapshot = {
         id: s.row.id,
         announcementId: s.announcement.id,
+        classroomName: s.announcement.classroom.name,
+        announcementTitle: s.announcement.title,
         expoToken: s.binding.expoToken,
         ttl: 10,
         type: 'announcement-created' as const,
@@ -313,6 +319,8 @@ describe('business dispatch fencing and recovery', () => {
       const snapshot = {
         id: s.row.id,
         announcementId: s.announcement.id,
+        classroomName: s.announcement.classroom.name,
+        announcementTitle: s.announcement.title,
         expoToken: s.binding.expoToken,
         ttl: 10,
         type: 'announcement-created' as const,

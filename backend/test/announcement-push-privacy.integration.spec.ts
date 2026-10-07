@@ -21,7 +21,7 @@ describe('business payload and response privacy sentinels', () => {
     await prisma.$disconnect();
   });
   it.each(['announcement-created', 'announcement-expiring'] as const)(
-    'transports only generic %s copy and closed intent; ledger never duplicates the raw token',
+    'transports only permitted contextual %s copy and closed intent; logs/ledger exclude content and secrets',
     async (type) => {
       await clearTestDatabase(prisma);
       const previous = { ...process.env };
@@ -49,7 +49,7 @@ describe('business payload and response privacy sentinels', () => {
         const api = new AnnouncementsService(prisma);
         const a = await api.create(f.author.user.id, {
           classroomId: f.classroom.id,
-          title: 'PRIVATE-SCHOOL-TITLE',
+          title: 'PERMITTED-ANNOUNCEMENT-TITLE',
           content: 'PRIVATE-SCHOOL-BODY',
           durationInDays: 2,
         });
@@ -69,6 +69,15 @@ describe('business payload and response privacy sentinels', () => {
           await service.materializeReminder(a.id, now);
         } else await service.materialize(a.id);
         const row = (await service.claim())[0];
+        // Metadata must come from final authorization, not the earlier claim/event.
+        await prisma.classroom.update({
+          where: { id: f.classroom.id },
+          data: { name: 'Current turma' },
+        });
+        await prisma.announcement.update({
+          where: { id: a.id },
+          data: { title: 'Current title' },
+        });
         const snapshot = (await service.authorize(row))!;
         const result = await new ExpoPushAdapter().sendAnnouncement(
           snapshot.expoToken,
@@ -77,6 +86,8 @@ describe('business payload and response privacy sentinels', () => {
             dispatchId: row.id,
             ttl: snapshot.ttl,
             type: snapshot.type,
+            classroomName: snapshot.classroomName,
+            announcementTitle: snapshot.announcementTitle,
           },
         );
         await service.completeSend(snapshot, result);
@@ -87,6 +98,16 @@ describe('business payload and response privacy sentinels', () => {
           data: Record<string, unknown>;
         };
         expect(payload.to).toBe(snapshot.expoToken);
+        expect(payload.title).toBe(
+          type === 'announcement-created'
+            ? 'Novo comunicado • Current turma'
+            : 'Comunicado próximo da expiração • Current turma',
+        );
+        expect(payload.body).toBe(
+          type === 'announcement-created'
+            ? 'Current title'
+            : 'Current title expira em breve.',
+        );
         expect(payload.data.type).toBe(type);
         expect(Object.keys(payload.data).sort()).toEqual([
           'announcementId',
@@ -110,19 +131,26 @@ describe('business payload and response privacy sentinels', () => {
           'synthetic-private-ticket',
         ])
           expect(publicContent).not.toContain(secret);
-        const neutralCopy = JSON.stringify({
+        const contextualCopy = JSON.stringify({
           title: payload.title,
           body: payload.body,
           data: payload.data,
         });
         for (const forbidden of [
-          'PRIVATE-SCHOOL-TITLE',
+          'PERMITTED-ANNOUNCEMENT-TITLE',
           'PRIVATE-SCHOOL-BODY',
           f.classroom.name,
           f.author.user.name,
           f.member.user.id,
         ])
-          expect(neutralCopy).not.toContain(forbidden);
+          expect(contextualCopy).not.toContain(forbidden);
+        const capturedLogs = JSON.stringify(logs.map((log) => log.mock.calls));
+        for (const forbidden of [
+          'Current turma',
+          'Current title',
+          'PRIVATE-SCHOOL-BODY',
+        ])
+          expect(capturedLogs).not.toContain(forbidden);
         const ledger = await prisma.announcementPushDispatch.findUnique({
           where: { id: row.id },
         });

@@ -32,6 +32,8 @@ export type ClaimedAnnouncementDispatch =
 export interface AnnouncementSendSnapshot {
   id: string;
   announcementId: string;
+  classroomName: string;
+  announcementTitle: string;
   expoToken: string;
   ttl: number;
   type: 'announcement-created' | 'announcement-expiring';
@@ -261,6 +263,7 @@ export class AnnouncementPushService {
         return null;
       const announcement = await tx.announcement.findUnique({
         where: { id: row.event.announcementId },
+        include: { classroom: { select: { name: true } } },
       });
       const member = await tx.userClassroom.findUnique({
         where: {
@@ -316,6 +319,8 @@ export class AnnouncementPushService {
         id: row.id,
         claimVersion: row.claimVersion,
         announcementId: announcement.id,
+        classroomName: announcement.classroom.name,
+        announcementTitle: announcement.title,
         type:
           row.event.kind === 'EXPIRING'
             ? 'announcement-expiring'
