@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import {
   ExpoPushAdapter,
   ExpoPushOutcomeUnknownError,
@@ -24,9 +25,17 @@ describe('ExpoPushAdapter', () => {
   let adapter: ExpoPushAdapter;
   let previousEnabled: string | undefined;
   let previousAccessToken: string | undefined;
+  let log: jest.SpyInstance<void, [unknown, ...unknown[]]>;
+  let warn: jest.SpyInstance<void, [unknown, ...unknown[]]>;
 
   beforeEach(() => {
     jest.restoreAllMocks();
+    log = jest
+      .spyOn(Logger.prototype, 'log')
+      .mockImplementation(() => undefined);
+    warn = jest
+      .spyOn(Logger.prototype, 'warn')
+      .mockImplementation(() => undefined);
     previousEnabled = process.env.EXPO_PUSH_ENABLED;
     previousAccessToken = process.env.EXPO_PUSH_ACCESS_TOKEN;
     process.env.EXPO_PUSH_ENABLED = 'true';
@@ -97,7 +106,118 @@ describe('ExpoPushAdapter', () => {
     await jest.advanceTimersByTimeAsync(5000);
     await rejected;
     expect(fetch).toHaveBeenCalledTimes(1);
+    expect(warn).toHaveBeenCalledWith('operation=send event=TIMEOUT');
     jest.useRealTimers();
+  });
+
+  it('accepts an individual successful ticket without retrying', async () => {
+    const fetch = jest
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(
+        jsonResponse({ data: { status: 'ok', id: 'synthetic-ticket-1' } }),
+      );
+    await expect(adapter.send(expoToken, attemptId)).resolves.toEqual({
+      kind: 'accepted',
+      ticketId: 'synthetic-ticket-1',
+    });
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(log).toHaveBeenCalledWith(
+      'operation=send event=HTTP_RESPONSE status=200',
+    );
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['DeviceNotRegistered', 'DEVICE_NOT_REGISTERED'],
+    ['InvalidCredentials', 'INVALID_CREDENTIALS'],
+    ['UNAUTHORIZED', 'PROVIDER_REJECTED'],
+    ['synthetic private provider error', 'PROVIDER_REJECTED'],
+  ])('sanitizes individual error ticket %s', async (error, code) => {
+    const fetch = jest.spyOn(globalThis, 'fetch').mockResolvedValue(
+      jsonResponse({
+        data: {
+          status: 'error',
+          message: `${expoToken} ${accessToken} private provider response`,
+          details: { error },
+        },
+      }),
+    );
+    await expect(adapter.send(expoToken, attemptId)).resolves.toEqual({
+      kind: 'rejected',
+      code,
+    });
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    null,
+    {},
+    { data: [] },
+    {
+      data: [
+        { status: 'ok', id: 'one' },
+        { status: 'ok', id: 'two' },
+      ],
+    },
+    { data: [null] },
+    { data: { status: 'unexpected' } },
+    { data: { status: 'ok' } },
+    { data: { status: 'ok', id: 123 } },
+    { data: { status: 'ok', id: 'x'.repeat(257) } },
+    { data: { status: 'ok', id: 'invalid ticket with spaces' } },
+  ])(
+    'keeps invalid ticket response %# UNKNOWN without retrying',
+    async (body) => {
+      const fetch = jest
+        .spyOn(globalThis, 'fetch')
+        .mockResolvedValue(jsonResponse(body));
+      await expect(adapter.send(expoToken, attemptId)).rejects.toBeInstanceOf(
+        ExpoPushOutcomeUnknownError,
+      );
+      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(warn).toHaveBeenCalledWith(
+        'operation=send event=INVALID_RESPONSE',
+      );
+    },
+  );
+
+  it('logs only safe HTTP, invalid response and transport diagnostics', async () => {
+    const secretTicket = 'synthetic-private-provider-ticket';
+    const raw = `${expoToken} ${accessToken} ${secretTicket} Authorization raw`;
+    const fetch = jest
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(
+        jsonResponse({ data: { status: 'ok', id: secretTicket } }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({ data: { status: 'error', message: raw } }),
+      )
+      .mockResolvedValueOnce(new Response(raw, { status: 200 }))
+      .mockRejectedValueOnce(new Error(raw));
+
+    await adapter.send(expoToken, attemptId);
+    await expect(adapter.send(expoToken, attemptId)).resolves.toEqual({
+      kind: 'rejected',
+      code: 'PROVIDER_REJECTED',
+    });
+    for (let index = 0; index < 2; index++) {
+      await expect(adapter.send(expoToken, attemptId)).rejects.toMatchObject({
+        name: 'ExpoPushOutcomeUnknownError',
+        message: 'PUSH_TEST_OUTCOME_UNKNOWN',
+      });
+    }
+    expect(fetch).toHaveBeenCalledTimes(4);
+    expect(warn).toHaveBeenCalledWith('operation=send event=TRANSPORT_ERROR');
+    const logCalls = [...log.mock.calls, ...warn.mock.calls];
+    for (const args of logCalls) {
+      expect(args).toHaveLength(1);
+      expect(args[0]).toMatch(
+        /^operation=send event=(HTTP_RESPONSE status=200|INVALID_RESPONSE|TRANSPORT_ERROR)$/,
+      );
+      for (const privateValue of [expoToken, accessToken, secretTicket, raw]) {
+        expect(JSON.stringify(args)).not.toContain(privateValue);
+      }
+    }
   });
 
   it.each([

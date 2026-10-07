@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { createPushConfig, type PushConfig } from './push.config';
 
 const SEND_URL = 'https://exp.host/--/api/v2/push/send';
@@ -72,6 +72,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 @Injectable()
 export class ExpoPushAdapter {
+  private readonly logger = new Logger(ExpoPushAdapter.name);
   private readonly config: PushConfig;
   private readonly fetcher: typeof fetch;
 
@@ -110,20 +111,22 @@ export class ExpoPushAdapter {
     if (response.status === 401 || response.status === 403) {
       return { kind: 'rejected', code: 'INVALID_CREDENTIALS' };
     }
-    if (
-      !isRecord(body) ||
-      !Array.isArray(body.data) ||
-      body.data.length !== 1
-    ) {
+    const data = isRecord(body) ? body.data : undefined;
+    const ticket: unknown = Array.isArray(data)
+      ? data.length === 1
+        ? data[0]
+        : undefined
+      : data;
+    if (!isRecord(ticket)) {
+      this.logger.warn('operation=send event=INVALID_RESPONSE');
       if (response.status >= 400 && response.status < 500) {
         return { kind: 'rejected', code: 'PROVIDER_REJECTED' };
       }
       throw new ExpoPushOutcomeUnknownError();
     }
-    const ticket = body.data[0] as unknown;
-    if (!isRecord(ticket)) throw new ExpoPushOutcomeUnknownError();
     if (ticket.status === 'ok') {
       if (typeof ticket.id !== 'string' || !ticketIdPattern.test(ticket.id)) {
+        this.logger.warn('operation=send event=INVALID_RESPONSE');
         throw new ExpoPushOutcomeUnknownError();
       }
       return { kind: 'accepted', ticketId: ticket.id };
@@ -135,6 +138,7 @@ export class ExpoPushAdapter {
         code: providerErrorCode(details?.error),
       };
     }
+    this.logger.warn('operation=send event=INVALID_RESPONSE');
     throw new ExpoPushOutcomeUnknownError();
   }
 
@@ -188,10 +192,15 @@ export class ExpoPushAdapter {
     externalSignal?: AbortSignal,
   ): Promise<{ response: Response; body: unknown }> {
     const controller = new AbortController();
+    const operation = url === SEND_URL ? 'send' : 'receipts';
+    let timedOut = false;
     const abort = () => controller.abort();
     if (externalSignal?.aborted) abort();
     else externalSignal?.addEventListener('abort', abort, { once: true });
-    const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    const timeout = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, REQUEST_TIMEOUT_MS);
     try {
       const response = await this.fetcher(url, {
         method: 'POST',
@@ -202,10 +211,24 @@ export class ExpoPushAdapter {
         },
         body: JSON.stringify(payload),
         signal: controller.signal,
+      }).catch(() => {
+        const event = timedOut
+          ? 'TIMEOUT'
+          : controller.signal.aborted
+            ? 'ABORTED'
+            : 'TRANSPORT_ERROR';
+        this.logger.warn(`operation=${operation} event=${event}`);
+        throw new Error('PROVIDER_TRANSPORT_ERROR');
       });
+      this.logger.log(
+        `operation=${operation} event=HTTP_RESPONSE status=${response.status}`,
+      );
       try {
         return { response, body: await readBoundedJson(response) };
       } catch {
+        this.logger.warn(
+          `operation=${operation} event=${timedOut ? 'TIMEOUT' : 'INVALID_RESPONSE'}`,
+        );
         if (response.status >= 400 && response.status < 500) {
           return { response, body: null };
         }
