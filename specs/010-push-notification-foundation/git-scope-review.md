@@ -1,5 +1,7 @@
 # Revisão do escopo Git — Spec 010
 
+**Resultado posterior à publicação:** [PR #53](https://github.com/FelipeFelema/avisa-ai-professor/pull/53) aberto para `develop`; Backend CI, Mobile CI e Commit Conventions PASS no HEAD funcional `e4ece93`. T074 fechada conforme [registro remoto](final-validation.md#fechamento-com-ci-remoto--2026-10-06). Commit de fechamento altera apenas documentação, sujeito aos checks finais; sem merge e stash da 011 intacto. As seções seguintes preservam a revisão anterior à publicação.
+
 ## Revisão final para publicação — 2026-10-06
 
 Branch confirmada: `010-push-notification-foundation`; base remota `develop` em `cd2a759`. O diff restante revisado contém o adapter Expo e seus testes, manifest/lockfile dos cinco patches Expo e evidências/documentação da 010. O rascunho do PR foi atualizado com push físico `PASS (user-reported)`, Doctor 21/21, gates locais PASS e triagem aceita com remediações obrigatórias na futura 012. T073 concluída; T074 permanece aberta até Backend CI/Mobile CI reais aprovados. Publicação autorizada pelo proprietário; merge não executado nesta etapa.

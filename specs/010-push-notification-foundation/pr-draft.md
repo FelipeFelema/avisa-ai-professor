@@ -1,6 +1,6 @@
 # PR draft — Spec 010
 
-Publication authorized on 2026-10-06 from `010-push-notification-foundation` to `develop`. T073 is complete; T074 remains open until actual Backend CI and Mobile CI pass. Spec 011 stays in its existing stash and contributes no files to this PR.
+Published on 2026-10-06 as [PR #53](https://github.com/FelipeFelema/avisa-ai-professor/pull/53) from `010-push-notification-foundation` to `develop`. T073 and T074 are complete after actual Backend CI and Mobile CI passed. Spec 011 stays in its existing stash and contributes no files to this PR. No merge performed.
 
 ## Title
 
@@ -39,7 +39,9 @@ The owner accepted the documented triage for Spec 010 and required remediation i
 
 ### Remote merge gates
 
-Backend CI and Mobile CI are pending publication. T074 remains open until their actual results are recorded. Local PASS does not substitute for GitHub checks; merge must wait for green required checks.
+**Backend CI, Mobile CI and Commit Conventions: PASS** on functional HEAD `e4ece9346023d183b8e88f282cb084b975443f48`. T074 stayed open until these actual remote results were confirmed, then closed with recorded evidence. The closing commit changes documentation only and must also pass the PR checks before merge. No merge performed.
+
+CI evidence: [Backend CI](https://github.com/FelipeFelema/avisa-ai-professor/actions/runs/37560479744), [Mobile CI](https://github.com/FelipeFelema/avisa-ai-professor/actions/runs/37560479782), [Commit Conventions](https://github.com/FelipeFelema/avisa-ai-professor/actions/runs/37560479703).
 
 ### Review notes
 

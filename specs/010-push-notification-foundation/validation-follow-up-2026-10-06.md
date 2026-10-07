@@ -1,5 +1,7 @@
 # Validação complementar — 2026-10-06
 
+**Atualização após publicação:** Backend CI, Mobile CI e Commit Conventions PASS no HEAD funcional `e4ece93` do [PR #53](https://github.com/FelipeFelema/avisa-ai-professor/pull/53). T074 fechada após esse resultado, conforme [evidência remota](final-validation.md#fechamento-com-ci-remoto--2026-10-06). As capturas locais abaixo antecedem CI e preservam seus limites históricos. O registro documental final também exige checks verdes no HEAD final antes de merge; nenhum merge executado e stash da 011 intacto.
+
 Registro posterior à captura histórica de [final-validation.md](final-validation.md). As seções abaixo preservam as investigações anteriores; o estado atual é o seguinte.
 
 ## Revalidação atual após adapter e cinco patches Expo

@@ -1,5 +1,7 @@
 # Fechamento da Spec 010 — checklist atual
 
+**Fechamento remoto confirmado — 2026-10-06:** T073/T074 concluídas. [PR #53](https://github.com/FelipeFelema/avisa-ai-professor/pull/53) aberto para `develop`; Backend CI, Mobile CI e Commit Conventions PASS no HEAD funcional `e4ece93`, conforme [registro remoto](final-validation.md#fechamento-com-ci-remoto--2026-10-06). Registro final somente documental será validado no novo HEAD antes de qualquer merge; nenhum merge executado. Stash da 011 intacto. O checkpoint local abaixo antecede publicação e CI; referências a NOT RUN descrevem aquele momento.
+
 Data: 2026-10-06. **T073 concluída como PASS (user-reported); T074 consolidada localmente e aberta somente pelo CI remoto NOT RUN.** Todos os gates finais locais passaram após adapter e cinco patches Expo; Doctor 21/21. Triagem de segurança aceita e registrada em [final-validation.md](final-validation.md). Nenhuma alteração adicional de runtime/dependências pelo agente, nova build, commit ou publicação. A 011 permanece no mesmo stash.
 
 ## T073 concluída / limites preservados
@@ -22,8 +24,8 @@ Roteiro viável integral relatado em [walkthrough-t073.md](walkthrough-t073.md),
 - [x] Registrar triagem aceita e obrigações futuras de remediação, sem audit fix.
 - [x] Alinhamento dos cinco patches pelo proprietário e repetição completa com Doctor 21/21.
 - [x] Consolidar FR/SC, gates locais, contratos, migration/recovery, escopo e privacidade.
-- [ ] Registrar workflows remotos na publicação autorizada.
-- [ ] Fechar T074 após CI real aprovado; não restaurar a 011 nesta avaliação.
+- [x] Registrar workflows remotos na publicação autorizada.
+- [x] Fechar T074 após CI real aprovado; não restaurar a 011 nesta avaliação.
 
 ## Comandos finais — executados nesta avaliação
 

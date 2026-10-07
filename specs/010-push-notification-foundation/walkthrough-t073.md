@@ -1,5 +1,7 @@
 # Walkthrough individual T073 — Android preview
 
+**Fechamento posterior de T074:** Backend CI e Mobile CI PASS no HEAD funcional `e4ece93` do [PR #53](https://github.com/FelipeFelema/avisa-ai-professor/pull/53), com Commit Conventions aprovado. [Registro remoto](final-validation.md#fechamento-com-ci-remoto--2026-10-06). As referências a T074 aberta abaixo descrevem o checkpoint físico/local anterior ao CI, sem alterar a atribuição do walkthrough ou inventar um novo APK testado.
+
 **Preparado e concluído**: 2026-10-06. **T073: PASS (user-reported), fechada. T074: aberta.** Proprietário como único executor, segundo APK preview corrigido, Android e backend local em `http://192.168.0.100:3000/api/v1` / `avisa_ai`. Health no celular foi relatado; gates destrutivos usaram exclusivamente `avisa_ai_test`. Evidência por camada e gates em [final-validation.md](final-validation.md#estado-atual-de-fechamento--2026-10-06).
 
 | Ordem | Cenário                             | Resultado e observação do proprietário                                                                                                                                                                                                                                          |

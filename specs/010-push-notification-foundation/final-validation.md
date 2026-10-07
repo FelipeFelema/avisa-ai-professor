@@ -1,5 +1,19 @@
 # Validação final — Push Notification Foundation
 
+## Fechamento com CI remoto — 2026-10-06
+
+**Spec 010 concluída: T073 e T074 fechadas.** PR [#53](https://github.com/FelipeFelema/avisa-ai-professor/pull/53), branch `010-push-notification-foundation` → `develop`. CI real aprovado no HEAD funcional `e4ece9346023d183b8e88f282cb084b975443f48`:
+
+| Workflow | Resultado | Evidência remota |
+| --- | --- | --- |
+| Backend CI | PASS — completed/success | [Run 37560479744](https://github.com/FelipeFelema/avisa-ai-professor/actions/runs/37560479744) |
+| Mobile CI | PASS — completed/success | [Run 37560479782](https://github.com/FelipeFelema/avisa-ai-professor/actions/runs/37560479782) |
+| Commit Conventions | PASS — completed/success | [Run 37560479703](https://github.com/FelipeFelema/avisa-ai-professor/actions/runs/37560479703) |
+
+Os workflows executaram instalação limpa e todos os scripts definidos na CI. T074 permaneceu aberta até a confirmação de ambos os workflows de componente; nenhuma dispensa ou resultado local foi usado como substituto. Este registro de fechamento altera somente documentação e será submetido novamente aos checks do PR; merge exige required checks verdes no HEAD final. **Nenhum merge executado.** Stash da 011 permanece `223e6ff688b5be4e6204934fc9ee5088dbc5bdb2`, sem restauração. Remediações da triagem de segurança continuam obrigatórias na futura Spec 012.
+
+As referências abaixo a T074 aberta ou CI NOT RUN preservam os checkpoints anteriores à publicação. O resultado remoto desta seção prevalece como estado atual.
+
 ## Preparação final de commits e PR — 2026-10-06
 
 Publicação autorizada pelo proprietário da branch `010-push-notification-foundation` para `develop`, após revisão do diff restante. Commits finais agrupam adapter/testes, patches Expo/lockfile e documentação/evidências. Revisão adicional do adapter: **1 suite / 27 testes PASS, exit 0 natural**; manifest e lockfile conferidos por nomes/ranges, independentemente da ordem JSON. O lockfile inclui as atualizações transitivas já presentes no WIP aprovado nos gates completos abaixo; nenhuma nova instalação ou remediação foi realizada para estes commits.
