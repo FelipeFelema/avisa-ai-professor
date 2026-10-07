@@ -61,3 +61,9 @@ Historical 2026-10-06 planning checkpoint: 010 T073/T074 and Doctor were open th
 ## P1 authorization update — 2026-10-07
 
 Owner requested complete P1. Add occurrenceKey to the existing event ledger and replace event uniqueness with (announcementId, kind, occurrenceKey); NEW keeps publication, EXPIRING uses current expiry milliseconds. Reuse ordered fanout and final authorization. A stale expiry dispatch is suppressed; returning to a previously used expiry does not recreate its tombstone. SENDING remains irreversible, including timeout/restart. PostgreSQL selector excludes already materialized current occurrences before LIMIT to avoid starvation. No new queue, token registry, adapter or dependency.
+
+## Owner-requested contextual copy and diagnostic visibility — 2026-10-07
+
+The earlier generic-copy choice is superseded by FR-009: permit only classroom name and announcement title in visible text, from current final authorization. Keep four-field data and authorized fresh detail query. Never treat text/IDs as access proof; no full body, personal data or content logging. Keep existing domain bounds and fallback for absent/blank metadata. No ledger/schema change.
+
+Gate diagnostic UI through development mode or an explicit preview/development build-profile boolean in app extra, with false defaults for production/absent/unknown profiles. Preserve backend test endpoint and consent/logout behavior. The installed standalone artifact embeds old JS/config and has no expo-updates setup; a new artifact is needed for the visual gate, while backend copy changes work with the same installed payload contract.

@@ -1,3 +1,5 @@
+> Historical runtime/build preparation before final product adjustments. Owner subsequently reported P0/P1 walkthrough PASS (user-reported); T060 is now closed after final new/reminder copy PASS (user-reported) and acceptance of automated/configurational production hiding. Production-artifact smoke is reserved for the final release gate; T061 awaits actual final-revision remote CI. Current expected notification copy and diagnostic visibility are in [quickstart.md](quickstart.md); earlier generic-copy expectations below are superseded.
+
 # Preparação do walkthrough — Spec 011 — 2026-10-07
 
 Preparação operacional autorizada pelo proprietário. Nenhuma lógica de produção, endpoint, relógio, intervalo ou dependência foi alterada. Este registro não declara recebimento físico, handoff externo ou navegação como PASS. A implementação permanece em WIP na branch 011-release-critical-notifications, sem staging, commit, push ou PR.

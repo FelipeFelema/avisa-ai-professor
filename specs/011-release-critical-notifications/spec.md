@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-06
 
-**Status**: P0 + P1 implemented and all local gates passed on 2026-10-07; owner walkthrough and actual final-revision CI pending.
+**Status**: P0/P1 walkthrough and final notification copy `PASS (user-reported)` on 2026-10-07. Production diagnostic visibility accepted through automated/configurational evidence; production-artifact smoke reserved for final release. T060 CLOSED; T062–T064 implemented and local gates passed. T061 pending actual final-revision remote CI. Spec 012 not started.
 
 **Input**: Notificar novos comunicados no lançamento, reutilizando a fundação da Spec 010, com isolamento entre turmas/contas, autorização normal no toque e processamento idempotente. Lembrete de expiração integra a entrega completa autorizada em 2026-10-07; flag operacional independente por padrão desativada.
 
@@ -78,7 +78,7 @@ Como membro elegível, posso receber um lembrete aproximadamente 24 horas antes 
 - **FR-006 (P0)**: Identidade do evento e progresso por instalação DEVEM persistir após reinício. Concorrência, recuperação e retries NÃO DEVEM repetir submissão do mesmo evento para a mesma instalação.
 - **FR-007 (P0)**: Resultado incerto NÃO provoca reenvio automático. A garantia é de ausência de duplicação por nosso processamento, não de entrega exatamente uma vez pelo provedor/dispositivo.
 - **FR-008 (P0)**: Reutilizar instalações, PushRegistration, consentimento, transporte autenticado e tratamento de token inválido da 010. NÃO criar segundo sistema de tokens/instalações; preservar single-flight, cooldown e proteção contra spam do teste neutro.
-- **FR-009 (P0)**: Aviso contém somente texto genérico e identificadores mínimos do evento/comunicado. NÃO incluir conteúdo do comunicado, nome de aluno, conta, turma, token ou capability; conteúdo real exige consulta autorizada.
+- **FR-009 (P0)**: Novo aviso usa título `Novo comunicado • {nome da turma}` e corpo com o título do comunicado; título ausente/vazio usa `Novo comunicado disponível`. Lembrete usa `Comunicado próximo da expiração • {nome da turma}` e `{título do comunicado} expira em breve.`, com fallback `Um comunicado expira em breve.`. Nome de turma ausente/vazio usa `Sua turma`. Somente nome da turma e título do comunicado são permitidos no texto; NÃO incluir corpo completo, dados pessoais, credenciais, tokens ou capabilities. `data` permanece fechado com version/type/announcementId/dispatchId; detalhe completo exige consulta autorizada atual.
 - **FR-010 (P0)**: Toque abre detalhe após consulta autenticada atual. `announcementId` no payload nunca substitui autorização server-side; perda de acesso, exclusão e expiração seguem negação normal do backend, prevalecendo sobre cache antigo.
 - **FR-011 (P0)**: Validar destinos e limitar ao detalhe interno. Troca de identidade descarta destino pendente; payload NÃO autoriza URL/rota arbitrária.
 - **FR-012 (P0)**: Foreground NÃO navega espontaneamente, solicita permissão ou dispara reconciliação repetida. Recebimento/toque repetidos têm processamento limitado/deduplicado.
@@ -89,6 +89,12 @@ Como membro elegível, posso receber um lembrete aproximadamente 24 horas antes 
 - **FR-017 (P1)**: Suprimir lembrete de comunicado excluído/expirado. Alteração de expiração cancela pendências do valor anterior e calcula a janela do valor atual; o mesmo valor nunca gera outro evento.
 - **FR-018 (P1)**: Reutilizar idempotência, restart safety, elegibilidade, privacidade e navegação do P0; sem reenvio incerto.
 - **FR-019 (P1)**: A flag P1 pode ficar desabilitada sem bloquear o fluxo P0. A entrega completa desta Spec inclui o scheduler e seus testes, mesmo com flag operacional default false.
+- **FR-020 (P0)**: A ação visual de teste neutro e seu feedback ficam disponíveis somente em desenvolvimento ou em build preview/development explicitamente configurada. Produção e configuração ausente ocultam a ação; preservar endpoint, infraestrutura, cooldown, opt-in e logout da 010.
+
+### Melhorias futuras — Spec 012 (registro, sem implementação nesta Spec)
+
+- Onboarding contextual no primeiro uso convidando a ativar notificações, com CTA explícito antes de qualquer prompt nativo.
+- Estudar persistência da preferência por usuário/dispositivo, com revogação segura no logout e sem herança entre contas. A 011 preserva o lifecycle atual de opt-in/logout; estas ideias não bloqueiam T060/T061.
 
 ### Key Entities
 
@@ -107,7 +113,7 @@ Como membro elegível, posso receber um lembrete aproximadamente 24 horas antes 
 - **SC-003 (P0)**: Repetição, duas execuções concorrentes e reinício nos pontos controlados produzem no máximo uma submissão por evento/instalação, inclusive em resultado incerto.
 - **SC-004 (P0)**: Walkthrough individual abre o detalhe correto pelo toque; cenários automatizados de perda de acesso/troca de conta/cache antigo mostram zero conteúdo protegido indevido.
 - **SC-005 (P0)**: Com processamento e serviço saudáveis, novo aviso é submetido em até dois minutos nos cenários controlados e em medição individual quando realizada; aceite não comprova exibição.
-- **SC-006 (P0)**: Capturas automatizadas de logs, respostas e avisos contêm zero credenciais, capabilities, tokens reais ou conteúdo privado do comunicado.
+- **SC-006 (P0)**: Capturas automatizadas confirmam push sem corpo completo, dados pessoais, credenciais ou capabilities; somente nome da turma/título no texto e os quatro campos mínimos em `data`. Logs não expõem esses textos nem segredos; respostas REST preservam o contrato autorizado existente. Produção oculta o botão de teste sem alterar ativação/desativação.
 - **SC-007 (P1)**: Com P1 habilitado e processamento saudável, selecionar lembrete entre 24 horas e 23 horas e 55 minutos antes da expiração; repetição/reinício não gera outro. Retomada tardia somente enquanto ativo.
 - **SC-008 (P0)**: MVP demonstrável/aprovável com lembretes desabilitados e sem regressão do consentimento/teste da 010.
 
@@ -116,7 +122,7 @@ Como membro elegível, posso receber um lembrete aproximadamente 24 horas antes 
 - Branch rebaseada sobre develop com 010 mergeada, base `416256032a645e7335229a42bb2a825d174c85c0` (verificada em 2026-10-07). T073/T074 da 010 estão checked nos artefatos atuais, verificados em 2026-10-07 e intocados nesta execução. P0 autorizado em 2026-10-06; entrega completa autorizada em 2026-10-07.
 - A 011 substitui o planejamento anterior dividido entre 011/012. Nenhuma Spec 012 é criada. Entrega completa autorizada = US1 + US2 + US3; a flag de US3 permanece independente do funcionamento de P0.
 - Candidatos são fixados no primeiro processamento durável do evento: membros pré-selecionados com instalações elegíveis, sem autor, ainda elegíveis ao confirmar o snapshot. Quem entra/ativa depois da pré-seleção não é acrescentado nesse processamento. Revalidar antes do envio; registro substituído não redireciona aviso a outra conta.
-- Revogação/perda de acesso anterior à autorização final impede envio. Push já submetido pode chegar depois da mudança e não pode ser recolhido; texto genérico e consulta atual protegem conteúdo.
+- Revogação/perda de acesso anterior à autorização final impede envio. Push já submetido pode chegar depois da mudança e não pode ser recolhido; somente nome da turma/título são exibidos, e conteúdo completo depende da consulta atual autorizada.
 - Um evento NEW por comunicado e um EXPIRING por valor de expiresAt; edição não dispara NEW novamente.
 - Comunicado criado com menos de 24 horas restantes não recebe lembrete imediato; indisponibilidade posterior a uma janela válida permite recuperação enquanto ativo.
 - Sem inbox, histórico para usuário, segundo transporte, campanhas nativas especializadas, auditorias físicas ou estudos com participantes. Constituição 2.1.0 e escopo individual vigente; relatos reais usam `PASS (user-reported)`.

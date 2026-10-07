@@ -2,7 +2,7 @@
 
 Full P0 + P1 implementation authorized on 2026-10-07. This guide lists repeatable validation commands; observed outcomes are recorded only in [final-validation.md](final-validation.md). Release depends on the completed foundation. Local build/export are included in the validation. Runtime preparation was authorized on 2026-10-07; see [walkthrough-preparation-2026-10-07.md](walkthrough-preparation-2026-10-07.md). Installed artifact, phone connectivity and observed delivery remain separate evidence. P1 worker is implemented, independently toggled and defaults false.
 
-Android preview for the current 011 WIP was authorized and submitted on 2026-10-07: see [build/snapshot evidence](eas-preview-build-2026-10-07.md). Installation and the staged owner walkthrough are still pending; no physical task is closed by build submission.
+Android preview for the current 011 WIP was authorized and submitted on 2026-10-07: see [build/snapshot evidence](eas-preview-build-2026-10-07.md). Owner subsequently reported the P0/P1 walkthrough PASS (user-reported). T060 is closed by explicit final owner acceptance; T061 remains open for actual remote CI; build submission alone is not physical evidence.
 
 ## Prerequisites and isolation
 
@@ -68,7 +68,7 @@ Keep 010's dynamic-import harness and feedback regression active. Doctor must in
 | Two workers, same event, stale claim                      | One snapshot and one send per installation; claim version fences stale writer.                                                         |
 | Crash before/after SENDING and after accepted HTTP        | Before boundary recover safely; after boundary UNKNOWN or accepted receipt reads, no second submit.                                    |
 | Rotation, logout, opt-out, reassociation, leave, deletion | Mutation preceding final authorization suppresses; late receipt cannot invalidate replacement binding; no deadlock/cross-account send. |
-| Closed payload/privacy                                    | Generic text only; no secrets/content/recipient identifiers in logs/responses; unknown/extra route ignored.                            |
+| Closed payload/privacy                                    | Only classroom name/title in visible copy; no full body/personal data/secrets; four-field data; generic logs; unknown/extra route ignored.                            |
 | Foreground + live tap + cold-start tap                    | Presentation without spontaneous navigation/prompt; tap opens fresh authorized detail once.                                            |
 | Stale detail cache + access loss / new account            | Fresh normal GET; 404/unavailable or new account's authorization; no old content.                                                      |
 | Regression 010                                            | Consent/test/cooldown/logout behavior unchanged; no connectivity→push-response reconciliation loop.                                    |
@@ -77,13 +77,13 @@ Mock tests prove submission/count/state behavior. They do not prove physical dis
 
 ## Owner walkthrough — after runtime setup / installed 011 artifact
 
-1. Professor publica um comunicado na turma A; responsável A com consentimento/registro elegível observa o push genérico. Registre publicação e recebimento separadamente.
+1. Professor publica um comunicado na turma A; responsável A com consentimento/registro elegível observa título `Novo comunicado • {nome da turma}` e corpo com o título do comunicado (fallback `Novo comunicado disponível`). Registre publicação e recebimento separadamente.
 2. Responsável apenas da turma B, também com push ativo, recebe zero avisos desse comunicado.
 3. Toque no aviso abre o comunicado correto com a conta atual. Após remover acesso ou excluir o comunicado, um toque posterior mostra indisponibilidade.
-4. Para reminder, publique com duração de três dias; após receber o P0 e aguardar um ou dois minutos, edite para um dia. A API aceita somente 1, 3, 7, 15 ou 30 dias; não aceita expiresAt absoluto. Assim a expiração atual fica aproximadamente24h à frente e createdAt precede a janela, sem backdate nem alterar o relógio. Com ambos os flags habilitados, observe o texto “Comunicado próximo da expiração” / “Um comunicado da sua turma expira em breve.” e toque para abrir o detalhe.
+4. Para reminder, publique com duração de três dias; após receber o P0 e aguardar um ou dois minutos, edite para um dia. A API aceita somente 1, 3, 7, 15 ou 30 dias; não aceita expiresAt absoluto. Assim a expiração atual fica aproximadamente24h à frente e createdAt precede a janela, sem backdate nem alterar o relógio. Com ambos os flags habilitados, observe o texto `Comunicado próximo da expiração • {nome da turma}` / `{título do comunicado} expira em breve.` e toque para abrir o detalhe.
 5. Aguarde novos ciclos e, se viável, reinicie o backend mantendo o mesmo expiresAt: não deve haver outro reminder para aquela instalação/ocorrência. Duas instalações elegíveis podem receber uma cada.
 6. Exclua outro comunicado antes da janela: zero reminder. O caso sem expiresAt não é exposto pela API atual; está coberto pela guarda automatizada e não deve ser declarado PASS físico.
-7. Faça logout/troque para conta sem acesso e toque em um aviso anterior: nenhum conteúdo da sessão antiga. Confirme que opt-out/teste neutro 010 continuam funcionando.
+7. Faça logout/troque para conta sem acesso e toque em um aviso anterior: nenhum conteúdo da sessão antiga. Confirme que opt-out continua funcionando. Teste neutro fica visível somente em desenvolvimento/preview; produção o oculta e mantém o endpoint de diagnóstico.
 
 Owner may be sole executor. Record build, environment, measured timings only when measured, and `PASS (user-reported)` only for reported cases. Specialized campaigns/participants are DISPENSADA POR ESCOPO; do not create substitute tasks.
 
@@ -106,3 +106,19 @@ Disable business flag (and optional reminder flag), stop new business dispatches
 The follow-up SQL is [20261007120000_announcement_expiration_occurrences/migration.sql](../../backend/prisma/migrations/20261007120000_announcement_expiration_occurrences/migration.sql): add private occurrenceKey with publication default, preserve any reserved EXPIRING row using current expiry, create replacement unique index, remove the old uniqueness index and add a kind/key CHECK. Existing events/dispatches are retained. Automated gates migrated only localhost/avisa_ai_test. The later authorized operational preparation applied both migrations to localhost/avisa_ai after a private backup, without fixtures/reset; see the dated walkthrough preparation. Do not reverse the ledger or replay sends during recovery.
 
 On this Windows tool runtime, npm default cmd shell failed before executing scripts. The same official scripts passed with `npm.cmd --script-shell=powershell.exe run <script>`; no package or persistent npm config was changed.
+
+## Final follow-up review / artifact implications — 2026-10-07
+
+Owner reported overall P0/P1 walkthrough `PASS (user-reported)`; no device/build/timing/individual-case details inferred. Owner now reports final new/reminder copy PASS (user-reported) and confirms the installed APK is preview, where the test action is expected. Automated/configurational production hiding is explicitly accepted. T060 is CLOSED; production-artifact smoke is reserved for final release, not T060. No production-artifact physical PASS is claimed.
+
+- New/reminder copy requires updated backend build/deployment/restart; the installed 011 app can display it with the unchanged four-field data payload. No new app build for copy alone.
+- Diagnostic button/feedback visibility requires updated app JS/configuration. Existing standalone preview embeds its old bundle; no expo-updates dependency/configuration exists, so use a new artifact for visual validation. Preview/development EAS profiles keep the button; production/absent/unknown profiles hide it. Local development uses __DEV__. For release-mode local export/production comparison, do not set EAS_BUILD_PROFILE to preview/development.
+- Check requested title/body plus safe fallbacks, no full body/personal data, and production absence vs preview presence of the test action. Lifecycle opt-in/logout and backend authorization stay unchanged. Automated configuration/UI tests cover both branches; no EAS build/deployment is performed by this follow-up.
+
+Future Spec 012 ideas are recorded in spec.md; no new onboarding or persistence behavior in 011.
+
+### Final release artifact smoke — owner-selected gate
+
+For the eventual production artifact, verify the diagnostic button/feedback is absent. This ordinary functional smoke is NOT RUN and belongs to the final release gate; the owner explicitly accepts current automated/configurational evidence for closing T060. It is not a specialized native/accessibility campaign, does not reopen T060 and is not transferred into Spec 012. Current preview retaining the action is expected.
+
+After final commits: publish the 011 feature branch and open PR into develop; observe Backend CI / Run backend checks, Mobile CI / Run mobile checks and Commit Conventions / Validate commits. Record run URLs/IDs and tested SHA for the final PR revision before T061 closure. Feature-branch push alone does not trigger these workflows' push filters; PR does. Use workflow_dispatch only if a required run is absent and verify the requested ref/SHA.

@@ -1,6 +1,60 @@
 # Validation — Spec 011
 
-## Current delivery — 2026-10-07
+## Current final product follow-up — 2026-10-07
+
+**Owner report:** Overall physical P0/P1 walkthrough previously reported **PASS (user-reported)**. Final owner report on 2026-10-07: new-announcement notification correctly displayed classroom + title **PASS (user-reported)**; expiration reminder correctly displayed classroom + announcement title **PASS (user-reported)**. Owner confirms the current APK is preview, so retaining the diagnostic test action is expected, and explicitly accepts automated/configurational validation that production hides it. No unreported individual scenario, device/build ID, timing, receipt or handoff is inferred.
+
+**Disposition:** T060 **CLOSED by explicit owner authorization** after final visual copy acceptance. T062/T063/T064 implemented and locally verified; **63/64 checked**. Only **T061 remains OPEN for actual final-revision remote CI and final consolidation (NOT RUN)**. Production-artifact smoke is reserved for the final release gate; automated/configurational visibility is accepted for T060, with no production-artifact physical PASS claimed. Earlier OPEN/PENDING notices below are superseded historical checkpoints.
+
+### Product result and privacy
+
+- New announcement: `Novo comunicado • {nome da turma}` / announcement title. Missing/null/blank title fallback: `Novo comunicado disponível`.
+- Expiration reminder: `Comunicado próximo da expiração • {nome da turma}` / `{título do comunicado} expira em breve.`. Missing/null/blank title fallback: `Um comunicado expira em breve.`. Missing/blank classroom name: `Sua turma`. Whitespace normalized; text bounded to domain limits 80/120.
+- Current classroom name/title are read under existing locks in final authorization and passed only in the in-memory send snapshot. No full body, personal data or additional context included. `data` remains exactly version/type/announcementId/dispatchId. Existing membership/session/binding checks, expiry, TTL, idempotence/no-resubmit and REST authorization remain unchanged. No schema/migration/dependency change.
+- Diagnostic test button and feedback render only in local development (`__DEV__`) or explicit EAS preview/development profile (`extra.pushDiagnosticsEnabled === true`). Production/absent/unknown profiles generate false, including when inherited extra had true. Existing authenticated endpoint/infrastructure, cooldown and opt-in/logout lifecycle remain intact.
+
+### Executed gates — final follow-up
+
+| Component | Check | Result |
+| --- | --- | --- |
+| Backend | typecheck / lint / format:check | PASS, each exit0 on final revision |
+| Backend | test:cov | PASS, exit0; 31 suites / 388 tests; S73.85%, B64.98%, F73.10%, L74.65% |
+| Backend | test:integration | PASS, exit0; 25 suites / 236 tests; natural cleanup |
+| Backend | test:contract | PASS, exit0; 1 suite / 10 tests |
+| Backend | test:e2e | PASS, exit0; 7 suites / 78 tests; natural cleanup |
+| Backend | build | PASS, exit0 |
+| Mobile | typecheck / lint / format:check | PASS, each exit0 |
+| Mobile | test:ci | PASS, exit0; 87 suites / 636 tests; S85.99%, B78.15%, F90.31%, L88.51% |
+| Mobile | doctor | PASS, exit0; 21/21 online checks |
+| Mobile | export:ci | PASS, exit0; Android/iOS/web local export |
+| Repository | git diff --check | PASS, exit0 |
+
+New tests first failed against the earlier generic copy and production-visible button. Final coverage verifies new/reminder exact copy, null/absent/blank fallback, bounded text, unchanged closed data/transport, current metadata after edits between claim and authorization, no full-body/personal/secret leakage and no metadata in logs. Configuration/UI tests cover development/preview/production/default visibility, inherited flag override and preserved opt-out; full mobile suite retains lifecycle/navigation/session regressions.
+
+Test-only corrections: the new app.config fixture initially omitted required ConfigContext fields; added typed fields. The fallback mock initially reused a consumed Response, then used async without await; it now creates a fresh Response via Promise.resolve per call. Final gates rerun successfully without weakening thresholds or production error handling. Unit and integration transport is mocked. Destructive database fixtures ran only on guarded localhost/avisa_ai_test. During automated gates, real-local database/backend were not restarted/reset. A subsequent owner-requested backend restart is recorded below. Logs are ignored under `.codex/spec011-product-followup/`. No forceExit. The normal sandbox could not start (setup refresh errors); approved external-shell execution completed validation. Existing Nest fault-injection/React act/pg warnings remain qualified log history, not real delivery evidence.
+
+### Build and visual validation
+
+Copy changes are backend-only: after deploying/restarting the updated backend, the installed 011 app can display the new copy using its unchanged payload parser. No new app build required for copy alone. Owner subsequently authorized restart: old PID19772 → new PID5964 using node -r dotenv/config dist/src/main.js, existing configuration and final local build. Local health returned HTTP200/status=ok; LAN health returned HTTP200 and stderr was empty at checkpoint. No database reset/migration/credential change. The subsequent final copy observations are owner-reported above.
+
+The button gate changes mobile JS/app configuration. Current standalone APK embeds the previous bundle; this project has no expo-updates dependency/configuration. A production app artifact is needed for the future physical smoke of the visual gate; owner accepts existing automated/configurational evidence now. Preview keeps the diagnostic action; production hides it. Owner confirms the current APK is preview, where presence is expected. To visually check absence at the final release gate, use the production artifact; another preview build still intentionally shows it. No native module/credential change, EAS submission, publication, staging, commit, push or PR performed.
+
+Future Spec 012 ideas recorded in spec.md: first-use contextual invitation with explicit CTA before native permission prompt; study per-user/device preference persistence with safe logout revocation and no inheritance between accounts. No implementation or lifecycle change here.
+
+### Approved final commits and focused checks — 2026-10-07
+
+Owner approved exact three subjects, isolated staging and pre-commit cached name/status + whitespace checks, focused tests, push/PR into develop and subsequent remote CI. Backend `9ee7ceee3aa9d5b87eb745512d8ed2c8193b8060` and mobile `4674e0452af6c76fc77e7cc736edcf08d1baec6f` created with only their approved seven/five files. Commitlint and staged checks passed for both.
+
+| Group | Narrow checks | Result |
+| --- | --- | --- |
+| Backend | Adapter, authorized snapshot/service and dispatch worker unit | PASS, natural exit0; 3 suites /74 tests |
+| Backend | Privacy/context, dispatch authorization and reminders integration | PASS, natural exit0; 3 suites /40 tests, only guarded localhost/avisa_ai_test, provider mocked |
+| Mobile | Profile/config, consent lifecycle and test lifecycle | PASS, natural exit0; 4 suites /39 tests |
+| Documentation | T060 closed/only T061 open, exact nine-file scope, local links and git whitespace | Validate immediately before third approved commit; 63/64 tasks, remote CI NOT RUN |
+
+Third approved commit consolidates this evidence and retains T061 OPEN until real remote results. Logs ignored in `.codex/spec011-final-commits/`. Worktree cleanliness is checked after the third commit before standard feature-branch push. Publication is now authorized; no merge, new EAS build or Spec 012 work.
+
+## Historical pre-follow-up delivery checkpoint — 2026-10-07
 
 Full Spec 011 including US3/P1 implemented. All requested local gates passed; physical walkthrough and actual remote CI remain pending. Historical 2026-10-06 records follow this current section and do not define today's scope or dependency status.
 
@@ -176,3 +230,13 @@ These are SDK patch mismatches, with possible missing upstream fixes/compatibili
 ## Remaining real evidence
 
 Authorized runtime/migration deployment and installed artifact walkthrough are not performed by test fixtures. Record only actual owner reports as `PASS (user-reported)`; never mark delivery from mock tests. Specialized campaigns/participants remain DISPENSADA POR ESCOPO, with no execution task.
+
+## Final acceptance and current diff review — 2026-10-07
+
+This section applies to the current final-product diff, not the earlier implementation checkpoints. T060 is closed from the exact owner reports at the top; production-artifact smoke remains NOT RUN in the final release gate, and is not a T060 or Spec 012 dependency. T061 remains open for real checks on the final PR revision.
+
+Reviewed the 21-file current diff: seven backend files (authorized metadata snapshot, worker forwarding, adapter copy/fallback and unit/privacy integration tests), five mobile files (build-profile boolean, runtime presentation gate, screen and configuration/UI tests), nine Spec 011 documentary files. No blocking finding in this scoped review. Existing membership/binding/lock order, minimal data fields, no-resubmit policy and opt-in/logout are preserved. No package/lockfile, schema/migration, private environment/credential or Spec 010 edit. The review retains previous observed full local gates; no production/test code changed during this documentary consolidation, so suites are not unnecessarily rerun. Whitespace, task state, proposal subjects/group coverage and local document links are rechecked.
+
+Proposed final commits are in [commit-plan.md](commit-plan.md). The earlier proposal step did not stage, commit or publish; owner has now approved execution of those exact groups and push/PR into develop with remote checks after commits. Required remote evidence: Backend CI / Run backend checks; Mobile CI / Run mobile checks; Commit Conventions / Validate commits. Current workflows trigger on PR into develop/main and offer workflow_dispatch. Feature-branch push alone is insufficient. Record URLs, result/conclusion and actual tested final head/PR merge SHA relationship. If T061 closure introduces a documentary commit, publish it and require all applicable final-revision checks again; do not cite green results from an older head as final CI.
+
+No Spec 012 work started. No new EAS build or production smoke performed. Remote checks remain NOT RUN at this proposal checkpoint.

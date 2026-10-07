@@ -20,7 +20,7 @@ Client cannot provide recipient IDs, installation IDs, push tokens, event states
 - Preselect before parent locks, then lock all selected Users before Classroom and other parents; only surviving preselected bindings enter the atomic snapshot. No new recipient discovery after locking. Finalization/receipts touching binding plus ledger use the same business order, including implicit FK locks.
 - Extend ExpoPushAdapter with typed business message input; preserve current push-test entry point, authentication headers, response bounds and safe error mapping. No separate Expo/FCM client.
 - Private adapter arguments may include current token, but private values never cross to public REST, logs, URLs, telemetry or artifacts. HTTP is called only after committed SENDING; no automatic submission retry.
-- Sending uses generic title “Novo comunicado” and body “Há um novo comunicado disponível. Abra o aplicativo para consultar.” Reminder: “Comunicado próximo da expiração” / “Um comunicado da sua turma expira em breve.” No classroom/member/title/content personalization.
+- Sending uses `Novo comunicado • {nome da turma}` with announcement title as body. Reminder uses `Comunicado próximo da expiração • {nome da turma}` / `{título do comunicado} expira em breve.`. Current metadata comes only from the final authorized server-side snapshot, never client input or the earlier claim. Blank/missing name falls back to `Sua turma`; blank/missing title falls back to `Novo comunicado disponível` or `Um comunicado expira em breve.`. Whitespace normalized; name/title bounded to existing domain limits (80/120 characters). No full announcement body, personal data or additional context.
 - `channelId='push-test'` reuses the existing Android channel named “Notificações”; sound default. TTL bounded to `min(3600, floor(seconds until current expiresAt))`, suppress at <1. No new native configuration/dependency required by this contract.
 
 ## Closed business payload
@@ -32,13 +32,13 @@ Client cannot provide recipient IDs, installation IDs, push tokens, event states
 | announcementId | UUID v4 string identifying existing resource; never authorization |
 | dispatchId     | UUID v4 string for dedupe; never capability                       |
 
-No token, capability, userId, sessionId, membership proof, classroom name/id, content, arbitrary URL/route or provider ticket. Parser rejects malformed values and unexpected business fields. Keep the existing `push-test` payload/attemptId contract unchanged; unknown types are ignored without permission prompts or reconciliation.
+`data` has no token, capability, userId, sessionId, membership proof, classroom name/id, announcement title/body, arbitrary URL/route or provider ticket. Only visible title/body permit classroom name and announcement title. Parser rejects malformed values and unexpected business fields. Keep the existing `push-test` payload/attemptId contract unchanged; unknown types are ignored without permission prompts or reconciliation.
 
 ## Presentation and tap state
 
 | State/input                                  | Required behavior                                                                                                                                                                  |
 | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Known business notification in foreground    | Generic banner/list/sound consistent with current preferences; receive dedupe 128 entries; no spontaneous navigation.                                                              |
+| Known business notification in foreground    | Contextual banner/list/sound consistent with current preferences; receive dedupe 128 entries; no spontaneous navigation.                                                              |
 | Live response or initial last SDK response   | Validate payload; independent tap dedupe 128 entries; clear consumed native response.                                                                                              |
 | Auth/router restoring                        | One memory-only pending intent, five-minute TTL; wait for readiness.                                                                                                               |
 | Anonymous cold-start intent                  | Can be adopted once by first authenticated session; fetch with that account's normal authorization.                                                                                |
@@ -56,4 +56,6 @@ Only internal destination `/(app)/announcements/[id]` is allowed. Route uses fre
 
 Diagnostics may report category, safe outcome code and aggregate counts; do not print tokens, capabilities, private fingerprints, provider IDs, recipient identities or school content. Use synthetic fixture IDs only in tests. Persistence/send/receipt/display outcomes remain distinct. P1 disabled creates no new EXPIRING events and submits no pending reminder dispatches; existing tombstones remain. NEW continues independently.
 
-Reminder occurrences use `expiration:<current expiresAt milliseconds>`; NEW uses `publication`. Both keys stay private. Final authorization compares current expiry to the original occurrence, then checks membership, original eligible binding and TTL. A changed expiry may have one new occurrence, but returning to an earlier value never recreates it. Already committed SENDING cannot be retracted; generic copy and normal GET authorization protect content.
+Reminder occurrences use `expiration:<current expiresAt milliseconds>`; NEW uses `publication`. Both keys stay private. Final authorization compares current expiry to the original occurrence, then checks membership, original eligible binding and TTL. A changed expiry may have one new occurrence, but returning to an earlier value never recreates it. Already committed SENDING cannot be retracted; full content remains behind normal GET authorization.
+
+The test endpoint/infrastructure remains available for authorized diagnostics. The mobile action and its feedback render only under `__DEV__` or `extra.pushDiagnosticsEnabled === true`; app.config sets that boolean only for EAS preview/development profiles, overwriting inherited values and defaulting false for production/absent/unknown profiles. This presentation gate changes neither backend authorization nor opt-in/logout.

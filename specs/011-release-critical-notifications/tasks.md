@@ -2,7 +2,7 @@
 
 **Input**: [spec.md](spec.md), [plan.md](plan.md), [research.md](research.md), [data-model.md](data-model.md), [contract](contracts/announcement-notifications.md), [quickstart.md](quickstart.md).
 
-**Status**: Full Spec 011 implemented and locally validated on 2026-10-07, including T046–T053. 59/61 tasks checked; T060/T061 remain open only for physical walkthrough and actual final-revision CI evidence. Existing completed tasks preserved. Real-local runtime preparation authorized and recorded in walkthrough-preparation-2026-10-07.md; no physical report or final-revision remote CI yet. Base develop `416256032a645e7335229a42bb2a825d174c85c0`, with merged Spec 010. Owner authorized three local commit groups on 2026-10-07; this does not close T060/T061. Physical walkthrough PENDING; final-revision remote CI NOT RUN. No Spec 012, push or PR.
+**Status**: Final P0/P1 notification copy accepted as `PASS (user-reported)` on 2026-10-07; preview test action is expected and production configuration/automated validation explicitly accepted. T060 CLOSED by owner authorization. T062–T064 locally verified; 63/64 checked. Only T061 remains OPEN for actual final-revision remote CI and final consolidation. Production-artifact smoke stays in the final release gate, not T060. Three final commit groups explicitly approved; backend/mobile groups committed after narrow tests and staged checks, documentation/publication follow. T061 remains open pending real CI. Spec 012 not started.
 
 **Tests**: Required by FR-015 and constitution; write relevant failing tests before implementing behavior. External transport is mocked. Destructive fixtures/migrations use exactly local `avisa_ai_test` with existing guards.
 
@@ -114,8 +114,8 @@
 - [x] T057 Execute backend official gates from `backend/package.json` and `.github/workflows/backend-ci.yml` per quickstart: Prisma validate/generate/migrate only `avisa_ai_test`, format/lint/typecheck, coverage/integration/contract/E2E/build; mock sends and record actual exit/coverage/repeats in `specs/011-release-critical-notifications/final-validation.md`.
 - [x] T058 Execute mobile gates from `mobile/package.json` and `.github/workflows/mobile-ci.yml`: typecheck/lint/format/test:ci/Doctor/export; preserve genuine third-party/CI failures and record results in `specs/011-release-critical-notifications/final-validation.md`; no automatic dependency upgrade/new EAS build to conceal a failed gate.
 - [x] T059 Validate flags/recovery plus no-duplicate tombstones across disable/restart/redeploy in `backend/test/announcement-push-dispatch.integration.spec.ts` and regression suites; preserve 010 consent/test behavior, scopes and real-workthrough prerequisites in `specs/011-release-critical-notifications/final-validation.md`.
-- [ ] T060 Record owner functional walkthrough P0/P1 in `specs/011-release-critical-notifications/final-validation.md` following `specs/011-release-critical-notifications/quickstart.md` after separate artifact/deployment authorization: normal open, publication, foreground/background if viable, tap current authorized detail, lost-access/account-change denial and 010 opt-out/test regression; mark only reported scenarios `PASS (user-reported)` and separate acceptance/handoff/display.
-- [ ] T061 Consolidate P0/P1 FR-001–019 and SC-001–008, tests, migration/recovery, owner evidence and actual local/remote gates in `specs/011-release-critical-notifications/final-validation.md` and `specs/011-release-critical-notifications/tasks.md`; include implemented P1 and its validation, require validated 010 for release and do not claim unexecuted CI.
+- [x] T060 Record owner functional walkthrough P0/P1 in `specs/011-release-critical-notifications/final-validation.md` following `specs/011-release-critical-notifications/quickstart.md` after separate artifact/deployment authorization: normal open, publication, foreground/background if viable, tap current authorized detail, lost-access/account-change denial and 010 opt-out/test regression; mark only reported scenarios `PASS (user-reported)` and separate acceptance/handoff/display. Overall P0/P1 walkthrough and final new/reminder copy accepted on 2026-10-07 as PASS (user-reported). Owner confirmed current APK is preview and accepted automated/configurational production hiding; production-artifact smoke remains the final release gate. T060 closed explicitly; no additional scenario/device/timing inference.
+- [ ] T061 Consolidate P0/P1 FR-001–020 and SC-001–008, tests, migration/recovery, owner evidence and actual local/remote gates in `specs/011-release-critical-notifications/final-validation.md` and `specs/011-release-critical-notifications/tasks.md`; include implemented P1 and its validation, require validated 010 for release and do not claim unexecuted CI.
 
 ## Dependencies & Execution Order
 
@@ -152,9 +152,18 @@ Owner authorized full 011 including P1 on 2026-10-07. Implement smallest P0 pipe
 | FR-009–012; SC-004/006         | T019/T025, T033–T045, T054, T060                           |
 | FR-015; all P0 outcomes        | Test tasks, T031/T045 and T054–T061                        |
 | FR-016–019; SC-007             | T046–T053; full 011 gates after P1 integration             |
+| FR-009/020; SC-006 | T062–T064; copy/privacy and diagnostic UI gates |
 
-61 tasks: Setup3, Foundation12, US1 17, US2 13, US3 8, closure8. Current authorized scope61;59 checked,2 evidence tasks open; historical P0 scope53. Only verified execution tasks are checked. Specialized campaigns/participants are DISPENSADA POR ESCOPO, with no execution checkbox and no release dependency.
+64 tasks: original 61 plus three authorized product follow-ups below. Existing 59 completed tasks preserved plus T062–T064 verified: 63/64 checked; T060 closed and only T061 remains open for final remote evidence. Only verified execution tasks are checked. Specialized campaigns/participants are DISPENSADA POR ESCOPO, with no execution checkbox and no release dependency.
 
 ### P1 execution dependencies (2026-10-07)
 
-T046/T047 tests -> occurrenceKey schema/migration/client -> T048 shared materialization -> T049 selector -> T050 wiring -> T051 adapter/mobile contract -> T052 P1/P0 validation -> T053 evidence. Final T057/T058 rerun after changes; T060 remains owner-reported only and T061 remains open until physical/CI evidence. Shared service/module/schema edits execute sequentially.
+T046/T047 tests -> occurrenceKey schema/migration/client -> T048 shared materialization -> T049 selector -> T050 wiring -> T051 adapter/mobile contract -> T052 P1/P0 validation -> T053 evidence. Final T057/T058 rerun after changes; owner P0/P1 walkthrough report received, T060 closed by owner acceptance and T061 remains open until final consolidation/CI evidence. Shared service/module/schema edits execute sequentially.
+
+## Final product follow-up — authorized 2026-10-07
+
+- [x] T062 [US1] Use current authorized classroom name/announcement title for new notification copy in `backend/src/push/announcement-push.service.ts`, `backend/src/push/announcement-push.worker.ts`, `backend/src/push/expo-push.adapter.ts`; safe missing/blank fallback; preserve minimal data, eligibility and no-resubmit; update adapter/service/worker and privacy tests.
+- [x] T063 [US3] Use `Comunicado próximo da expiração • {nome da turma}` / `{título do comunicado} expira em breve.` through the same authorized snapshot/adapter, with safe fallback and no body/personal data; verify reminder and privacy regressions.
+- [x] T064 Hide diagnostic test action/feedback in production through `mobile/app.config.ts`, `mobile/src/config/push-config.ts` and `mobile/app/(app)/profile/notifications.tsx`; retain explicit preview/development visibility and backend endpoint/lifecycle; cover configuration/profile UI and applicable gates; record build implications and owner report in `final-validation.md`.
+
+Future Spec 012 ideas are recorded in `spec.md`: contextual first-use invitation with explicit CTA before native prompt; study per-user/device preference persistence with safe logout revocation and no account inheritance. No lifecycle change or Spec 012 execution task is created here.
