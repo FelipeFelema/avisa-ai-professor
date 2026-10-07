@@ -4,7 +4,21 @@
 
 **Owner report:** Overall physical P0/P1 walkthrough previously reported **PASS (user-reported)**. Final owner report on 2026-10-07: new-announcement notification correctly displayed classroom + title **PASS (user-reported)**; expiration reminder correctly displayed classroom + announcement title **PASS (user-reported)**. Owner confirms the current APK is preview, so retaining the diagnostic test action is expected, and explicitly accepts automated/configurational validation that production hides it. No unreported individual scenario, device/build ID, timing, receipt or handoff is inferred.
 
-**Disposition:** T060 CLOSED by owner acceptance; T062–T064 verified. **T061 COMPLETED after actual successful remote Backend CI, Mobile CI and Commit Conventions on c57b0a48bc2a1154a6cb68cc218d68d0b17fe5ae; 64/64 checked.** The final documentary closure commit must receive its own green checks before reporting ready for merge. Production-artifact smoke stays in the final release gate, not a claimed physical PASS. Earlier OPEN/PENDING/NOT RUN notices below are superseded historical checkpoints.
+**Disposition:** T060 CLOSED by owner acceptance; T062–T064 verified. **T061 COMPLETE; 64/64 tasks checked.** Actual Backend CI, Mobile CI and Commit Conventions all succeeded on the published closure head e0f0f9c9f30af743a0832e1b6ab95039dd0938a7; current linked evidence and blocker review below. No Spec 011 blocker remains at that checked head. This requested evidence update will receive another commit/push and its own checks before merge readiness is reported. Production-artifact smoke stays in the separate final release gate, with no physical production PASS claimed. Earlier OPEN/PENDING/NOT RUN notices are historical.
+
+### CI of the published closure commit and blocker review — 2026-10-07
+
+Latest verified published closure commit: `docs(spec011): close release critical notifications`, head `e0f0f9c9f30af743a0832e1b6ab95039dd0938a7`. Actual PR: [#54 → develop](https://github.com/FelipeFelema/avisa-ai-professor/pull/54). Rechecked live at `2026-10-07T22:08:24.794221+00:00`: all three workflows, jobs and required head check-runs completed/success. PR reports mergeable/clean and remains open/unmerged. Merge ref `be4e39e045533e97f6ffbf7e3aa7e204773483ff` includes feature head `e0f0f9c9f30af743a0832e1b6ab95039dd0938a7` and develop base `416256032a645e7335229a42bb2a825d174c85c0` as parents. This supplements the first remote batch below with actual evidence for the already published closure commit.
+
+| Workflow | Actual run | Actual job | Result |
+| --- | --- | --- | --- |
+| Backend CI | [37691578237](https://github.com/FelipeFelema/avisa-ai-professor/actions/runs/37691578237) | [Run backend checks / 113032803692](https://github.com/FelipeFelema/avisa-ai-professor/actions/runs/37691578237/job/113032803692) | PASS — completed/success, attempt 1 |
+| Mobile CI | [37691578186](https://github.com/FelipeFelema/avisa-ai-professor/actions/runs/37691578186) | [Run mobile checks / 113032802486](https://github.com/FelipeFelema/avisa-ai-professor/actions/runs/37691578186/job/113032802486) | PASS — completed/success, attempt 1 |
+| Commit Conventions | [37691578141](https://github.com/FelipeFelema/avisa-ai-professor/actions/runs/37691578141) | [Validate commits / 113032802606](https://github.com/FelipeFelema/avisa-ai-professor/actions/runs/37691578141/job/113032802606) | PASS — completed/success, attempt 1 |
+
+**Blocker review: none remaining for Spec 011 at this checked head.** All 64 unique tasks are checked, T060 retains exact PASS (user-reported) owner acceptance, T061 has genuine remote evidence, no requested implementation/validation task remains open, and GitHub reports all required checks successful with no merge conflict. This is a scoped Spec 011 conclusion, not an invented new security/device audit. The owner-accepted production-artifact smoke stays NOT RUN in the separate final release gate and does not reopen T060/T061. Specialized campaigns remain outside scope. Spec 012 not started.
+
+The owner requested a further evidence-only update with the same subject `docs(spec011): close release critical notifications`. Only this file and tasks.md change; no production/test code, migration, dependency, environment or lifecycle change. Validate documentary states/links/whitespace/Commitlint and cached name/status + check before creating it, then push normally and wait for Backend CI/Mobile CI/Commit Conventions on its new head. New-head results must be verified live and attached to PR evidence/final response before reporting ready for merge; no future check outcome is claimed here. No merge authorization is exercised.
 
 ### Product result and privacy
 
@@ -70,7 +84,7 @@ Backend CI includes Prisma validate/generate/migration on the isolated test serv
 
 **T061 completed after these real results; all 64 tasks checked.** Owner's final P0/P1 copy acceptance remains PASS (user-reported), and the separately agreed production-artifact smoke remains NOT RUN at the final release gate without reopening T060/T061. Spec 012 is not started and must wait until the Spec 011 merge.
 
-The owner-authorized final subject is `docs(spec011): close release critical notifications`. This evidence-only closure commit must be pushed and all three required checks must pass again on its new head before reporting merge readiness. Its final SHA/results will be verified from live GitHub and attached to PR evidence/final report; this record does not claim future results before execution. No extra repository commit is needed merely to insert its own future hash/results recursively.
+The first closure commit e0f0f9c was created, pushed and all three required checks succeeded; its linked actual evidence is now recorded above. The additional owner-requested documentary update also requires its own green checks after push. Future results are verified externally in the PR/final response rather than claimed before execution.
 
 ## Historical pre-follow-up delivery checkpoint — 2026-10-07
 
