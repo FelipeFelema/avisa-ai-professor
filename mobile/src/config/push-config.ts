@@ -76,3 +76,11 @@ export function getPushRuntimeConfig(): PushRuntimeConfig {
     },
   });
 }
+
+export function resolvePushTestActionEnabled(development: boolean, configured: unknown): boolean {
+  return development || configured === true;
+}
+
+export function getPushTestActionEnabled(): boolean {
+  return resolvePushTestActionEnabled(__DEV__, Constants.expoConfig?.extra?.pushDiagnosticsEnabled);
+}

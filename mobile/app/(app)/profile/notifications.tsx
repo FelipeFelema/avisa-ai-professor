@@ -1,6 +1,7 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SecondaryScreen, Button, ScreenState } from '@/components/ui';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { getPushTestActionEnabled } from '@/config/push-config';
 import { useTheme } from '@/hooks/useTheme';
 import type { Theme } from '@/theme';
 
@@ -55,6 +56,7 @@ export default function ProfileNotificationsScreen() {
   const message = push.message ?? presentation.message;
   const unavailable = push.status === 'UNAVAILABLE';
   const pending = push.status === 'PENDING_CLEANUP' || push.isBusy;
+  const diagnosticsEnabled = getPushTestActionEnabled();
 
   if (push.status === 'LOADING') {
     return (
@@ -84,22 +86,26 @@ export default function ProfileNotificationsScreen() {
 
           {push.status === 'ACTIVE' ? (
             <>
-              <Button
-                label={
-                  push.isTestBusy
-                    ? 'Enviando teste...'
-                    : push.testCooldownActive
-                      ? 'Aguarde para enviar teste'
-                      : 'Enviar teste de notificação'
-                }
-                loading={push.isTestBusy}
-                disabled={push.isTestBusy || push.testCooldownActive || pending}
-                onPress={() => void push.sendTest()}
-              />
-              {push.testMessage && (
-                <Text accessibilityRole="summary" style={styles.message}>
-                  {push.testMessage}
-                </Text>
+              {diagnosticsEnabled && (
+                <>
+                  <Button
+                    label={
+                      push.isTestBusy
+                        ? 'Enviando teste...'
+                        : push.testCooldownActive
+                          ? 'Aguarde para enviar teste'
+                          : 'Enviar teste de notificação'
+                    }
+                    loading={push.isTestBusy}
+                    disabled={push.isTestBusy || push.testCooldownActive || pending}
+                    onPress={() => void push.sendTest()}
+                  />
+                  {push.testMessage && (
+                    <Text accessibilityRole="summary" style={styles.message}>
+                      {push.testMessage}
+                    </Text>
+                  )}
+                </>
               )}
               <Button
                 label="Desativar notificações"
