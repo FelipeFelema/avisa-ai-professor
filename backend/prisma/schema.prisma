@@ -7,20 +7,21 @@ datasource db {
 }
 
 model User {
-  id               String   @id @default(uuid())
-  name             String
-  email            String   @unique
-  password         String
-  role             Role     @default(PARENT)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  
-  announcements    Announcement[]
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(PARENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  announcements Announcement[]
 
   userClassrooms UserClassroom[]
 
-  ownedClassrooms Classroom[] @relation("ClassroomOwner")
-  sessions         AuthSession[]
+  ownedClassrooms   Classroom[]        @relation("ClassroomOwner")
+  sessions          AuthSession[]
+  pushRegistrations PushRegistration[]
 }
 
 model AuthSession {
@@ -32,7 +33,8 @@ model AuthSession {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pushRegistrations PushRegistration[]
 
   @@index([userId])
 }
@@ -44,59 +46,153 @@ model ClassroomDeletionReceipt {
 }
 
 model Announcement {
-  id               String   @id @default(uuid())
-  title            String
-  content          String
-  expiresAt        DateTime
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  expiresAt DateTime
 
-  authorId         String
-  author           User     @relation(fields: [authorId], references: [id])
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
 
-  classroomId      String
-  classroom        Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+  classroomId String
+  classroom   Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
 
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Classroom {
-  id               String   @id @default(uuid())
-  name             String
-  ownerId          String
+  id      String @id @default(uuid())
+  name    String
+  ownerId String
 
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  announcements    Announcement[]
+  announcements Announcement[]
 
   userClassrooms UserClassroom[]
 
-  owner          User @relation("ClassroomOwner", fields: [ownerId], references: [id])
+  owner User @relation("ClassroomOwner", fields: [ownerId], references: [id])
 }
 
 model UserClassroom {
-  userId           String
-  classroomId      String
+  userId      String
+  classroomId String
 
-  user             User     @relation(fields: [userId], references: [id])
-  classroom        Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id])
+  classroom Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
 
   @@id([userId, classroomId])
 }
 
 model InviteCode {
-  id               String   @id @default(uuid())
-  code             String   @unique
-  role             Role
-  isActive         Boolean  @default(true)
-  expiresAt        DateTime
+  id        String   @id @default(uuid())
+  code      String   @unique
+  role      Role
+  isActive  Boolean  @default(true)
+  expiresAt DateTime
 
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum Role {
   PARENT
   PROFESSOR
   ADMIN
+}
+
+enum PushPlatform {
+  ANDROID
+  IOS
+}
+
+enum PushRegistrationState {
+  RESERVED
+  ACTIVE
+  REVOKED
+  INVALID
+}
+
+enum PushRegistrationReason {
+  USER_DISABLED
+  LOGOUT
+  PERMISSION_REVOKED
+  SESSION_INACTIVE
+  TOKEN_INVALID
+  REPLACED
+}
+
+enum PushTestAttemptState {
+  SENDING
+  ACCEPTED
+  PROVIDER_HANDOFF
+  REJECTED
+  UNKNOWN
+}
+
+model PushInstallation {
+  id                  String    @id @db.Uuid
+  secretHash          String    @db.Char(64)
+  lifecycleVersion    Int       @default(0)
+  lastTestStartedAt   DateTime? @db.Timestamptz(6)
+  nextTestAvailableAt DateTime? @db.Timestamptz(6)
+  testLeaseUntil      DateTime? @db.Timestamptz(6)
+  createdAt           DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt           DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+
+  registrations PushRegistration[]
+  testAttempts  PushTestAttempt[]
+}
+
+model PushRegistration {
+  id               String                  @id @default(uuid()) @db.Uuid
+  installationId   String                  @db.Uuid
+  userId           String
+  sessionId        String
+  lifecycleVersion Int
+  platform         PushPlatform?
+  expoToken        String?                 @unique
+  tokenFingerprint String?                 @db.Char(64)
+  tokenRevision    Int                     @default(0)
+  state            PushRegistrationState   @default(RESERVED)
+  reason           PushRegistrationReason?
+  createdAt        DateTime                @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime                @default(now()) @updatedAt @db.Timestamptz(6)
+  activatedAt      DateTime?               @db.Timestamptz(6)
+  invalidatedAt    DateTime?               @db.Timestamptz(6)
+
+  installation PushInstallation  @relation(fields: [installationId], references: [id], onDelete: Cascade)
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session      AuthSession       @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  testAttempts PushTestAttempt[]
+
+  @@unique([installationId, lifecycleVersion])
+  @@index([userId])
+  @@index([sessionId])
+  @@index([installationId, state])
+}
+
+model PushTestAttempt {
+  id                 String               @id @default(uuid()) @db.Uuid
+  installationId     String               @db.Uuid
+  registrationId     String               @db.Uuid
+  tokenRevision      Int
+  tokenFingerprint   String               @db.Char(64)
+  state              PushTestAttemptState @default(SENDING)
+  failureCode        String?
+  providerTicketId   String?              @db.VarChar(256)
+  startedAt          DateTime             @default(now()) @db.Timestamptz(6)
+  acceptedAt         DateTime?            @db.Timestamptz(6)
+  completedAt        DateTime?            @db.Timestamptz(6)
+  nextReceiptCheckAt DateTime?            @db.Timestamptz(6)
+  receiptDeadlineAt  DateTime?            @db.Timestamptz(6)
+  receiptLeaseUntil  DateTime?            @db.Timestamptz(6)
+  receiptChecks      Int                  @default(0)
+
+  installation PushInstallation @relation(fields: [installationId], references: [id], onDelete: Cascade)
+  registration PushRegistration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+
+  @@index([state, nextReceiptCheckAt])
 }

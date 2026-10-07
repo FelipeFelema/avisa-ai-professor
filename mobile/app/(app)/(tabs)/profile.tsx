@@ -141,6 +141,13 @@ export default function ProfileScreen() {
           onPress={() => router.push('/profile/change-password')}
         />
 
+        <Button
+          label="Notificações neste dispositivo"
+          variant="secondary"
+          accessibilityHint="Abrir o consentimento de notificações para este dispositivo"
+          onPress={() => router.push('/profile/notifications')}
+        />
+
         {user.role === 'ADMIN' ? (
           <Button
             label="Convites de professores"

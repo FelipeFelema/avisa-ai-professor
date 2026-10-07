@@ -8,6 +8,7 @@ import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { ClassroomsModule } from './classrooms/classrooms.module';
 import { InvitesCodeModule } from './invites-code/invites-code.module';
+import { PushModule } from './push/push.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { InvitesCodeModule } from './invites-code/invites-code.module';
     AnnouncementsModule,
     ClassroomsModule,
     InvitesCodeModule,
+    PushModule,
   ],
   controllers: [AppController],
   providers: [AppService],

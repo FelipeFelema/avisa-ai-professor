@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { createHash, randomUUID } from 'node:crypto';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { AccountDeletionService } from '../src/users/account-deletion.service';
 import { Role } from '@prisma/client';
@@ -134,6 +135,58 @@ describe('Account deletion policy graph on PostgreSQL', () => {
     ).toBe(0);
   });
 
+  it('cascades the deleted account push registrations and attempts while preserving another account', async () => {
+    const fixture = await createAccountFixture(prisma, { role: Role.PARENT });
+    fixtures.push(fixture);
+    const otherSession = await prisma.authSession.create({
+      data: {
+        id: randomUUID(),
+        userId: fixture.thirdParty.id,
+        refreshTokenHash: 'synthetic-other-account-session',
+        expiresAt: new Date(Date.now() + 86400000),
+      },
+    });
+    const targetIdentity = await createPushFixture(prisma, {
+      userId: fixture.target.id,
+      sessionId: fixture.sessions[0].id,
+      token: 'ExpoPushToken[synthetic-delete-target-01]',
+    });
+    const otherIdentity = await createPushFixture(prisma, {
+      userId: fixture.thirdParty.id,
+      sessionId: otherSession.id,
+      token: 'ExpoPushToken[synthetic-delete-other-02]',
+    });
+
+    await service.deleteOwnAccount(fixture.target.id, fixture.sessions[0].id, {
+      currentPassword: fixture.password,
+      confirmationPhrase: 'EXCLUIR MINHA CONTA',
+    });
+
+    expect(
+      await prisma.pushRegistration.findUnique({
+        where: { id: targetIdentity.registrationId },
+      }),
+    ).toBeNull();
+    expect(
+      await prisma.pushTestAttempt.count({
+        where: { id: targetIdentity.attemptId },
+      }),
+    ).toBe(0);
+    expect(
+      await prisma.pushRegistration.findUnique({
+        where: { id: otherIdentity.registrationId },
+      }),
+    ).toMatchObject({
+      state: 'ACTIVE',
+      expoToken: 'ExpoPushToken[synthetic-delete-other-02]',
+    });
+    expect(
+      await prisma.pushTestAttempt.count({
+        where: { id: otherIdentity.attemptId },
+      }),
+    ).toBe(1);
+  });
+
   it.each([
     'announcement',
     'membership',
@@ -197,6 +250,48 @@ describe('Account deletion policy graph on PostgreSQL', () => {
     expect(await snapshotDatabase(prisma)).toEqual(before);
   });
 });
+
+async function createPushFixture(
+  prisma: PrismaService,
+  input: { userId: string; sessionId: string; token: string },
+) {
+  const installation = await prisma.pushInstallation.create({
+    data: {
+      id: randomUUID(),
+      secretHash: createHash('sha256').update(randomUUID()).digest('hex'),
+      lifecycleVersion: 1,
+    },
+  });
+  const tokenFingerprint = createHash('sha256')
+    .update(input.token)
+    .digest('hex');
+  const registration = await prisma.pushRegistration.create({
+    data: {
+      installationId: installation.id,
+      userId: input.userId,
+      sessionId: input.sessionId,
+      lifecycleVersion: 1,
+      platform: 'ANDROID',
+      expoToken: input.token,
+      tokenFingerprint,
+      tokenRevision: 1,
+      state: 'ACTIVE',
+      activatedAt: new Date(),
+    },
+  });
+  const attempt = await prisma.pushTestAttempt.create({
+    data: {
+      installationId: installation.id,
+      registrationId: registration.id,
+      tokenRevision: 1,
+      tokenFingerprint,
+      state: 'ACCEPTED',
+      providerTicketId: 'synthetic-ticket-private',
+      acceptedAt: new Date(),
+    },
+  });
+  return { registrationId: registration.id, attemptId: attempt.id };
+}
 
 type DeletionInstrumentation = {
   failAfter?: string;

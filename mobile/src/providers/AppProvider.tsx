@@ -5,6 +5,7 @@ import { queryClient } from '@/config';
 import { useTheme } from '@/hooks/useTheme';
 import { AuthProvider } from '@/providers/AuthProvider';
 import { ThemeProvider } from '@/providers/ThemeProvider';
+import { PushProvider } from '@/providers/PushProvider';
 
 type AppProviderProps = PropsWithChildren;
 
@@ -25,5 +26,9 @@ function ReadySessionTree({ children }: AppProviderProps) {
     return null;
   }
 
-  return <AuthProvider>{children}</AuthProvider>;
+  return (
+    <AuthProvider>
+      <PushProvider>{children}</PushProvider>
+    </AuthProvider>
+  );
 }

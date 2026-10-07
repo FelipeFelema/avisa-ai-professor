@@ -79,6 +79,25 @@ describe('profile route', () => {
       expect(view.getByRole('button', { name: 'Sair da conta' })).toBeTruthy();
     },
   );
+
+  it.each(['PARENT', 'PROFESSOR', 'ADMIN'] as const)(
+    'offers the same notification settings entry to %s',
+    async (role) => {
+      mockUseAuth.mockReturnValue({
+        user: { id: 'u', name: 'Pessoa', email: 'pessoa@example.com', role },
+        logout: jest.fn(),
+      } as never);
+      const view = await renderProfile();
+      const notifications = view.getByRole('button', {
+        name: 'Notificações neste dispositivo',
+      });
+      expect(notifications.props.accessibilityHint).toContain('consentimento');
+      await fireEvent.press(notifications);
+      expect(push).toHaveBeenCalledWith('/profile/notifications');
+      expect(view.getByRole('button', { name: 'Alterar senha' })).toBeTruthy();
+      expect(view.getByRole('button', { name: 'Sair da conta' })).toBeTruthy();
+    },
+  );
   it('keeps header, avatar, identity values, and actions in reading order', async () => {
     const view = await renderProfile();
     const text = collectText(view.toJSON());

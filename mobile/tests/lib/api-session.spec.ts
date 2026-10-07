@@ -5,7 +5,7 @@ import {
   type InternalAxiosRequestConfig,
 } from 'axios';
 
-import { api, authApi, setSessionExpiredHandler } from '@/lib';
+import { addConnectivityListener, api, authApi, setSessionExpiredHandler } from '@/lib';
 import * as storage from '@/storage';
 import { changePassword, ChangePasswordError } from '@/services/auth';
 import { invalidateSessionGeneration } from '@/lib/session-generation';
@@ -147,8 +147,58 @@ describe('API session bridge', () => {
   it('passes successful responses through unchanged', async () => {
     const response = { data: { ok: true }, status: 200 } as AxiosResponse;
     const fulfilled = responseHandlers().find((handler) => handler.fulfilled)?.fulfilled;
+    const connectivity = jest.fn();
+    const remove = addConnectivityListener(connectivity);
 
     expect(await fulfilled?.(response)).toBe(response);
+    await Promise.resolve();
+    expect(connectivity).toHaveBeenCalledTimes(1);
+    remove();
+  });
+
+  it('reports a server response as a connectivity opportunity without changing its error result', async () => {
+    const connectivity = jest.fn();
+    const remove = addConnectivityListener(connectivity);
+    const rejected = responseHandlers().find((handler) => handler.rejected)?.rejected;
+    const request = config();
+    const error = new AxiosError('server response', undefined, request);
+    error.response = {
+      status: 503,
+      statusText: 'Unavailable',
+      headers: {},
+      config: request,
+      data: {},
+    };
+
+    await expect(rejected?.(error)).rejects.toBe(error);
+    await Promise.resolve();
+    expect(connectivity).toHaveBeenCalledTimes(1);
+    remove();
+  });
+
+  it.each([
+    ['get', '/push/installation'],
+    ['post', '/push/installation/reserve'],
+    ['put', '/push/installation'],
+    ['post', '/push/installation/test'],
+  ])('does not feed push reconciliation from a %s %s success or 429', async (method, url) => {
+    const connectivity = jest.fn();
+    const remove = addConnectivityListener(connectivity);
+    const request = { ...config(), method, url };
+    const handlers = responseHandlers();
+    const fulfilled = handlers.find((handler) => handler.fulfilled)?.fulfilled;
+    const rejected = handlers.find((handler) => handler.rejected)?.rejected;
+    try {
+      const response = { data: {}, status: 200, config: request } as AxiosResponse;
+      expect(await fulfilled?.(response)).toBe(response);
+      const error = new AxiosError('rate limited', undefined, request);
+      error.response = { ...response, status: 429 };
+      await expect(rejected?.(error)).rejects.toBe(error);
+      await Promise.resolve();
+      expect(connectivity).not.toHaveBeenCalled();
+    } finally {
+      remove();
+    }
   });
 
   it('refreshes tokens, retries a 401 request and returns the retried response', async () => {
