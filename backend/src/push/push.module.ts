@@ -8,9 +8,17 @@ import { PushController } from './push.controller';
 import { ExpoPushAdapter } from './expo-push.adapter';
 import { PushTestService } from './push-test.service';
 import { PushReceiptsWorker } from './push-receipts.worker';
+import { announcementPushConfig } from './announcement-push.config';
+import { AnnouncementPushService } from './announcement-push.service';
+import { AnnouncementPushWorker } from './announcement-push.worker';
+import { AnnouncementRemindersWorker } from './announcement-reminders.worker';
 
 @Module({
-  imports: [PrismaModule, ConfigModule.forFeature(pushConfig)],
+  imports: [
+    PrismaModule,
+    ConfigModule.forFeature(pushConfig),
+    ConfigModule.forFeature(announcementPushConfig),
+  ],
   controllers: [PushController],
   providers: [
     InstallationCapabilityGuard,
@@ -18,6 +26,9 @@ import { PushReceiptsWorker } from './push-receipts.worker';
     ExpoPushAdapter,
     PushTestService,
     PushReceiptsWorker,
+    AnnouncementPushService,
+    AnnouncementPushWorker,
+    AnnouncementRemindersWorker,
   ],
   exports: [
     InstallationCapabilityGuard,

@@ -31,6 +31,8 @@ export async function clearTestDatabase(prisma: PrismaService): Promise<void> {
   assertSafeTestDatabase();
 
   await prisma.$transaction([
+    prisma.announcementPushDispatch.deleteMany(),
+    prisma.announcementPushEvent.deleteMany(),
     prisma.pushTestAttempt.deleteMany(),
     prisma.pushRegistration.deleteMany(),
     prisma.pushInstallation.deleteMany(),

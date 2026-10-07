@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Optional,
   type OnModuleDestroy,
   type OnModuleInit,
 } from '@nestjs/common';
@@ -7,6 +8,8 @@ import type { PushTestAttempt } from '@prisma/client';
 import { ExpoPushAdapter, type ExpoReceiptResult } from './expo-push.adapter';
 import { PushRegistrationService } from './push-registration.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { AnnouncementPushService } from './announcement-push.service';
+import { createAnnouncementPushConfig } from './announcement-push.config';
 
 const TICK_MS = 60_000;
 const RECEIPT_LEASE_MS = 60_000;
@@ -44,6 +47,7 @@ export class PushReceiptsWorker implements OnModuleInit, OnModuleDestroy {
     private readonly prisma: PrismaService,
     private readonly registrations: PushRegistrationService,
     private readonly expo: ExpoPushAdapter,
+    @Optional() private readonly announcements?: AnnouncementPushService,
   ) {}
 
   onModuleInit(): void {
@@ -96,6 +100,40 @@ export class PushReceiptsWorker implements OnModuleInit, OnModuleDestroy {
           ? this.processReceiptBatch(second, now)
           : Promise.resolve(),
       ]);
+    }
+    await this.processAnnouncementReceipts(now);
+  }
+
+  private async processAnnouncementReceipts(now: Date): Promise<void> {
+    if (
+      !this.announcements ||
+      !createAnnouncementPushConfig().enabled ||
+      this.shuttingDown
+    )
+      return;
+    const attempts = await this.announcements.claimReceipts(now);
+    if (attempts.length === 0) return;
+    const controller = new AbortController();
+    this.activeRequests.add(controller);
+    try {
+      let results: Record<string, ExpoReceiptResult> = {};
+      try {
+        results = await this.expo.getReceipts(
+          attempts.map((row) => row.providerTicketId!),
+          controller.signal,
+        );
+      } catch {
+        if (this.shuttingDown) return;
+      }
+      for (const attempt of attempts) {
+        await this.announcements.completeReceipt(
+          attempt,
+          results[attempt.providerTicketId!],
+          now,
+        );
+      }
+    } finally {
+      this.activeRequests.delete(controller);
     }
   }
 

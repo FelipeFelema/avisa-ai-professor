@@ -249,6 +249,47 @@ describe('Announcements Integration Tests', () => {
   });
 
   describe('GET /api/v1/announcements', () => {
+    it('detail ids from notifications keep normal membership, expiry and deletion authorization', async () => {
+      const teacher = await createProfessor(makeEmail('detail-teacher'));
+      const outsider = await createProfessor(makeEmail('detail-outsider'));
+      const classroomResponse = await request(app.getHttpServer())
+        .post('/api/v1/classrooms')
+        .auth(teacher.access_token, { type: 'bearer' })
+        .send({ name: makeClassroomName('detail') })
+        .expect(201);
+      const classroomId = (classroomResponse.body as { id: string }).id;
+      const publication = await request(app.getHttpServer())
+        .post('/api/v1/announcements')
+        .auth(teacher.access_token, { type: 'bearer' })
+        .send({
+          title: 'Detail authorization',
+          content: 'Synthetic',
+          durationInDays: 7,
+          classroomId,
+        })
+        .expect(201);
+      const id = (publication.body as { id: string }).id;
+      const read = (token: string) =>
+        request(app.getHttpServer())
+          .get(`/api/v1/announcements/${id}`)
+          .auth(token, { type: 'bearer' });
+      await read(teacher.access_token).expect(200);
+      await read(outsider.access_token).expect(404);
+      await prisma.userClassroom.delete({
+        where: { userId_classroomId: { userId: teacher.id, classroomId } },
+      });
+      await read(teacher.access_token).expect(404);
+      await prisma.userClassroom.create({
+        data: { userId: teacher.id, classroomId },
+      });
+      await prisma.announcement.update({
+        where: { id },
+        data: { expiresAt: new Date(0) },
+      });
+      await read(teacher.access_token).expect(404);
+      await prisma.announcement.delete({ where: { id } });
+      await read(teacher.access_token).expect(404);
+    });
     it('should list announcements for user in classroom', async () => {
       // Setup: create professor, classroom, and announcement
       const profEmail = makeEmail('professor');

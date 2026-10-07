@@ -19,9 +19,10 @@ model User {
 
   userClassrooms UserClassroom[]
 
-  ownedClassrooms   Classroom[]        @relation("ClassroomOwner")
-  sessions          AuthSession[]
-  pushRegistrations PushRegistration[]
+  ownedClassrooms            Classroom[]                @relation("ClassroomOwner")
+  sessions                   AuthSession[]
+  pushRegistrations          PushRegistration[]
+  announcementPushDispatches AnnouncementPushDispatch[]
 }
 
 model AuthSession {
@@ -33,8 +34,9 @@ model AuthSession {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
-  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  pushRegistrations PushRegistration[]
+  user                       User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pushRegistrations          PushRegistration[]
+  announcementPushDispatches AnnouncementPushDispatch[]
 
   @@index([userId])
 }
@@ -57,8 +59,12 @@ model Announcement {
   classroomId String
   classroom   Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt           DateTime                @default(now())
+  updatedAt           DateTime                @updatedAt
+  notificationPending Boolean?
+  pushEvents          AnnouncementPushEvent[]
+
+  @@index([notificationPending, createdAt, id])
 }
 
 model Classroom {
@@ -142,8 +148,9 @@ model PushInstallation {
   createdAt           DateTime  @default(now()) @db.Timestamptz(6)
   updatedAt           DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
 
-  registrations PushRegistration[]
-  testAttempts  PushTestAttempt[]
+  registrations          PushRegistration[]
+  testAttempts           PushTestAttempt[]
+  announcementDispatches AnnouncementPushDispatch[]
 }
 
 model PushRegistration {
@@ -163,10 +170,11 @@ model PushRegistration {
   activatedAt      DateTime?               @db.Timestamptz(6)
   invalidatedAt    DateTime?               @db.Timestamptz(6)
 
-  installation PushInstallation  @relation(fields: [installationId], references: [id], onDelete: Cascade)
-  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  session      AuthSession       @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  testAttempts PushTestAttempt[]
+  installation           PushInstallation           @relation(fields: [installationId], references: [id], onDelete: Cascade)
+  user                   User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session                AuthSession                @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  testAttempts           PushTestAttempt[]
+  announcementDispatches AnnouncementPushDispatch[]
 
   @@unique([installationId, lifecycleVersion])
   @@index([userId])
@@ -195,4 +203,74 @@ model PushTestAttempt {
   registration PushRegistration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
 
   @@index([state, nextReceiptCheckAt])
+}
+
+enum AnnouncementPushKind {
+  NEW
+  EXPIRING
+}
+
+enum AnnouncementPushDispatchState {
+  PENDING
+  CLAIMED
+  SENDING
+  ACCEPTED
+  PROVIDER_HANDOFF
+  REJECTED
+  UNKNOWN
+  SUPPRESSED
+}
+
+model AnnouncementPushEvent {
+  id             String                     @id @default(uuid()) @db.Uuid
+  announcementId String
+  kind           AnnouncementPushKind
+  snapshotAt     DateTime                   @db.Timestamptz(6)
+  createdAt      DateTime                   @default(now()) @db.Timestamptz(6)
+  announcement   Announcement               @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  dispatches     AnnouncementPushDispatch[]
+
+  occurrenceKey String @default("publication") @db.VarChar(40)
+
+  @@unique([announcementId, kind, occurrenceKey])
+}
+
+model AnnouncementPushDispatch {
+  id                 String                        @id @default(uuid()) @db.Uuid
+  eventId            String                        @db.Uuid
+  installationId     String                        @db.Uuid
+  registrationId     String                        @db.Uuid
+  userId             String
+  sessionId          String
+  lifecycleVersion   Int
+  tokenRevision      Int
+  tokenFingerprint   String                        @db.Char(64)
+  state              AnnouncementPushDispatchState @default(PENDING)
+  claimVersion       Int                           @default(0)
+  leaseUntil         DateTime?                     @db.Timestamptz(6)
+  sendStartedAt      DateTime?                     @db.Timestamptz(6)
+  providerTicketId   String?                       @db.VarChar(256)
+  failureCode        String?                       @db.VarChar(64)
+  acceptedAt         DateTime?                     @db.Timestamptz(6)
+  completedAt        DateTime?                     @db.Timestamptz(6)
+  nextReceiptCheckAt DateTime?                     @db.Timestamptz(6)
+  receiptDeadlineAt  DateTime?                     @db.Timestamptz(6)
+  receiptLeaseUntil  DateTime?                     @db.Timestamptz(6)
+  receiptChecks      Int                           @default(0)
+  createdAt          DateTime                      @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime                      @default(now()) @updatedAt @db.Timestamptz(6)
+
+  event        AnnouncementPushEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  installation PushInstallation      @relation(fields: [installationId], references: [id], onDelete: Cascade)
+  registration PushRegistration      @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  user         User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session      AuthSession           @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, installationId])
+  @@index([state, leaseUntil])
+  @@index([state, createdAt])
+  @@index([state, nextReceiptCheckAt])
+  @@index([userId])
+  @@index([sessionId])
+  @@index([registrationId])
 }

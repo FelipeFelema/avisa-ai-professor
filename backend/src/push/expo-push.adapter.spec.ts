@@ -88,6 +88,125 @@ describe('ExpoPushAdapter', () => {
     );
   });
 
+  it('uses the same authenticated transport for a closed generic announcement notice', async () => {
+    const fetch = jest.spyOn(globalThis, 'fetch').mockResolvedValue(
+      jsonResponse({
+        data: [{ status: 'ok', id: 'synthetic-business-ticket' }],
+      }),
+    );
+    const announcementId = '00000000-0000-4000-8000-000000000111';
+    await expect(
+      adapter.sendAnnouncement(expoToken, {
+        announcementId,
+        dispatchId: attemptId,
+        ttl: 120,
+      }),
+    ).resolves.toEqual({
+      kind: 'accepted',
+      ticketId: 'synthetic-business-ticket',
+    });
+    const init = fetch.mock.calls[0][1];
+    expect(new Headers(init?.headers).get('authorization')).toBe(
+      'Bearer ' + accessToken,
+    );
+    expect(JSON.parse(requestBody(init?.body))).toEqual({
+      to: expoToken,
+      title: 'Novo comunicado',
+      body: 'Há um novo comunicado disponível. Abra o aplicativo para consultar.',
+      data: {
+        version: 1,
+        type: 'announcement-created',
+        announcementId,
+        dispatchId: attemptId,
+      },
+      sound: 'default',
+      channelId: 'push-test',
+      ttl: 120,
+    });
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('sends the minimal reminder copy without school content, recipients or expiry in data', async () => {
+    const fetch = jest
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(
+        jsonResponse({ data: { status: 'ok', id: 'synthetic-reminder' } }),
+      );
+    await adapter.sendAnnouncement(expoToken, {
+      announcementId: attemptId,
+      dispatchId: attemptId,
+      ttl: 120,
+      type: 'announcement-expiring',
+    });
+    const payload = JSON.parse(requestBody(fetch.mock.calls[0][1]?.body)) as {
+      data: unknown;
+    };
+    expect(payload).toEqual({
+      to: expoToken,
+      title: 'Comunicado próximo da expiração',
+      body: 'Um comunicado da sua turma expira em breve.',
+      data: {
+        version: 1,
+        type: 'announcement-expiring',
+        announcementId: attemptId,
+        dispatchId: attemptId,
+      },
+      sound: 'default',
+      channelId: 'push-test',
+      ttl: 120,
+    });
+    expect(Object.keys(payload.data as object).sort()).toEqual([
+      'announcementId',
+      'dispatchId',
+      'type',
+      'version',
+    ]);
+    expect(
+      JSON.stringify([...log.mock.calls, ...warn.mock.calls]),
+    ).not.toContain(expoToken);
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('applies the same five-second timeout to reminders with no HTTP retry', async () => {
+    jest.useFakeTimers();
+    const fetch = jest.spyOn(globalThis, 'fetch').mockImplementation(
+      (_url, init) =>
+        new Promise((_resolve, reject) => {
+          init?.signal?.addEventListener('abort', () =>
+            reject(new Error('synthetic')),
+          );
+        }),
+    );
+    const op = adapter.sendAnnouncement(expoToken, {
+      announcementId: attemptId,
+      dispatchId: attemptId,
+      ttl: 120,
+      type: 'announcement-expiring',
+    });
+    const assertion = expect(op).rejects.toBeInstanceOf(
+      ExpoPushOutcomeUnknownError,
+    );
+    await jest.advanceTimersByTimeAsync(5000);
+    await assertion;
+    expect(fetch).toHaveBeenCalledTimes(1);
+    jest.useRealTimers();
+  });
+
+  it.each([0, 3601])(
+    'does not transmit a business notice with invalid TTL %i',
+    async (ttl) => {
+      const fetch = jest.spyOn(globalThis, 'fetch');
+      await expect(
+        adapter.sendAnnouncement(expoToken, {
+          announcementId: attemptId,
+          dispatchId: attemptId,
+          ttl,
+        }),
+      ).rejects.toBeInstanceOf(ExpoPushOutcomeUnknownError);
+      expect(fetch).not.toHaveBeenCalled();
+    },
+  );
+
   it('bounds the send request to five seconds', async () => {
     jest.useFakeTimers();
     const fetch = jest.spyOn(globalThis, 'fetch').mockImplementation(

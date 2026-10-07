@@ -3,6 +3,7 @@ import type { PrismaService } from '../prisma/prisma.service';
 import { ExpoPushAdapter, type ExpoReceiptResult } from './expo-push.adapter';
 import { PushRegistrationService } from './push-registration.service';
 import { PushReceiptsWorker } from './push-receipts.worker';
+import { AnnouncementPushService } from './announcement-push.service';
 
 const now = new Date('2026-10-05T12:00:00.000Z');
 const attempt = {
@@ -335,4 +336,54 @@ describe('PushReceiptsWorker', () => {
     await worker.onModuleDestroy();
     expect(jest.getTimerCount()).toBe(0);
   });
+
+  it.each([false, true])(
+    'uses the shared receipt transport for business tickets (provider failure=%s), never submits again',
+    async (failure) => {
+      const previous = { ...process.env };
+      Object.assign(process.env, {
+        ANNOUNCEMENT_PUSH_ENABLED: 'true',
+        EXPO_PUSH_ENABLED: 'true',
+        EXPO_PUSH_ACCESS_TOKEN: 'synthetic-only',
+      });
+      const business = {
+        claimReceipts: jest
+          .fn()
+          .mockResolvedValue([
+            { id: 'business', providerTicketId: 'business-ticket' },
+          ]),
+        completeReceipt: jest.fn().mockResolvedValue(undefined),
+      };
+      prisma.pushTestAttempt.findMany.mockResolvedValue([]);
+      if (failure)
+        expo.getReceipts.mockRejectedValue(
+          new Error('synthetic receipt timeout'),
+        );
+      else
+        expo.getReceipts.mockResolvedValue({
+          'business-ticket': { kind: 'ok' },
+        });
+      try {
+        const combined = new PushReceiptsWorker(
+          prisma as unknown as PrismaService,
+          registrations as unknown as PushRegistrationService,
+          expo as unknown as ExpoPushAdapter,
+          business as unknown as AnnouncementPushService,
+        );
+        await combined.tick(now);
+        expect(expo.getReceipts).toHaveBeenCalledWith(
+          ['business-ticket'],
+          expect.any(AbortSignal),
+        );
+        expect(business.completeReceipt).toHaveBeenCalledWith(
+          { id: 'business', providerTicketId: 'business-ticket' },
+          failure ? undefined : { kind: 'ok' },
+          now,
+        );
+        await combined.onModuleDestroy();
+      } finally {
+        process.env = previous;
+      }
+    },
+  );
 });

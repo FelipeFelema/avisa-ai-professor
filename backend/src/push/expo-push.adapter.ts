@@ -83,10 +83,6 @@ export class ExpoPushAdapter {
   }
 
   async send(expoToken: string, attemptId: string): Promise<ExpoSendResult> {
-    if (!this.config.enabled || !this.config.accessToken) {
-      throw new ExpoPushOutcomeUnknownError();
-    }
-
     const payload = {
       to: expoToken,
       title: 'Teste de notificações',
@@ -97,10 +93,69 @@ export class ExpoPushAdapter {
       ttl: 60,
     };
 
+    return this.sendPayload(payload);
+  }
+
+  async sendAnnouncement(
+    expoToken: string,
+    intent: {
+      announcementId: string;
+      dispatchId: string;
+      ttl: number;
+      type?: 'announcement-created' | 'announcement-expiring';
+    },
+    signal?: AbortSignal,
+  ): Promise<ExpoSendResult> {
+    const uuid =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (
+      (intent.type !== undefined &&
+        intent.type !== 'announcement-created' &&
+        intent.type !== 'announcement-expiring') ||
+      !uuid.test(intent.announcementId) ||
+      !uuid.test(intent.dispatchId) ||
+      !Number.isInteger(intent.ttl) ||
+      intent.ttl < 1 ||
+      intent.ttl > 3600
+    ) {
+      throw new ExpoPushOutcomeUnknownError();
+    }
+    return this.sendPayload(
+      {
+        to: expoToken,
+        title:
+          intent.type === 'announcement-expiring'
+            ? 'Comunicado próximo da expiração'
+            : 'Novo comunicado',
+        body:
+          intent.type === 'announcement-expiring'
+            ? 'Um comunicado da sua turma expira em breve.'
+            : 'Há um novo comunicado disponível. Abra o aplicativo para consultar.',
+        data: {
+          version: 1,
+          type: intent.type ?? 'announcement-created',
+          announcementId: intent.announcementId,
+          dispatchId: intent.dispatchId,
+        },
+        sound: 'default',
+        channelId: 'push-test',
+        ttl: intent.ttl,
+      },
+      signal,
+    );
+  }
+
+  private async sendPayload(
+    payload: unknown,
+    signal?: AbortSignal,
+  ): Promise<ExpoSendResult> {
+    if (!this.config.enabled || !this.config.accessToken)
+      throw new ExpoPushOutcomeUnknownError();
+
     let response: Response;
     let body: unknown;
     try {
-      ({ response, body } = await this.request(SEND_URL, payload));
+      ({ response, body } = await this.request(SEND_URL, payload, signal));
     } catch {
       throw new ExpoPushOutcomeUnknownError();
     }

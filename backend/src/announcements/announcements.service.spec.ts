@@ -75,6 +75,66 @@ describe('AnnouncementsService', () => {
   });
 
   describe('create', () => {
+    describe('notification publication boundary', () => {
+      let previousFlag: string | undefined;
+      beforeEach(() => {
+        previousFlag = process.env.ANNOUNCEMENT_PUSH_ENABLED;
+        mockPrisma.user.findUnique.mockResolvedValue({
+          id: 'professor',
+          role: 'PROFESSOR',
+        });
+        mockPrisma.userClassroom.findUnique.mockResolvedValue({});
+        mockPrisma.announcement.count.mockResolvedValue(0);
+        mockPrisma.announcement.create.mockResolvedValue({ id: 'saved' });
+      });
+      afterEach(() => {
+        if (previousFlag === undefined)
+          delete process.env.ANNOUNCEMENT_PUSH_ENABLED;
+        else process.env.ANNOUNCEMENT_PUSH_ENABLED = previousFlag;
+        jest.restoreAllMocks();
+      });
+      it('saves recovery marker with publication without making a provider request', async () => {
+        process.env.ANNOUNCEMENT_PUSH_ENABLED = 'true';
+        const fetch = jest
+          .spyOn(globalThis, 'fetch')
+          .mockRejectedValue(new Error('synthetic provider failure'));
+        await expect(
+          service.create('professor', {
+            title: 'Test',
+            content: 'Content',
+            classroomId: 'classroom',
+            durationInDays: 2,
+          }),
+        ).resolves.toEqual({ id: 'saved' });
+        expect(mockPrisma.announcement.create).toHaveBeenCalledWith(
+          expect.objectContaining({
+            data: expect.objectContaining({
+              notificationPending: true,
+            }) as unknown as Record<string, unknown>,
+            select: expect.not.objectContaining({
+              notificationPending: true,
+            }) as unknown as Record<string, unknown>,
+          }),
+        );
+        expect(fetch).not.toHaveBeenCalled();
+      });
+      it('leaves disabled publication outside future recovery backlog', async () => {
+        process.env.ANNOUNCEMENT_PUSH_ENABLED = 'false';
+        await service.create('professor', {
+          title: 'Test',
+          content: 'Content',
+          classroomId: 'classroom',
+          durationInDays: 2,
+        });
+        expect(mockPrisma.announcement.create).toHaveBeenCalledWith(
+          expect.objectContaining({
+            data: expect.objectContaining({
+              notificationPending: null,
+            }) as unknown as Record<string, unknown>,
+          }),
+        );
+      });
+    });
     it('should create announcement successfully', async () => {
       const dto = {
         title: 'Test',

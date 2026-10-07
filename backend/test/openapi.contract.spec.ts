@@ -160,6 +160,31 @@ function expectSchemaMatch(
 }
 
 describe('OpenAPI runtime contract', () => {
+  it('business fanout remains internal to the existing announcement contract', () => {
+    const properties = Object.keys(
+      designContract.components.schemas.Announcement?.properties ?? {},
+    );
+    expect(properties).toContain('id');
+    for (const field of [
+      'notificationPending',
+      'recipientIds',
+      'dispatches',
+      'providerTicketId',
+      'tokenFingerprint',
+      'expoToken',
+    ])
+      expect(properties).not.toContain(field);
+    const input = Object.keys(
+      designContract.components.schemas.CreateAnnouncementRequest?.properties ??
+        {},
+    );
+    expect(input.sort()).toEqual([
+      'classroomId',
+      'content',
+      'durationInDays',
+      'title',
+    ]);
+  });
   let app: INestApplication<App>;
 
   beforeAll(async () => {
