@@ -4,7 +4,7 @@
 
 **Owner report:** Overall physical P0/P1 walkthrough previously reported **PASS (user-reported)**. Final owner report on 2026-10-07: new-announcement notification correctly displayed classroom + title **PASS (user-reported)**; expiration reminder correctly displayed classroom + announcement title **PASS (user-reported)**. Owner confirms the current APK is preview, so retaining the diagnostic test action is expected, and explicitly accepts automated/configurational validation that production hides it. No unreported individual scenario, device/build ID, timing, receipt or handoff is inferred.
 
-**Disposition:** T060 **CLOSED by explicit owner authorization** after final visual copy acceptance. T062/T063/T064 implemented and locally verified; **63/64 checked**. Only **T061 remains OPEN for actual final-revision remote CI and final consolidation (NOT RUN)**. Production-artifact smoke is reserved for the final release gate; automated/configurational visibility is accepted for T060, with no production-artifact physical PASS claimed. Earlier OPEN/PENDING notices below are superseded historical checkpoints.
+**Disposition:** T060 CLOSED by owner acceptance; T062–T064 verified. **T061 COMPLETED after actual successful remote Backend CI, Mobile CI and Commit Conventions on c57b0a48bc2a1154a6cb68cc218d68d0b17fe5ae; 64/64 checked.** The final documentary closure commit must receive its own green checks before reporting ready for merge. Production-artifact smoke stays in the final release gate, not a claimed physical PASS. Earlier OPEN/PENDING/NOT RUN notices below are superseded historical checkpoints.
 
 ### Product result and privacy
 
@@ -50,9 +50,27 @@ Owner approved exact three subjects, isolated staging and pre-commit cached name
 | Backend | Adapter, authorized snapshot/service and dispatch worker unit | PASS, natural exit0; 3 suites /74 tests |
 | Backend | Privacy/context, dispatch authorization and reminders integration | PASS, natural exit0; 3 suites /40 tests, only guarded localhost/avisa_ai_test, provider mocked |
 | Mobile | Profile/config, consent lifecycle and test lifecycle | PASS, natural exit0; 4 suites /39 tests |
-| Documentation | T060 closed/only T061 open, exact nine-file scope, local links and git whitespace | Validate immediately before third approved commit; 63/64 tasks, remote CI NOT RUN |
+| Documentation | T060 closed/only T061 open at third commit, exact nine-file scope, local links and git whitespace | PASS, exit0 before c57b0a4; 63/64 tasks at that checkpoint, CI not yet run |
 
 Third approved commit consolidates this evidence and retains T061 OPEN until real remote results. Logs ignored in `.codex/spec011-final-commits/`. Worktree cleanliness is checked after the third commit before standard feature-branch push. Publication is now authorized; no merge, new EAS build or Spec 012 work.
+
+### Actual remote CI and T061 closure — 2026-10-07
+
+[PR #54](https://github.com/FelipeFelema/avisa-ai-professor/pull/54), base `develop`, head `011-release-critical-notifications`. Three approved final commits created: backend `9ee7ceee3aa9d5b87eb745512d8ed2c8193b8060`, mobile `4674e0452af6c76fc77e7cc736edcf08d1baec6f`, documentary `c57b0a48bc2a1154a6cb68cc218d68d0b17fe5ae`. Worktree/index were clean before normal branch push; no force-push. Exact staged name/status and whitespace checks preceded every commit; all six Spec 011 commit subjects passed local Commitlint.
+
+Publication created the PR and triggered the three existing pull_request workflows; no duplicate workflow_dispatch was needed. GitHub API reports all runs, jobs and head check-runs completed/success for head `c57b0a48bc2a1154a6cb68cc218d68d0b17fe5ae`. Observation: `2026-10-07T21:42:35.585461+00:00`. PR merge ref at this checkpoint: `43b401c2e4701f9ad1b7332de215eb4a5c96ee41`, with parents including head `c57b0a48bc2a1154a6cb68cc218d68d0b17fe5ae` and develop base `416256032a645e7335229a42bb2a825d174c85c0`; workflow/check-run head_sha is the feature head, while standard PR checkout tests GitHub's merge ref. This records actual CI, not local test or device-display inference.
+
+| Workflow | Actual run | Actual job | Result |
+| --- | --- | --- | --- |
+| Backend CI | [37690901403](https://github.com/FelipeFelema/avisa-ai-professor/actions/runs/37690901403) | [Run backend checks / 113030509114](https://github.com/FelipeFelema/avisa-ai-professor/actions/runs/37690901403/job/113030509114) | PASS — completed/success, attempt 1 |
+| Mobile CI | [37690901274](https://github.com/FelipeFelema/avisa-ai-professor/actions/runs/37690901274) | [Run mobile checks / 113030509452](https://github.com/FelipeFelema/avisa-ai-professor/actions/runs/37690901274/job/113030509452) | PASS — completed/success, attempt 1 |
+| Commit Conventions | [37690901249](https://github.com/FelipeFelema/avisa-ai-professor/actions/runs/37690901249) | [Validate commits / 113030509247](https://github.com/FelipeFelema/avisa-ai-professor/actions/runs/37690901249/job/113030509247) | PASS — completed/success, attempt 1 |
+
+Backend CI includes Prisma validate/generate/migration on the isolated test service, formatting/lint/types, coverage/integration/contract/E2E and build. Mobile CI includes types/lint/format, online Doctor, Jest coverage and all-platform export. Commit Conventions validates the actual PR commit range. Job/step results were read from GitHub; all required checks succeeded. PR was mergeable with state clean at observation; no merge performed.
+
+**T061 completed after these real results; all 64 tasks checked.** Owner's final P0/P1 copy acceptance remains PASS (user-reported), and the separately agreed production-artifact smoke remains NOT RUN at the final release gate without reopening T060/T061. Spec 012 is not started and must wait until the Spec 011 merge.
+
+The owner-authorized final subject is `docs(spec011): close release critical notifications`. This evidence-only closure commit must be pushed and all three required checks must pass again on its new head before reporting merge readiness. Its final SHA/results will be verified from live GitHub and attached to PR evidence/final report; this record does not claim future results before execution. No extra repository commit is needed merely to insert its own future hash/results recursively.
 
 ## Historical pre-follow-up delivery checkpoint — 2026-10-07
 
@@ -231,7 +249,7 @@ These are SDK patch mismatches, with possible missing upstream fixes/compatibili
 
 Authorized runtime/migration deployment and installed artifact walkthrough are not performed by test fixtures. Record only actual owner reports as `PASS (user-reported)`; never mark delivery from mock tests. Specialized campaigns/participants remain DISPENSADA POR ESCOPO, with no execution task.
 
-## Final acceptance and current diff review — 2026-10-07
+## Historical pre-publication acceptance and diff review — 2026-10-07
 
 This section applies to the current final-product diff, not the earlier implementation checkpoints. T060 is closed from the exact owner reports at the top; production-artifact smoke remains NOT RUN in the final release gate, and is not a T060 or Spec 012 dependency. T061 remains open for real checks on the final PR revision.
 

@@ -2,7 +2,7 @@
 
 Full P0 + P1 implementation authorized on 2026-10-07. This guide lists repeatable validation commands; observed outcomes are recorded only in [final-validation.md](final-validation.md). Release depends on the completed foundation. Local build/export are included in the validation. Runtime preparation was authorized on 2026-10-07; see [walkthrough-preparation-2026-10-07.md](walkthrough-preparation-2026-10-07.md). Installed artifact, phone connectivity and observed delivery remain separate evidence. P1 worker is implemented, independently toggled and defaults false.
 
-Android preview for the current 011 WIP was authorized and submitted on 2026-10-07: see [build/snapshot evidence](eas-preview-build-2026-10-07.md). Owner subsequently reported the P0/P1 walkthrough PASS (user-reported). T060 is closed by explicit final owner acceptance; T061 remains open for actual remote CI; build submission alone is not physical evidence.
+Android preview for the current 011 WIP was authorized and submitted on 2026-10-07: see [build/snapshot evidence](eas-preview-build-2026-10-07.md). Owner subsequently reported the P0/P1 walkthrough PASS (user-reported). T060 is closed by explicit final owner acceptance; T061 completed after actual successful PR CI, and final closure commit must also pass checks; build submission alone is not physical evidence.
 
 ## Prerequisites and isolation
 
@@ -122,3 +122,7 @@ Future Spec 012 ideas are recorded in spec.md; no new onboarding or persistence 
 For the eventual production artifact, verify the diagnostic button/feedback is absent. This ordinary functional smoke is NOT RUN and belongs to the final release gate; the owner explicitly accepts current automated/configurational evidence for closing T060. It is not a specialized native/accessibility campaign, does not reopen T060 and is not transferred into Spec 012. Current preview retaining the action is expected.
 
 After final commits: publish the 011 feature branch and open PR into develop; observe Backend CI / Run backend checks, Mobile CI / Run mobile checks and Commit Conventions / Validate commits. Record run URLs/IDs and tested SHA for the final PR revision before T061 closure. Feature-branch push alone does not trigger these workflows' push filters; PR does. Use workflow_dispatch only if a required run is absent and verify the requested ref/SHA.
+
+### Actual remote checkpoint and final documentary gate
+
+PR #54 is published into develop. All three required workflows/jobs passed on head c57b0a48bc2a1154a6cb68cc218d68d0b17fe5ae; actual run/job URLs and PR merge-ref relationship are in final-validation.md. T061 completed from these results; 64/64 checked. After `docs(spec011): close release critical notifications`, push normally and require Backend CI/Mobile CI/Commit Conventions success on the new head before reporting ready for merge. No merge in this run. Production-artifact smoke remains final release, and Spec 012 waits until the 011 merge.

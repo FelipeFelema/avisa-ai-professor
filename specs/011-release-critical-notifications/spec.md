@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-06
 
-**Status**: P0/P1 walkthrough and final notification copy `PASS (user-reported)` on 2026-10-07. Production diagnostic visibility accepted through automated/configurational evidence; production-artifact smoke reserved for final release. T060 CLOSED; T062–T064 implemented and local gates passed. T061 pending actual final-revision remote CI. Spec 012 not started.
+**Status**: P0/P1 walkthrough and final copy PASS (user-reported); production diagnostic hiding accepted from automated/configurational evidence, production-artifact smoke at final release. All local gates and actual remote Backend CI/Mobile CI/Commit Conventions passed for PR #54 on c57b0a4. T060/T061 completed; 64/64 tasks. Final documentary closure commit must also receive green checks before merge readiness. Spec 012 not started; no merge performed.
 
 **Input**: Notificar novos comunicados no lançamento, reutilizando a fundação da Spec 010, com isolamento entre turmas/contas, autorização normal no toque e processamento idempotente. Lembrete de expiração integra a entrega completa autorizada em 2026-10-07; flag operacional independente por padrão desativada.
 

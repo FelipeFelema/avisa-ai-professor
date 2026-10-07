@@ -2,7 +2,7 @@
 
 **Input**: [spec.md](spec.md), [plan.md](plan.md), [research.md](research.md), [data-model.md](data-model.md), [contract](contracts/announcement-notifications.md), [quickstart.md](quickstart.md).
 
-**Status**: Final P0/P1 notification copy accepted as `PASS (user-reported)` on 2026-10-07; preview test action is expected and production configuration/automated validation explicitly accepted. T060 CLOSED by owner authorization. T062–T064 locally verified; 63/64 checked. Only T061 remains OPEN for actual final-revision remote CI and final consolidation. Production-artifact smoke stays in the final release gate, not T060. Three final commit groups explicitly approved; backend/mobile groups committed after narrow tests and staged checks, documentation/publication follow. T061 remains open pending real CI. Spec 012 not started.
+**Status**: All 64/64 tasks complete. T060 closed from exact owner PASS (user-reported) for P0/P1 and final copy, preview expectation and acceptance of automated/configurational production hiding. T061 completed after real successful Backend CI, Mobile CI and Commit Conventions for PR #54 at head c57b0a48bc2a1154a6cb68cc218d68d0b17fe5ae; actual run/job links in final-validation.md. Final documentary closure commit will be pushed and checked before declaring merge readiness. Production-artifact smoke remains the separate final release gate. No merge; Spec 012 not started and waits for the Spec 011 merge.
 
 **Tests**: Required by FR-015 and constitution; write relevant failing tests before implementing behavior. External transport is mocked. Destructive fixtures/migrations use exactly local `avisa_ai_test` with existing guards.
 
@@ -115,7 +115,7 @@
 - [x] T058 Execute mobile gates from `mobile/package.json` and `.github/workflows/mobile-ci.yml`: typecheck/lint/format/test:ci/Doctor/export; preserve genuine third-party/CI failures and record results in `specs/011-release-critical-notifications/final-validation.md`; no automatic dependency upgrade/new EAS build to conceal a failed gate.
 - [x] T059 Validate flags/recovery plus no-duplicate tombstones across disable/restart/redeploy in `backend/test/announcement-push-dispatch.integration.spec.ts` and regression suites; preserve 010 consent/test behavior, scopes and real-workthrough prerequisites in `specs/011-release-critical-notifications/final-validation.md`.
 - [x] T060 Record owner functional walkthrough P0/P1 in `specs/011-release-critical-notifications/final-validation.md` following `specs/011-release-critical-notifications/quickstart.md` after separate artifact/deployment authorization: normal open, publication, foreground/background if viable, tap current authorized detail, lost-access/account-change denial and 010 opt-out/test regression; mark only reported scenarios `PASS (user-reported)` and separate acceptance/handoff/display. Overall P0/P1 walkthrough and final new/reminder copy accepted on 2026-10-07 as PASS (user-reported). Owner confirmed current APK is preview and accepted automated/configurational production hiding; production-artifact smoke remains the final release gate. T060 closed explicitly; no additional scenario/device/timing inference.
-- [ ] T061 Consolidate P0/P1 FR-001–020 and SC-001–008, tests, migration/recovery, owner evidence and actual local/remote gates in `specs/011-release-critical-notifications/final-validation.md` and `specs/011-release-critical-notifications/tasks.md`; include implemented P1 and its validation, require validated 010 for release and do not claim unexecuted CI.
+- [x] T061 Consolidate P0/P1 FR-001–020 and SC-001–008, tests, migration/recovery, owner evidence and actual local/remote gates in `specs/011-release-critical-notifications/final-validation.md` and `specs/011-release-critical-notifications/tasks.md`; include implemented P1 and its validation, require validated 010 for release and do not claim unexecuted CI. Completed from actual successful PR #54 checks on c57b0a48bc2a1154a6cb68cc218d68d0b17fe5ae; final closure commit must also pass all three checks before reporting ready for merge.
 
 ## Dependencies & Execution Order
 
@@ -154,11 +154,11 @@ Owner authorized full 011 including P1 on 2026-10-07. Implement smallest P0 pipe
 | FR-016–019; SC-007             | T046–T053; full 011 gates after P1 integration             |
 | FR-009/020; SC-006 | T062–T064; copy/privacy and diagnostic UI gates |
 
-64 tasks: original 61 plus three authorized product follow-ups below. Existing 59 completed tasks preserved plus T062–T064 verified: 63/64 checked; T060 closed and only T061 remains open for final remote evidence. Only verified execution tasks are checked. Specialized campaigns/participants are DISPENSADA POR ESCOPO, with no execution checkbox and no release dependency.
+64 tasks: original 61 plus three authorized product follow-ups below. Existing 59 completed tasks preserved plus T062–T064 verified: 64/64 checked; T060 closed from owner evidence and T061 completed from actual successful remote CI. Only verified execution tasks are checked. Specialized campaigns/participants are DISPENSADA POR ESCOPO, with no execution checkbox and no release dependency.
 
 ### P1 execution dependencies (2026-10-07)
 
-T046/T047 tests -> occurrenceKey schema/migration/client -> T048 shared materialization -> T049 selector -> T050 wiring -> T051 adapter/mobile contract -> T052 P1/P0 validation -> T053 evidence. Final T057/T058 rerun after changes; owner P0/P1 walkthrough report received, T060 closed by owner acceptance and T061 remains open until final consolidation/CI evidence. Shared service/module/schema edits execute sequentially.
+T046/T047 tests -> occurrenceKey schema/migration/client -> T048 shared materialization -> T049 selector -> T050 wiring -> T051 adapter/mobile contract -> T052 P1/P0 validation -> T053 evidence. Final T057/T058 rerun after changes; owner P0/P1 walkthrough report received, T060 closed by owner acceptance and T061 completed after actual remote CI; closure commit still receives final checks. Shared service/module/schema edits execute sequentially.
 
 ## Final product follow-up — authorized 2026-10-07
 

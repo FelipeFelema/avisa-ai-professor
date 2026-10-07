@@ -1,6 +1,6 @@
 # Approved final commits — Spec 011
 
-Branch: `011-release-critical-notifications`; proposal checkpoint HEAD `48e5aaa`. Original implementation commits `8ccfab2`, `7475f49`, `48e5aaa` remain intact. The approved groups cover the 21-file final follow-up diff, including final product changes after the initial walkthrough and the authorized T060 closure. T060 CLOSED; 63/64 tasks checked; T061 OPEN for final remote CI. Spec 012 not started.
+Branch: `011-release-critical-notifications`; proposal checkpoint HEAD `48e5aaa`. Original implementation commits `8ccfab2`, `7475f49`, `48e5aaa` remain intact. The approved groups cover the 21-file final follow-up diff, including final product changes after the initial walkthrough and the authorized T060 closure. T060/T061 CLOSED; 64/64 checked after actual successful remote CI, with closure-commit checks still required. Spec 012 not started.
 
 Owner explicitly approved all three subjects, staging by exact group with cached name/status and whitespace checks, focused tests, normal feature-branch push, PR into develop and remote CI. Execution below supersedes the earlier proposal-only boundary. No merge or Spec 012 work is authorized in this run.
 
@@ -91,3 +91,9 @@ Each group requires git diff --cached --name-status and git diff --cached --chec
 - Mobile: `4674e0452af6c76fc77e7cc736edcf08d1baec6f`; approved five-file staged scope; cached name/status and check passed; Commitlint zero problems/warnings. Narrow config/profile/consent/test-lifecycle4/39 passed naturally, exit0.
 - Third approved documentary subject: `docs(spec011): close owner walkthrough and consolidate final evidence`; exact nine-file group. T060 CLOSED; only T061 OPEN (63/64), remote CI NOT RUN before publication. Validate local links/task states and staged scope before creating this commit. Its hash and final remote results will be recorded in the separately authorized closure commit after CI success.
 - Ignored local logs: `.codex/spec011-final-commits/`. No private environment/dependency/Spec 010 changes. GitHub CLI is absent; Git Credential Manager supplies existing authentication for standard git push and GitHub API PR/check operations without logging or persisting credentials.
+
+## Actual publication, CI and authorized closure
+
+Third approved commit: `c57b0a48bc2a1154a6cb68cc218d68d0b17fe5ae`, after documentary assertions/local links, nine-file staging and cached checks passed. Worktree/index clean before standard push; feature branch published and PR #54 created for develop. Backend CI run37690901403/job113030509114, Mobile CI run37690901274/job113030509452 and Commit Conventions run37690901249/job113030509247 all completed/success on c57b0a4. Actual linked evidence in final-validation.md. No merge.
+
+The owner authorized the final evidence-only commit `docs(spec011): close release critical notifications`. Stage only final-validation.md, tasks.md, spec.md, plan.md, quickstart.md, commit-plan.md and the current notice in walkthrough-preparation-2026-10-07.md. Validate 64 unique checked tasks/local links/Commitlint and run cached name/status + whitespace checks before committing. Then normal push and all three remote checks on the new head; declare ready for merge only after success. Spec 012 waits until actual 011 merge; production-artifact smoke remains the separate final release gate.
