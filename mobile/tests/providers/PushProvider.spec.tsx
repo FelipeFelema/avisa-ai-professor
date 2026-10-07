@@ -15,7 +15,10 @@ import {
 import { pushMocks } from '../helpers/push';
 
 const mockRouterPush = jest.fn();
-jest.mock('expo-router', () => ({ useRouter: () => ({ push: mockRouterPush }) }));
+jest.mock('expo-router', () => ({
+  useRouter: () => ({ push: mockRouterPush }),
+  useRootNavigationState: () => ({ key: 'ready' }),
+}));
 jest.mock('@/config/push-config', () => ({
   getPushRuntimeConfig: jest.fn(),
 }));

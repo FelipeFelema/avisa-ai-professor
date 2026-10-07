@@ -19,6 +19,7 @@ import {
   SessionGenerationChangedError,
 } from '@/lib';
 import { completePushLogoutCleanup, preparePushLogout } from '@/services/push/push-lifecycle';
+import { cancelAnnouncementPush } from '@/services/push/announcement-push-navigation';
 
 type AuthProviderProps = PropsWithChildren;
 
@@ -40,6 +41,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     // Invalidate first so pending requests and token writes cannot revive this session.
     const cleanupGeneration = invalidateSessionGeneration();
+    cancelAnnouncementPush();
     const pendingPushRevocation = await preparePushLogout().catch(() => null);
     void completePushLogoutCleanup(pendingPushRevocation).catch(() => undefined);
     void queryClient.cancelQueries();

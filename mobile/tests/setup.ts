@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { jest } from '@jest/globals';
 
 jest.mock('expo-router', () => ({
+  useRootNavigationState: () => ({ key: 'ready' }),
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: jest.fn() },
   Redirect: ({ href }: { href: string }) => {
     const ReactRuntime = require('react');
