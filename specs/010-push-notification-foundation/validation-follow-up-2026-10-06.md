@@ -1,6 +1,23 @@
 # Validação complementar — 2026-10-06
 
-Registro posterior à captura histórica de [final-validation.md](final-validation.md). As evidências históricas não representam o estado atual do Doctor ou o walkthrough ainda pendente. T073/T074 permanecem abertas.
+Registro posterior à captura histórica de [final-validation.md](final-validation.md). As seções abaixo preservam as investigações anteriores; o estado atual é o seguinte.
+
+## Revalidação atual após adapter e cinco patches Expo
+
+- Todos os gates oficiais backend/mobile repetidos e **PASS**: unitárias backend **26/318**, integração **19/176**, contrato **1/9**, E2E **6/70**, mobile **82/591**, cobertura/estáticos/build/export aprovados. Exit 0 natural, sem forceExit/aumento de timeout; banco destrutivo exclusivamente local avisa_ai_test.
+- **Doctor 21/21, exit 0**, com acesso externo; manifest/lockfile/instalação sincronizados. Versões: expo 57.0.27, constants 57.0.21, linking 57.0.12, notifications 57.0.22, router 57.0.25. Desalinhamento anterior resolvido pelo proprietário.
+- Triagem aceita: shell-quote@1.9.0 Critical, ausente do bundle Android analisado, **DEV/TOOLING ONLY**; decode-uri-component@0.2.2 Moderate, presente, **REMEDIAR NA SPEC 012**, sem afirmar mitigação completa. Ambas exigem remediação na futura 012; **não executar npm audit fix / --force na 010**. Evidência e advisories em [final-validation.md](final-validation.md).
+- T073 concluída como PASS (user-reported); tempo de ativação/background NÃO MEDIDO. **T074 consolidada localmente, aberta apenas pelo CI remoto NOT RUN**; nenhum outro blocker real identificado nesta avaliação. Não atribuir o walkthrough histórico a um APK atualizado não testado.
+- Stash da 011 preservado, não restaurado; sem alterações adicionais de runtime/dependências pelo agente ou publicação.
+
+## Captura anterior ao alinhamento dos patches — histórico
+
+- T073 concluída como **PASS (user-reported)** no walkthrough individual; tempo de ativação e instante exato de background **NÃO MEDIDO**. Detalhes em [walkthrough-t073.md](walkthrough-t073.md).
+- Gate mobile atual `npm run test:ci`: **82 suites / 591 testes**, cobertura aprovada, exit 0 natural. Os quatro erros de PushProvider permanecem resolvidos no harness; sem regressão detectada.
+- Backend completo após adapter: unitárias **26/318**, integração **19/176**, contrato **1/9**, E2E **6/70**, todos exit 0 natural; demais scripts oficiais e build aprovados. Banco destrutivo exclusivamente local `avisa_ai_test`.
+- Doctor inicial **19/21** por bloqueio de rede EACCES; repetição com acesso externo **20/21**, exit 1. Único check: versões exigidas pelo SDK, com os mesmos cinco patches na tabela abaixo. Nenhuma dependência/lockfile alterada ou check excluído.
+- Mobile typecheck/lint/format e export all-platform aprovados. CI remoto **NOT RUN**; T074 continua aberta pelo Doctor e pelos workflows remotos aplicáveis. A 011 permanece no stash, não restaurada.
+- Matriz FR/SC, privacidade, contratos e migration/recovery consolidados no estado atual de [final-validation.md](final-validation.md). Capturas anteriores não são promovidas a evidência da revisão final.
 
 ## PushProvider — causa no harness e correção limitada aos testes
 
@@ -30,7 +47,7 @@ No PowerShell deste ambiente, foi usado `npm.cmd` para preservar os argumentos a
 
 O timeout da primeira execução não voltou a ocorrer nos controles ou no gate completo repetido. A evidência é compatível com timing do ambiente/harness; sua causa de desempenho não foi medida, e não houve mudança no teste nem no runtime para mascará-la.
 
-## Expo Doctor — pendência separada de dependências
+## Expo Doctor — desalinhamento histórico resolvido
 
 `npm run doctor` reproduziu **20/21**. Único check falhando: **Check that packages match versions required by installed Expo SDK**. Todos os cinco desalinhamentos são de patch; as versões atuais abaixo são as instaladas, não apenas os ranges declarados.
 
@@ -44,7 +61,7 @@ O timeout da primeira execução não voltou a ocorrer nos controles ou no gate 
 
 Os cinco patches esperados foram publicados em 2026-10-06. A aprovação histórica 21/21 não cobre esse novo conjunto recomendado. O check aponta compatibilidade de dependências; não demonstra sozinho regressão causada pelas correções de app.config/push-config.
 
-**Estado: PENDENTE para avaliação em T074.** Não executar `expo install`, alterar manifests/lockfiles ou ignorar o check para fazê-lo passar enquanto a build atual e o walkthrough estiverem pendentes.
+**Estado histórico:** o check estava pendente nessa captura. O proprietário alinhou os patches e a repetição completa atual confirmou Doctor 21/21 sem exclusões; não usar essa tabela histórica como pendência atual.
 
 ## Preservação da primeira build/runtime — captura histórica
 
@@ -57,4 +74,4 @@ Os cinco patches esperados foram publicados em 2026-10-06. A aprovação histór
 
 - Checklist curto preparado em [walkthrough-t073.md](walkthrough-t073.md). Na captura inicial os passos de push estavam NOT RUN. Posteriormente, o retorno das configurações Android apresentou FAIL (user-reported); diagnóstico e reteste estão em [walkthrough-t073-429-diagnosis.md](walkthrough-t073-429-diagnosis.md).
 - Na captura histórica foi preparado um rascunho da 011. Ele foi posteriormente removido por solicitação do proprietário; nenhum arquivo da 011 permanece na branch 010. A recriação será feita somente na branch própria.
-- A pendência dos quatro testes do provider foi resolvida no harness; Doctor 20/21 permanece separado. T073/T074 continuam abertas e só serão avaliadas após o walkthrough e a consolidação dos gates aplicáveis.
+- Histórico: os quatro testes do provider foram resolvidos no harness. Na captura anterior ao alinhamento, Doctor 20/21 e CI remoto mantinham T074 aberta. Na avaliação atual, T073 está concluída e somente CI remoto NOT RUN permanece pendente.

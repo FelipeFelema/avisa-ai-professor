@@ -1,6 +1,6 @@
 # PR draft — Spec 010
 
-Draft only. No PR created; T073/T074 remain open. Update validation evidence and unresolved gates before requesting review/merge. The previous Spec 011 draft was removed from this branch; no Spec 011 files belong in this PR.
+Publication authorized on 2026-10-06 from `010-push-notification-foundation` to `develop`. T073 is complete; T074 remains open until actual Backend CI and Mobile CI pass. Spec 011 stays in its existing stash and contributes no files to this PR.
 
 ## Title
 
@@ -14,27 +14,35 @@ Users can enable notifications explicitly from Profile → Notifications and sen
 
 - Add installation capabilities, session/account-bound registrations, versioned lifecycle transitions, token rotation, opt-out/logout reconciliation and account-deletion cascade with isolation/concurrency coverage.
 - Add authenticated Expo push dispatch, persistent single-flight/cooldown and restart-safe receipt processing. Test requests cannot select recipients; public responses and logs exclude private tokens/capabilities/provider IDs. No announcement or other business notification rules are implemented.
+- Accept both an individual Expo ticket and a one-ticket array, retaining strict response validation and no automatic retry. Add regression tests for successful/error/malformed individual tickets and safe diagnostics.
 - Add the mobile consent/settings flow, guarded SDK loading, permission reconciliation, foreground presentation deduplication and navigation on test-notification taps.
-- Preserve existing app configuration while moving to `app.config.ts`; add Android preview APK configuration, EAS-provided Google Services file support and storage backup exclusions. Local preview uses the configured LAN API; private FCM/service-account and backend access credentials stay outside source and bundle.
-- Extend the canonical OpenAPI contract and regression suites. Fix Jest dynamic imports through a test-only transform without changing production PushProvider behavior or adding dependencies.
-- Prevent push HTTP responses, including 429s, from triggering their own reconciliation loop. Keep the existing rate limits, single-flight and test cooldown; add a regression covering foreground return with the real API/provider/lifecycle stack.
+- Prevent push HTTP responses, including 429s, from triggering their own reconciliation loop. Preserve rate limits, single-flight and test cooldown; cover foreground return with the real API/provider/lifecycle stack.
+- Move existing app configuration to `app.config.ts`; add Android preview APK configuration, EAS-provided Google Services file support and storage backup exclusions. Private FCM/service-account and backend access credentials stay outside source and bundle.
+- Align the five Expo SDK patches: Expo 57.0.27, Constants 57.0.21, Linking 57.0.12, Notifications 57.0.22 and Router 57.0.25, with a synchronized lockfile. Constants remains within the existing root range `~57.0.15`.
+- Extend the canonical OpenAPI contract and regression suites. Fix Jest dynamic imports through a test-only transform without changing production PushProvider behavior.
 
-### Validation recorded so far
+### Validation
 
-- Backend local checkpoint (2026-10-05): Prisma validation/generation/migrations on isolated `avisa_ai_test`, format/lint/typecheck/build and coverage passed; 26 suites / 301 unit tests, 19 suites / 176 integration tests, 1 suite / 9 contract tests and 6 suites / 70 e2e tests. Branch coverage 60.12%, meeting the configured gate. These are historical local results, not a new final run or remote CI.
-- Mobile follow-up (2026-10-06): 81 suites / 585 tests with coverage, natural exit 0; typecheck/lint passed. The four PushProvider failures were reproduced as a Jest/Node dynamic-import harness failure and resolved only in test configuration. An initial separate timeout was investigated and the full gate passed on repeat; see the evidence document.
-- Provisioning: EAS preview file variable and FCM V1 confirmed, Enhanced Push Security enabled, private backend configuration present, additive migration applied to local `avisa_ai`, PushModule startup/configuration available. Android LAN health check: PASS (user-reported). This does not prove push delivery.
-- Submitted build archive was inspected for excluded private credentials/environment files and secret matches. Runtime/dependency files remained unchanged during the subsequent harness/documentation work.
+- **Real Android push: PASS (user-reported).** The owner installed the second corrected preview APK and confirmed explicit activation, stable ACTIVE state without the 429 loop, one neutral foreground notification, notification observed after minimizing, return to Notifications by tapping, cooldown, persistent opt-out, logout/login and readable light/dark themes. Expo accepted the foreground attempt and its separately queried receipt returned `ok`.
+- The exact background transition and activation duration were not measured. The second APK's ID/URL was not supplied. This physical walkthrough preceded the five SDK patch updates; the updated dependencies have automated validation and are not attributed to a newly built or physically retested APK.
+- **All final local gates: PASS**, rerun on 2026-10-06 after the adapter correction and five Expo patches. Backend: Prisma validate/generate/migrate deploy, format/lint/typecheck/build; 26 suites / 318 unit tests with coverage, 19 / 176 integration, 1 / 9 contract and 6 / 70 e2e. Branch coverage 60.99%, above the configured threshold.
+- Mobile: typecheck/lint/format; 82 suites / 591 tests with coverage; **Expo Doctor 21/21**, no excluded checks; Android/iOS/web export. Test processes exited naturally with code 0, without `forceExit` or increased timeouts. Destructive PostgreSQL checks used only guarded loopback `avisa_ai_test`.
+- Runtime/configuration and tracked-file privacy review passed. No private credentials/environment files are included. Local validation did not run `npm ci`; actual clean-install validation belongs to remote CI.
 
-### Open gates
+### Dependency security decision
 
-- A physical walkthrough exposed a reconciliation feedback loop after returning from Android settings. The mobile fix passed the full local gate (82 suites / 591 tests); a new APK and physical retest are required. See [429 diagnosis](walkthrough-t073-429-diagnosis.md). The owner has manually submitted the second preview build; its APK and physical retest are pending.
-- The first preview build finished but its installed APK failed the settings-return scenario. The second preview build result and individual push retest are pending; T073/T074 are not complete.
-- Expo Doctor: 20/21; SDK patch alignment check reports five packages. No dependency upgrade or check suppression was performed while this build is pending.
-- Final local gates and FR/SC evidence consolidation must follow the walkthrough. Backend CI/Mobile CI have not run remotely for this work.
+The owner accepted the documented triage for Spec 010 and required remediation in the future **Spec 012**. Audit is not green: production audit reports 63 affected dependency entries (15 moderate, 47 high, 1 critical); full audit reports 67 (15 moderate, 51 high, 1 critical).
+
+- Critical `shell-quote@1.9.0` is **DEV/TOOLING ONLY** in the analyzed dependency usage and absent from the inspected production Android bundle. Remediation remains mandatory in Spec 012; this is not a claim that the installed APK binary was audited.
+- Moderate `decode-uri-component@0.2.2` is present in the Android bundle, with malformed URI/query denial-of-service risk. Remediation/review is mandatory in Spec 012; no complete mitigation is claimed.
+- Remaining dependency/tooling advisories are recorded for the full Spec 012 audit. No `npm audit fix` or `--force` was applied in Spec 010, and no Spec 012 implementation is included.
+
+### Remote merge gates
+
+Backend CI and Mobile CI are pending publication. T074 remains open until their actual results are recorded. Local PASS does not substitute for GitHub checks; merge must wait for green required checks.
 
 ### Review notes
 
 Migration `20261005130000_push_notification_foundation` is additive. Operational recovery disables push and preserves the new tables; no destructive rollback is required. Android local preview needs the phone and backend on the same LAN. Storage backup exclusions also affect restoration of existing AsyncStorage preferences, including theme; existing theme/session behavior is covered by regression tests.
 
-References: [final validation](final-validation.md), [follow-up evidence](validation-follow-up-2026-10-06.md), [closing checklist and commands](closeout-checklist.md), [Git scope review](git-scope-review.md).
+References: [final validation](final-validation.md), [follow-up evidence](validation-follow-up-2026-10-06.md), [physical walkthrough](walkthrough-t073.md), [closing checklist](closeout-checklist.md), [Git scope review](git-scope-review.md).

@@ -1,46 +1,31 @@
-# Fechamento da Spec 010 — checklist preparado
+# Fechamento da Spec 010 — checklist atual
 
-Data: 2026-10-06. Este documento prepara a avaliação; não fecha T073/T074 nem afirma execução dos comandos abaixo. O proprietário já iniciou manualmente a segunda build preview com a correção do loop/429. Não gerar outra build nem alterar seu runtime, configuração ou dependências.
+Data: 2026-10-06. **T073 concluída como PASS (user-reported); T074 consolidada localmente e aberta somente pelo CI remoto NOT RUN.** Todos os gates finais locais passaram após adapter e cinco patches Expo; Doctor 21/21. Triagem de segurança aceita e registrada em [final-validation.md](final-validation.md). Nenhuma alteração adicional de runtime/dependências pelo agente, nova build, commit ou publicação. A 011 permanece no mesmo stash.
 
-## Evidência que falta para T073
+## T073 concluída / limites preservados
 
-Executar o [walkthrough T073](walkthrough-t073.md) no APK efetivamente instalado. O health já relatado não cobre os passos de push. Registrar data, executor proprietário, build instalada, ambiente Android/backend local e resultado por cenário, sem identificadores privados ou segredos.
+Roteiro viável integral relatado em [walkthrough-t073.md](walkthrough-t073.md), sem inventar medições: tempo de ativação e instante exato de background NÃO MEDIDO. O APK testado fisicamente é a segunda build corrigida anterior ao alinhamento dos patches; não afirmar novo APK/walkthrough após o alinhamento. Gate atual confirma regressões automatizadas. ID/URL desse segundo APK não informado; não usar o ID da primeira como substituto.
 
-| Cenário ainda sem relato                | Evidência esperada                                                                                                                                                                                                                   |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Abertura, login e Perfil → Notificações | App utilizável, sem prompt espontâneo; estado inicial e explicação apresentados.                                                                                                                                                     |
-| Ativar e responder à permissão          | Escolha explícita; resposta real do Android, inclusive permissão já concedida se for o caso.                                                                                                                                         |
-| Confirmação do vínculo                  | Estado ACTIVE e conta/instalação atual; registrar tempo até confirmação para avaliar SC-005 (até 2 min), se efetivamente medido. Recusa/indisponibilidade deve ter orientação acionável. Sem medição, não afirmar o limite temporal. |
-| Enviar teste / feedback do backend      | Resultado real: aceito, recusado, falha ou indeterminado. Não copiar token, capability ou ticket privado para evidência.                                                                                                             |
-| Foreground e background viável          | Conteúdo neutro, apresentação única e retorno pelo toque à área de notificações; registrar cada exibição observada ou sua ausência. Aceite e receipt positivo não comprovam exibição.                                                |
-| Cooldown / pendência                    | Nova intenção antes da liberação bloqueada ou limitada com feedback; nenhum envio duplicado intencional.                                                                                                                             |
-| Desativar e retornar                    | Opt-out mantido ao retornar à tela/foreground; não confundir com revogação da permissão no Android.                                                                                                                                  |
-| Logout e retorno/login                  | Reconciliação sem vínculo residual da conta anterior ou reativação espontânea. Sem rede, registrar somente se viável; variações restantes têm automação.                                                                             |
-| Temas e navegação                       | Conferir Claro/Escuro, labels/feedback e navegação existente no mesmo walkthrough individual viável.                                                                                                                                 |
+## T074: resultado atual
 
-Usar `PASS (user-reported)` somente nos cenários relatados; FAIL e NOT RUN continuam explícitos. SC-006 permite registrar aceite sem exibição observada, sem inventar sucesso. Uma falha deve ser localizada por camada antes de qualquer mudança de código. Não exigir frota de aparelhos, campanha iOS/Android especializada, leitores de tela ou participantes independentes.
-
-## O que falta para T074 além do walkthrough
-
-1. **Gate de dependências:** avaliar/resolver o Doctor 20/21 após o checkpoint físico e com autorização para eventuais atualizações. Único check falhando: alinhamento com o SDK; `expo` 57.0.26 → ~57.0.27, `expo-constants` 57.0.20 → ~57.0.21, `expo-linking` 57.0.11 → ~57.0.12, `expo-notifications` 57.0.21 → ~57.0.22 e `expo-router` 57.0.24 → ~57.0.25. Não ocultar o check ou declarar dispensa. Os quatro testes do provider já não são uma falha pendente: a correção de harness e o gate completo aprovado estão registrados separadamente.
-2. **Resultado do artefato:** registrar sucesso/falha final da build atual, APK instalado e configuração efetivamente testada. Upload e export não substituem build concluída. Se um ajuste futuro modificar runtime/dependências, evidência do APK atual não valida automaticamente o novo runtime; uma nova build exige autorização própria.
-3. **Gates finais locais:** executar os scripts oficiais abaixo sobre o estado que será submetido, registrar exit codes, cobertura, ambiente e eventuais falhas/repetições. Os passes de 05/10 e do harness em 06/10 têm datas e escopos diferentes; não apresentá-los como nova execução integral.
-4. **CI aplicável:** Backend CI/Mobile CI permanecem gates remotos sem execução neste trabalho local. Quando o usuário autorizar publicação, registrar os resultados reais desses workflows. Preparar PR não autoriza push/PR/dispatch, e um passe local não prova CI remoto.
-5. **Consolidação documental:** atualizar a matriz FR-001–030 / SC-001–010 em `final-validation.md` com referências atuais, qualificações de SC-005/006 e resultados de regressão (auth, conta, convites, turmas e comunicados; sem notificações de negócio). Conferir contrato canônico/runtime, migração aditiva e recuperação por desabilitação preservando tabelas. A migration real já foi aplicada; não reaplicá-la nem executar rollback destrutivo para produzir evidência.
-6. **Escopo e privacidade da entrega:** revisar o conjunto final de arquivos da 010, manter ausentes os arquivos da 011, cujo WIP anterior já foi removido, confirmar ausência de credenciais/ambientes privados e preservar a evidência da inspeção do upload. Consolidar provisionamento EAS/FCM e backend sem valores privados.
+- **Gates locais PASS:** Prisma validate/generate/migrate deploy; backend format/lint/typecheck, 26/318 unitárias com cobertura, 19/176 integração, 1/9 contrato, 6/70 E2E e build; mobile typecheck/lint/format, 82/591 com cobertura, Doctor 21/21 e export Android/iOS/web. Testes com exit 0 natural, sem forceExit/timeouts maiores; PostgreSQL destrutivo somente avisa_ai_test.
+- **Triagem aceita:** shell-quote@1.9.0 Critical ausente do bundle Android, DEV/TOOLING ONLY; decode-uri-component@0.2.2 Moderate presente, REMEDIAR NA SPEC 012 sem mitigação completa. Ambas com remediação obrigatória na futura 012. Não executar npm audit fix nem --force na 010; auditoria com advisories não é apresentada como verde.
+- **Documentação consolidada:** FR-001–030/SC-001–010, qualificações de SC-005/006, OpenAPI canônico/runtime, migration aditiva preservando fixtures, recovery sem apagar tabelas e regressões atuais em final-validation.
+- **Escopo/privacidade PASS:** 236 arquivos de runtime/config preservados byte a byte durante os gates; 558 arquivos rastreados inspecionados, zero correspondências com segredos privados ou arquivos de credenciais/ambiente privado. Stash da 011 preservado e arquivos da 011 ausentes.
+- **Única pendência real identificada:** Backend CI/Mobile CI remotos NOT RUN. Registrar resultados reais quando publicação for autorizada; sem dispensa ou PASS inventado. T074 permanece aberta até esse gate.
 
 ## Sequência de fechamento
 
-- [ ] Obter o resultado da build atual e instalar seu APK; não gerar outra automaticamente.
-- [ ] Executar e registrar o walkthrough individual, com distinção entre aceite, handoff e exibição.
-- [ ] Diagnosticar eventuais falhas antes de decidir alterações; preservar a identificação do APK testado.
-- [ ] Avaliar Doctor e autorizar separadamente eventual correção de dependências.
-- [ ] Executar os gates finais e consolidar FR/SC, contratos, migration/recovery e evidências.
-- [ ] Revisar o escopo do diff e o rascunho do PR; publicação depende de pedido do usuário.
-- [ ] Registrar CI remoto quando houver publicação autorizada, sem antecipar PASS.
-- [ ] Avaliar T073/T074 somente com suas evidências e gates aplicáveis; não marcar nesta preparação.
+- [x] Instalação/reteste do segundo APK confirmados pelo proprietário; ID/URL não informado.
+- [x] Registrar walkthrough individual, separando aceite, receipt e recebimento físico.
+- [x] Diagnosticar e corrigir loop/429, parsing do ticket e IAM antes do reteste.
+- [x] Registrar triagem aceita e obrigações futuras de remediação, sem audit fix.
+- [x] Alinhamento dos cinco patches pelo proprietário e repetição completa com Doctor 21/21.
+- [x] Consolidar FR/SC, gates locais, contratos, migration/recovery, escopo e privacidade.
+- [ ] Registrar workflows remotos na publicação autorizada.
+- [ ] Fechar T074 após CI real aprovado; não restaurar a 011 nesta avaliação.
 
-## Comandos finais — somente depois do walkthrough
+## Comandos finais — executados nesta avaliação
 
 Usar uma sessão PowerShell separada da operação do backend. Não copiar o `.env` real para configurar suites. As credenciais abaixo são as fixtures públicas de teste já usadas no quickstart; ajustar a conexão privada se necessário, mantendo obrigatoriamente destino local `avisa_ai_test`. Os testes continuam protegidos pelos helpers `assertSafeTestDatabase`.
 
@@ -88,7 +73,7 @@ npm.cmd run doctor
 npm.cmd run export:ci
 ```
 
-Com os cinco patches atuais, o Doctor permanece esperado como pendente até reavaliação; não executar `expo install` ou alterar lockfiles para esconder esse fato durante a espera. O export all-platform é validação automatizada e não assina APK nem comprova entrega de push.
+Os cinco patches foram alinhados pelo proprietário e a repetição atual confirmou Doctor 21/21. A triagem aceita proíbe npm audit fix / --force na 010; nenhuma atualização adicional foi feita nesta execução. O export all-platform é validação automatizada e não assina APK nem comprova entrega de push.
 
 Revisão final, sem staging:
 

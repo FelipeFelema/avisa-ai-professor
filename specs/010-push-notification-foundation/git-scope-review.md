@@ -1,6 +1,16 @@
 # Revisão do escopo Git — Spec 010
 
-Captura: 2026-10-06, antes dos commits intermediários aprovados. O diff rastreado tem **33 arquivos, 2.821 inserções e 324 remoções**; esse total não inclui os 80 arquivos novos ainda sem rastreamento.
+## Revisão final para publicação — 2026-10-06
+
+Branch confirmada: `010-push-notification-foundation`; base remota `develop` em `cd2a759`. O diff restante revisado contém o adapter Expo e seus testes, manifest/lockfile dos cinco patches Expo e evidências/documentação da 010. O rascunho do PR foi atualizado com push físico `PASS (user-reported)`, Doctor 21/21, gates locais PASS e triagem aceita com remediações obrigatórias na futura 012. T073 concluída; T074 permanece aberta até Backend CI/Mobile CI reais aprovados. Publicação autorizada pelo proprietário; merge não executado nesta etapa.
+
+Stash da 011 a preservar: `223e6ff688b5be4e6204934fc9ee5088dbc5bdb2`, mensagem `wip: spec 011 before 010 physical validation`. Nenhum arquivo da 011 está rastreado nesta branch.
+
+Os commits finais separam correção/testes backend, patches mobile e documentação. Antes de cada commit: `git diff --cached --name-status` e `git diff --cached --check`; após os commits: worktree limpa e stash idêntico. Resultados remotos serão registrados após a execução; este registro não antecipa PASS.
+
+## Captura antes dos commits intermediários — histórico
+
+Captura: 2026-10-06, antes dos commits intermediários aprovados. O diff rastreado tinha **33 arquivos, 2.821 inserções e 324 remoções**; esse total não incluía os 80 arquivos novos ainda sem rastreamento. As referências abaixo a arquivos untracked, patches pendentes ou T073 aberta descrevem exclusivamente esse checkpoint histórico.
 
 ## Alterações rastreadas que pertencem à 010
 
