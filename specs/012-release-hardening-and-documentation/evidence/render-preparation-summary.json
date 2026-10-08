@@ -1,0 +1,2574 @@
+{
+  "time": "2026-10-08T16:37:04.322Z",
+  "baseCommit": "832626de96c9ad5ef7446d8aba4f759113d1385a",
+  "node": "v22.14.0",
+  "npm": "11.10.1",
+  "gates": [
+    {
+      "component": "backend",
+      "label": "format-approved",
+      "start": "2026-10-08T16:12:44.314Z",
+      "end": "2026-10-08T16:12:47.625Z",
+      "code": 0,
+      "command": "npm run format:check",
+      "database": "loopback/avisa_ai_test"
+    },
+    {
+      "component": "backend",
+      "label": "lint-approved",
+      "start": "2026-10-08T16:08:27.810Z",
+      "end": "2026-10-08T16:08:45.908Z",
+      "code": 0,
+      "command": "npm run lint",
+      "database": "loopback/avisa_ai_test"
+    },
+    {
+      "component": "backend",
+      "label": "types-approved",
+      "start": "2026-10-08T16:12:43.439Z",
+      "end": "2026-10-08T16:12:49.711Z",
+      "code": 0,
+      "command": "npm run typecheck",
+      "database": "loopback/avisa_ai_test"
+    },
+    {
+      "component": "backend",
+      "label": "unit-approved",
+      "start": "2026-10-08T16:08:29.552Z",
+      "end": "2026-10-08T16:08:50.956Z",
+      "code": 0,
+      "command": "npm run test:cov",
+      "database": "loopback/avisa_ai_test"
+    },
+    {
+      "component": "backend",
+      "label": "integration",
+      "start": "2026-10-08T15:58:46.086Z",
+      "end": "2026-10-08T16:02:34.884Z",
+      "code": 0,
+      "command": "npm run test:integration",
+      "database": "loopback/avisa_ai_test"
+    },
+    {
+      "component": "backend",
+      "label": "e2e",
+      "start": "2026-10-08T15:57:22.246Z",
+      "end": "2026-10-08T15:58:25.202Z",
+      "code": 0,
+      "command": "npm run test:e2e",
+      "database": "loopback/avisa_ai_test"
+    },
+    {
+      "component": "backend",
+      "label": "contract",
+      "start": "2026-10-08T16:04:56.821Z",
+      "end": "2026-10-08T16:05:00.311Z",
+      "code": 0,
+      "command": "npm run test:contract",
+      "database": "loopback/avisa_ai_test"
+    },
+    {
+      "component": "backend",
+      "label": "prisma-validate",
+      "start": "2026-10-08T15:58:15.455Z",
+      "end": "2026-10-08T15:58:37.683Z",
+      "code": 0,
+      "command": "npm run prisma:validate",
+      "database": "loopback/avisa_ai_test"
+    },
+    {
+      "component": "backend",
+      "label": "prisma-generate",
+      "start": "2026-10-08T15:58:45.330Z",
+      "end": "2026-10-08T15:58:48.475Z",
+      "code": 0,
+      "command": "npm run prisma:generate",
+      "database": "loopback/avisa_ai_test"
+    },
+    {
+      "component": "backend",
+      "label": "migration-status",
+      "start": "2026-10-08T16:04:56.956Z",
+      "end": "2026-10-08T16:04:59.153Z",
+      "code": 0,
+      "command": "node node_modules/prisma/build/index.js migrate status",
+      "database": "loopback/avisa_ai_test"
+    },
+    {
+      "component": "backend",
+      "label": "build-approved",
+      "start": "2026-10-08T16:08:30.160Z",
+      "end": "2026-10-08T16:08:41.206Z",
+      "code": 0,
+      "command": "npm run build",
+      "database": "loopback/avisa_ai_test"
+    },
+    {
+      "component": "mobile",
+      "label": "quality",
+      "start": "2026-10-08T15:56:25.230Z",
+      "end": "2026-10-08T15:56:37.248Z",
+      "code": 0,
+      "command": "npm run typecheck",
+      "database": "loopback/avisa_ai_test"
+    },
+    {
+      "component": "mobile",
+      "label": "lint",
+      "start": "2026-10-08T15:58:14.513Z",
+      "end": "2026-10-08T15:58:34.876Z",
+      "code": 0,
+      "command": "npm run lint",
+      "database": "loopback/avisa_ai_test"
+    },
+    {
+      "component": "mobile",
+      "label": "format",
+      "start": "2026-10-08T15:58:14.689Z",
+      "end": "2026-10-08T15:58:18.985Z",
+      "code": 0,
+      "command": "npm run format:check",
+      "database": "loopback/avisa_ai_test"
+    },
+    {
+      "component": "mobile",
+      "label": "unit",
+      "start": "2026-10-08T15:56:24.829Z",
+      "end": "2026-10-08T15:57:20.129Z",
+      "code": 0,
+      "command": "npm run test:ci",
+      "database": "loopback/avisa_ai_test"
+    },
+    {
+      "component": "mobile",
+      "label": "doctor",
+      "start": "2026-10-08T16:04:57.219Z",
+      "end": "2026-10-08T16:05:06.628Z",
+      "code": 0,
+      "command": "npm run doctor",
+      "database": "loopback/avisa_ai_test"
+    },
+    {
+      "component": "mobile",
+      "label": "decoder",
+      "start": "2026-10-08T15:58:45.225Z",
+      "end": "2026-10-08T15:58:45.497Z",
+      "code": 0,
+      "command": "node scripts/check-decode-security.cjs",
+      "database": "loopback/avisa_ai_test"
+    },
+    {
+      "component": "backend",
+      "label": "resumed-http",
+      "start": "2026-10-08T16:35:04.364Z",
+      "end": "2026-10-08T16:35:34.518Z",
+      "code": 0,
+      "command": "node node_modules/jest/bin/jest.js --config test/jest-e2e.json --runInBand --runTestsByPath test/proxy-rate-limit.e2e-spec.ts test/production-config.e2e-spec.ts",
+      "database": "loopback/avisa_ai_test"
+    },
+    {
+      "component": "backend",
+      "label": "resumed-migrations",
+      "start": "2026-10-08T16:35:05.365Z",
+      "end": "2026-10-08T16:35:22.689Z",
+      "code": 0,
+      "command": "node node_modules/prisma/build/index.js migrate status",
+      "database": "loopback/avisa_ai_test"
+    },
+    {
+      "component": "mobile",
+      "label": "resumed-decoder",
+      "start": "2026-10-08T16:35:04.367Z",
+      "end": "2026-10-08T16:35:04.722Z",
+      "code": 0,
+      "command": "node scripts/check-decode-security.cjs",
+      "database": "loopback/avisa_ai_test"
+    }
+  ],
+  "audit": [
+    {
+      "component": "backend",
+      "label": "audit-full",
+      "start": "2026-10-08T16:01:04.248Z",
+      "end": "2026-10-08T16:01:08.130Z",
+      "code": 1,
+      "command": "npm audit --json",
+      "database": "loopback/avisa_ai_test",
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 20,
+        "high": 3,
+        "critical": 0,
+        "total": 23
+      }
+    },
+    {
+      "component": "backend",
+      "label": "audit-runtime",
+      "start": "2026-10-08T16:01:05.676Z",
+      "end": "2026-10-08T16:01:07.597Z",
+      "code": 0,
+      "command": "npm audit --omit=dev --json",
+      "database": "loopback/avisa_ai_test",
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0,
+        "total": 0
+      }
+    },
+    {
+      "component": "mobile",
+      "label": "audit-full",
+      "start": "2026-10-08T16:01:04.414Z",
+      "end": "2026-10-08T16:01:10.580Z",
+      "code": 1,
+      "command": "npm audit --json",
+      "database": "loopback/avisa_ai_test",
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 12,
+        "high": 50,
+        "critical": 0,
+        "total": 62
+      }
+    },
+    {
+      "component": "mobile",
+      "label": "audit-runtime",
+      "start": "2026-10-08T16:01:04.274Z",
+      "end": "2026-10-08T16:01:10.543Z",
+      "code": 1,
+      "command": "npm audit --omit=dev --json",
+      "database": "loopback/avisa_ai_test",
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 12,
+        "high": 46,
+        "critical": 0,
+        "total": 58
+      }
+    }
+  ],
+  "startup": {
+    "time": "2026-10-08T16:14:16.110Z",
+    "results": [
+      {
+        "label": "wrong-mode",
+        "started": "2026-10-08T16:14:13.639Z",
+        "ended": "2026-10-08T16:14:13.695Z",
+        "exit": 1,
+        "pass": true,
+        "expectedCode": "PRODUCTION_NODE_ENV_REQUIRED"
+      },
+      {
+        "label": "invalid-jwt",
+        "started": "2026-10-08T16:14:13.695Z",
+        "ended": "2026-10-08T16:14:14.904Z",
+        "exit": 1,
+        "pass": true,
+        "expectedCode": "APPLICATION_STARTUP_FAILED"
+      },
+      {
+        "label": "invalid-proxy",
+        "started": "2026-10-08T16:14:14.904Z",
+        "ended": "2026-10-08T16:14:16.110Z",
+        "exit": 1,
+        "pass": true,
+        "expectedCode": "APPLICATION_STARTUP_FAILED"
+      }
+    ],
+    "pass": true,
+    "database": "loopback/avisa_ai_test; configuration refused before DB startup"
+  },
+  "cleanInstall": {
+    "start": "2026-10-08T16:00:11.563Z",
+    "end": "2026-10-08T16:03:27.124Z",
+    "code": 0,
+    "command": "npm ci --include=dev --no-audit",
+    "target": "logs\\spec012\\backend-render-clean-1791475210842",
+    "copiedFiles": 194,
+    "privateEnvCopied": false,
+    "allBackendSourceInputsMatchValidatedWorktree": true,
+    "finalCleanBuild": "PASS; current source recopied, no env file, final clean build log private"
+  },
+  "tests": {
+    "backendUnit": {
+      "suites": 33,
+      "tests": 426,
+      "statements": 72.38,
+      "branches": 63.44,
+      "functions": 72.38,
+      "lines": 73
+    },
+    "backendIntegration": {
+      "suites": 28,
+      "tests": 270
+    },
+    "backendE2E": {
+      "suites": 11,
+      "tests": 120
+    },
+    "finalProxyAndProductionRetest": {
+      "suites": 2,
+      "tests": 25,
+      "result": "PASS; overlaps E2E above"
+    },
+    "backendContract": {
+      "suites": 1,
+      "tests": 10
+    },
+    "mobileUnit": {
+      "suites": 89,
+      "tests": 677
+    },
+    "mobileDoctor": "21/21"
+  },
+  "secrets": {
+    "time": "2026-10-08T16:37:03.781Z",
+    "knownRealSecretMatches": 0,
+    "worktreeTextFiles": 662,
+    "historyTextBlobs": 1899,
+    "ignoredLogs": 434,
+    "artifacts": 174,
+    "allSensitivePathsIgnored": true,
+    "limits": "Known private inventory and local sources/reachable history/logs/artifacts; hosted logs, missing remote refs, unknown/encoded secrets, APK/AAB not certified."
+  },
+  "sources": [
+    {
+      "path": "backend/.env.example",
+      "sha256": "c302bce78f7a776c4685bf1b3832cd6b0ccff53f026889f1f1c9f98fc7d373a4",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/.gitignore",
+      "sha256": "2d25b4b022f47cba32c769b31496b42531bc63c78b489181c6c15925f752e55c",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/.prettierignore",
+      "sha256": "11e8af429205e86e6be7f9333938dec268673aed69a17eabe18ad4f7911d074d",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/.prettierrc",
+      "sha256": "e51419e8206a0a5493e85ef1f4dea080982dc9187992bb253220a93d0784f6b2",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/README.md",
+      "sha256": "96c5d110b6bd3fb1c690dbb359d696edba5d22ce4901bdca0df9f2ef762589b4",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/eslint.config.mjs",
+      "sha256": "1657e6765d9f3490222e35b838e9bcdf443199cf146cc3b7cfe74d92e7e6f7b0",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/nest-cli.json",
+      "sha256": "bcb15e3049ff5d131762d2bfe3a6f917c3c64c83ac772467a4073975cd423b5b",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/package-lock.json",
+      "sha256": "0d1853a6e0a4a314eb09dc3f89667159701618ba9f121a3d0b57e2718ae9e97e",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/package.json",
+      "sha256": "36c5dddddf14eba90f78f68e940c033af88f8e73a335e4473f0d7c3fc0f08943",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/prisma.config.ts",
+      "sha256": "912fabc788d36a38c61ccaad28ff160c019fdb5642c856c182c0872fc560d3ef",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/prisma/migrations/20260327214559_init/migration.sql",
+      "sha256": "712c579851f44094382ebc7911b75e5d0c8a892188a934223eccd9fbd5904c4f",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/prisma/migrations/20260327215207_init/migration.sql",
+      "sha256": "dca8940add97f3bac8cb0da66c55c0e5e6ddecbf94466b455bc18eda744c46c4",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/prisma/migrations/20260331190759_add_admin_role/migration.sql",
+      "sha256": "7bc857a05a0862100fbce3fb3d7a8e99590075546cb22f4ac145613710d4790a",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/prisma/migrations/20260331194502_create_announcements/migration.sql",
+      "sha256": "f532c3878ee4d2d550135031de04599019da3b595c4a6a30b874be62a50e0602",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/prisma/migrations/20260407200932_create_classroom/migration.sql",
+      "sha256": "cd5cb853665321142dd525f2f0e0e748983fc1efe371f550632108eca0a4964d",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/prisma/migrations/20260407202639_add_announcement_classroom_relation/migration.sql",
+      "sha256": "c6e97c7ef5dd25bb466746cce236941187069d058702c7d0df3051579f44838f",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/prisma/migrations/20260409192224_add_userclassroom_relation/migration.sql",
+      "sha256": "6434f645288dd8ba81829a9aa8406ec0c175bb958b5f28a73d9c74e82af69800",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/prisma/migrations/20260414184149_add_invite_code/migration.sql",
+      "sha256": "506c3096af8b5a411b0d39b3849d32f8a50c577af90f1416e576a2fe04d85202",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/prisma/migrations/20260807202044_add_classroom_owner/migration.sql",
+      "sha256": "593a9df5de533956e0302fdf1887084f6fbdad62f9d9de74bba89a5bf70f850d",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/prisma/migrations/20260807203647_add_classroom_delete_cascade/migration.sql",
+      "sha256": "45796b872b89c11a8224cdc3920e649b16080e37a13d8cd8542395112adb563c",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/prisma/migrations/20260824_add_auth_sessions_and_deletion_receipts/migration.sql",
+      "sha256": "6e1bb8b8831c5711c34423c3526c16423be48991f1f2913554747f2ac7eb40e1",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/prisma/migrations/20261005130000_push_notification_foundation/migration.sql",
+      "sha256": "35640bb947296bd32ed1c93bb1dedbf3ded849c83b612e4e607b65d8a39deb78",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/prisma/migrations/20261006190000_release_critical_notifications/migration.sql",
+      "sha256": "af12c63536aba55358fcd024b067217991a657396c2b577d1adc60364d5d6dde",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/prisma/migrations/20261007120000_announcement_expiration_occurrences/migration.sql",
+      "sha256": "f9c5272b55c7c671bb45fcce9d2d653fd7076846150bbe1e9a29e0b105ba525f",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/prisma/migrations/migration_lock.toml",
+      "sha256": "99836963713b4f5b269ad49af0ed3d7b0b2e336115c2f92dc9ac683d139d0900",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/prisma/schema.prisma",
+      "sha256": "495e55984062499449ee24d955d8c3141318fd645d378dff93be69fced2c5fda",
+      "normalization": "raw-bytes"
+    },
+    {
+      "path": "backend/scripts/start-production.cjs",
+      "sha256": "06b045f13b95f9f67a851bcce84a92b1db20dc0761740f434b0f735abb782bf2",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/announcements/announcements.controller.spec.ts",
+      "sha256": "a511b869348c9e64cc29b191af2800b3ce4f4d367cf82ef872c4237af06f2ea7",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/announcements/announcements.controller.ts",
+      "sha256": "3b00c3c5f7f89fc69e587261855ff3a98f9b8e8816b931f7c4f763257eef0d81",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/announcements/announcements.module.ts",
+      "sha256": "c508364bb0e1323033fa12fc5a9d0b1035d63c20276c77d7883983992f5a8bee",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/announcements/announcements.service.spec.ts",
+      "sha256": "0411c6db5e45c6a50a98bc94e4918381e8e3c010eb114db8d14078ccb91e1aa3",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/announcements/announcements.service.ts",
+      "sha256": "90a0393ea2fe2c5ce9b0dfd33d6052ec11e5058886e9b34440962619f2dbc998",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/announcements/dto/create-announcement.dto.ts",
+      "sha256": "47f7fa2aa4ab25f4550920f060d54262acf83906e483a22e878564f97fc7c8fa",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/announcements/dto/update-announcement.dto.ts",
+      "sha256": "125ef025ba555b4e491605419ac73c4c287043aca8b7a108c8042b09fa8c63c8",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/app.controller.spec.ts",
+      "sha256": "dbfd6f13587e3ce5284c6c673f0d3324de3032bd9ff9fe192f471446dda6f375",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/app.controller.ts",
+      "sha256": "32abd84233429aa3f07d16030f1664f8b75dd9ebcabaa690008a0dd2df33ce8e",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/app.module.ts",
+      "sha256": "dd720b8638013c1701bb1db180c961771f3e4305d340d52acae05003dac9cd14",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/app.service.ts",
+      "sha256": "6a58843aaa27480da70c5ec480529fc876fdd504e75de5fea5e7391e8871d2ce",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/auth/auth-session.service.spec.ts",
+      "sha256": "a7bbb2dd41f8b3f027c9bae8bfab06712dfc14a7c877d03456376e1f31a1b6ab",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/auth/auth-session.service.ts",
+      "sha256": "9b386b41314a1588ac1ead36f44533cc274836a7b76adac5df69e9b8437921e7",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/auth/auth.controller.spec.ts",
+      "sha256": "59111a3f1cd4fb7b6ac5e5efd02f8f86bb8795f657151c9deb3f0fa2c3c9b6e6",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/auth/auth.controller.ts",
+      "sha256": "71bd2cb4a42bee82fa02b3480b70d42e02520c01e23e44d56b99c1cbcc248683",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/auth/auth.module.ts",
+      "sha256": "7a95faeb5b9af947fa9a99359302da856f1734863cb6ba9c086b220604da6f96",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/auth/auth.service.spec.ts",
+      "sha256": "28d913832c241f7da133443b6750b510fb2a9e701f05e80be5036834840dd11b",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/auth/auth.service.ts",
+      "sha256": "7ea8a1af6816ee09505d534f027fc8b489d5c2a609ea0624d2216121e3e66804",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/auth/decorator/roles.decorator.ts",
+      "sha256": "a5cba706165b56d912154199188019cebd3bdc9fb8703278a80050b26753b51f",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/auth/dto/change-password.dto.spec.ts",
+      "sha256": "cb0a212953638fb1df4cf4b426248873442c8a5a25692655683c449e08bd015f",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/auth/dto/change-password.dto.ts",
+      "sha256": "baf1445ec2f3030a8887ce7407f9716e32a845ba69c1f93a583dbd89f8567426",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/auth/dto/login.dto.ts",
+      "sha256": "9af727d2d4d65e1962f55fc988e6c2ea9ec5f0ef46e2d3c732a9462e098e4e35",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/auth/dto/session-revocation.dto.ts",
+      "sha256": "08022ad63b8047366a1831dd641d50ccbf4b060ffb32d78e7606f0acadd32efd",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/auth/guards/jwt-auth.guard.ts",
+      "sha256": "51fc903ffa25cb72c7ecc1aa1fed8c9d5bf7c6dd2f7f0efe9d5fa1d7490b020c",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/auth/guards/rate-limit.guard.spec.ts",
+      "sha256": "2b7b7209c869ddd03af5885702b1524c96aeca2be56d39533e36f0f3a0522d7f",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/auth/guards/rate-limit.guard.ts",
+      "sha256": "44a5b73f974e6d71db21661e011db58c5ae5998197d95f52451390192d72a2c1",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/auth/guards/roles.guard.ts",
+      "sha256": "6dad8c4246084386ba4a2c4ef8879301fcbde0df8b202efeca09b2962c919811",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/auth/guards/self-or-admin.guard.ts",
+      "sha256": "c9f53d07572b5b95a36d1147efd3664956f681a264e67bfcfc4868fa3d42fee7",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/auth/session-revocation.service.spec.ts",
+      "sha256": "5c67ce2f6e35b06eea075f013fb99f8659abd673704055199e0ac0352e72432c",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/auth/session-revocation.service.ts",
+      "sha256": "d070321a2f0f6d840142ec28aa5fc9eeeca345cdcf62debb8353e4c2812154ac",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/auth/strategies/jwt.strategy.ts",
+      "sha256": "92d82515dcb23c1c3f62856593228961559b4f64ae1564db695cf173f4fdeba9",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/auth/strategies/refresh.strategy.ts",
+      "sha256": "60d87d1413691a6bb681b905bc3ef928989db3ab5d1c503bab10492cd122ee1d",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/classrooms/classrooms.controller.spec.ts",
+      "sha256": "d1675774cf47a40105bb7280a780d24817ac9b8b5ec3b7dd1d89020dd44927e9",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/classrooms/classrooms.controller.ts",
+      "sha256": "fb721fdf97ea75c521d200c244ca98f4cdcfec92c8f27432c0789de5fda928d1",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/classrooms/classrooms.module.ts",
+      "sha256": "42fc19cbcd712025c7929d2224c6e28ee91443067cd8b9b3113d61b1a2b8fbe1",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/classrooms/classrooms.service.spec.ts",
+      "sha256": "96d094f879f9acb5aeab7bf6080c31ffddf1e1200f41ac1bf1e4b0b6d7abf2ba",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/classrooms/classrooms.service.ts",
+      "sha256": "e4745d1c0b34f23aad0a77e978de9b6bbdb106b9205a032f0631f500e1b2af44",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/classrooms/dto/classroom-summary.dto.ts",
+      "sha256": "709564f767b2106d472244b3619de728540f932e589ef4a2241485ccad33d861",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/classrooms/dto/create-classroom.dto.ts",
+      "sha256": "a2a2d05c1a71e3ba7b776ed073df0198ea437ba29e688d267591c6210cac036d",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/classrooms/dto/find-available-classrooms-query.dto.spec.ts",
+      "sha256": "c4547761394471e715bb3f426f44fb305a9d562a5dc5e57035a054daffe218c0",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/classrooms/dto/find-available-classrooms-query.dto.ts",
+      "sha256": "8ab6806d66eb97a0fb949dd3065c49c81e6e6cde037db7e3c6a66ac19b7f4bab",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/common/constants/classroom.constants.ts",
+      "sha256": "dcfe6c6176c752d7b46c214c277d2cfde1b00122ccfe5c2d5d2979fc30aafb16",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/common/dto/auth-response.dto.ts",
+      "sha256": "b1b34c1f31828535e203164cc81eb66ee18e17efc7132b2899a80fc9816394b1",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/common/dto/error-response.dto.ts",
+      "sha256": "87905dea1d58cfbab450f793914dcbff1d6ee440b8461bd413a95749aa74bb82",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/common/dto/health-response.dto.ts",
+      "sha256": "f0de70a6f106a700492c622f8f906b4090aa35e80daa8ecfd7e92c7025c24cb0",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/common/filters/sanitized-exception.filter.ts",
+      "sha256": "d62e9bee47da08899cf40a1b99b8460b54c57fdfe058451848a0476a9a4f005a",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/common/normalizers/user-normalizer.ts",
+      "sha256": "b47457029cac8be4bfb36206dd337d09085dfd4e0c015aeb0571ac163377bc60",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/common/security/password-hasher.spec.ts",
+      "sha256": "0220b0477540097b8869d9921ddf1f225ede96987cfcdc2632ce4580158e5712",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/common/security/password-hasher.ts",
+      "sha256": "c0bb7a6cf67c98b8340a701165a9db6b3e62a8508eedf135ef232541dce7fa8f",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/common/types/auth-user.type.ts",
+      "sha256": "bc7ef21cdcc67695d77a73eda8ab63ba4340f1d5e18be3092f56f5a77f08b049",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/common/types/classroom-with-users.type.ts",
+      "sha256": "8532f755dde52981c6ff30ec5c823340009c4475a414e13d2deffccc9fed7e4f",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/common/types/jwt-payload.type.ts",
+      "sha256": "a13166fcaac10b817641257a98f61e5e9e12cc78263dbb3f66f04a4861daed7c",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/config/production.config.ts",
+      "sha256": "9b36bdd2ab993a886c90fcbcca9461fd2e88f4dc4c0acfd51db662aa51b6599a",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/config/trusted-proxy.config.spec.ts",
+      "sha256": "f42a45b915037dd1cc864207eba82857bbb2dcd3820fb7db70fb5e4a4f36d372",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/config/trusted-proxy.config.ts",
+      "sha256": "fd39e16ecd11efb7992ea2acd069c9b37019343ca1d3acc784c60ab3fe5ee8b6",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/configure-app.ts",
+      "sha256": "1908c53e5c6f7c3e2b3db04b59b693903231d29f1a3a96e09dd1db3c0c0e72c8",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/invites-code/dto/create-invite-code.dto.spec.ts",
+      "sha256": "067894cee3a476cbfdfa84f227c2fac28c979273ece61c50599944b527908403",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/invites-code/dto/create-invite-code.dto.ts",
+      "sha256": "0fa66600a09f2d46bca0936f80257d4c7af78fd333c3cef3bc49f14af777ef9c",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/invites-code/invite-code-random.ts",
+      "sha256": "e9c8103164a67b2f3c4be309bad12c08a94db40e98851157f114164221128e50",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/invites-code/invite-code.controller.spec.ts",
+      "sha256": "773d91e79b03a7ebf206958d22da0127795887b35d408a0e8d7cf2adefc7b4e1",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/invites-code/invite-code.controller.ts",
+      "sha256": "a3f6ca17d17d9f5643a872cdbf74975bb5fd391932180721895094fc6f2e1b8a",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/invites-code/invite-code.service.spec.ts",
+      "sha256": "3b1240775738e697e1e1ca8e633f45ea9a9bb189c7e5f25a75201a5446cade88",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/invites-code/invite-code.service.ts",
+      "sha256": "52136ec74a6a7c1558659af047fc8119cebc20478ae9119ade2b7192626c082c",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/invites-code/invites-code.module.ts",
+      "sha256": "6b7dc46ff98335bf2c07b883d0c18741760335f9a6429bff234daaa6808e7308",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/invites-code/types/invite-code-role.types.ts",
+      "sha256": "cf804d1416fa57582dce3c3b61e3281100e66cf2934a40140dfeb01edc1cc243",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/main.ts",
+      "sha256": "494d631e2fb6090a9704b850a4cee2acb95bf3b20f7943659bf87444a75932b1",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/openapi/api-responses.decorator.ts",
+      "sha256": "65c281f1ba2282adea10e39d79444fbd68c2b66502241485c4ebeaf63f4be527",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/openapi/configure-openapi.ts",
+      "sha256": "4798459f5976864ec0489a65f28fcedf3ac50027f530530663d731c99f0e0eeb",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/prisma/prisma.module.ts",
+      "sha256": "9223a0889abb0669020e94a9b8c1e68274cdc05533c1f79d84fe516450e94ebd",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/prisma/prisma.service.ts",
+      "sha256": "e9e1ceadbd77bac7cd6e41f44ddee3aa4f2ab5dc6b2cfd20d72a41b9e5ef431c",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/push/announcement-push-locks.spec.ts",
+      "sha256": "322f6f83fd8c4e381b86bad7512412fb6e24c3c324e17c5097818eb9d90beb75",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/push/announcement-push.config.spec.ts",
+      "sha256": "e3a5a5caaacc2d77157ef7e6d8a92f427111d1815d0048ad6f1e91b778124753",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/push/announcement-push.config.ts",
+      "sha256": "ab8ebf797daab672a67209f284d14b1df8c458f3f231e09f6455ba3f7afec46e",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/push/announcement-push.service.spec.ts",
+      "sha256": "9367cd1f5b2323ec6a5262cc390761f4a9cff3c74e759561e30319f5ce8ab1e4",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/push/announcement-push.service.ts",
+      "sha256": "e08739af304b06db3aaa359e96cf44e7dae927d9b48ec5909075aa21c61c182e",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/push/announcement-push.worker.spec.ts",
+      "sha256": "c3c5e8ac874acdd334e2e0bc11d9aa2e761d6ccafb47f6e12e9d4aab43d072a9",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/push/announcement-push.worker.ts",
+      "sha256": "6cb62739439b1799265144a2699d3dc708a613faf8bb6ad0f7aac44e9893c640",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/push/announcement-reminders.worker.spec.ts",
+      "sha256": "afc43e14b6f49ac3beb9c65123748507b37a0d4e17ce0323515c79347f7786cf",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/push/announcement-reminders.worker.ts",
+      "sha256": "eb7d84d4b4b63215830055d2a8854c658eab41d8bf7d8dcfffb693ac552f7c2e",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/push/dto/activate-push.dto.ts",
+      "sha256": "c6453eaad1c07d8909e4b16ac681f0c66e2519aace4e6b8e14fb7b3d258b9275",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/push/dto/empty-push.dto.ts",
+      "sha256": "827da0d6fd78dcbca98767e2a83d627d077f63eb220dadfa3209fdceb6588da6",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/push/dto/push-installation-headers.dto.ts",
+      "sha256": "a24d4c5b11e554d15f82b19efc7c02977e7feeff98877d76d8747e89b8b7a8cd",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/push/dto/push-request.validation.ts",
+      "sha256": "d14717dfed00ab568c605f1fabb508e39040083e6471119a1247f414552614c9",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/push/dto/push-view.dto.ts",
+      "sha256": "b78777e4c6d1d3ca7d2c3f03d8505f7941bd084ce4ecac6e5fd928227af2b975",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/push/dto/push.dto.spec.ts",
+      "sha256": "30a5bd823334900cdb7fe754e83fb24860c39a29d7624f7a07c5fafe1f8e3e6b",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/push/dto/revoke-push.dto.ts",
+      "sha256": "0f679ca771b56a35be309203cde999814bcb7ccb16f24b52371bcf20cb3bc88d",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/push/expo-push.adapter.spec.ts",
+      "sha256": "d5f0add2ea544e520f5dbcc07df416c7c03145b6813fc92c36f8bbfb056cbdfb",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/push/expo-push.adapter.ts",
+      "sha256": "530272363b6bdbd8dddac239bb40c3a715678421f1888db9b96e988109cf4542",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/push/guards/installation-capability.guard.spec.ts",
+      "sha256": "78611229d7af72a625658ca1bf225092aff5a71b9b822010fdf223cf3f44122d",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/push/guards/installation-capability.guard.ts",
+      "sha256": "120b22481cedc08d94014d0ac7fbda5765c731ee1a355ed783165e30d0abbf81",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/push/push-receipts.worker.spec.ts",
+      "sha256": "11db808482be8efdff21e76ecc7fbbfbe19927cc37c1ce641bf4dfa52ff7aed2",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/push/push-receipts.worker.ts",
+      "sha256": "0619efe0e42ef69bd28e9c0240ca60b7fcbe5e9707a58d8e0578f2fb1bd644df",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/push/push-registration.service.spec.ts",
+      "sha256": "fce6f7034201f0df6768f0359c90a007c3966143ab954fe3efd515309f23a955",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/push/push-registration.service.ts",
+      "sha256": "051977740c0ed132fafd4167fef7a5f8961ec0712baed7871845a1bc53943789",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/push/push-test.service.spec.ts",
+      "sha256": "6a701ffa3ed12d84857544c8969e7262b22688b8f5df4d6b85a394ab78d55159",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/push/push-test.service.ts",
+      "sha256": "82efb8d0b4ef93facb366a808da70c249656a523e6138e9d9f5cdb1a68eb0551",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/push/push.config.spec.ts",
+      "sha256": "6a5ffc22bab8c2bba91cfd3b7abd81859c6eff529e368827c2ab45127c3a6c9f",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/push/push.config.ts",
+      "sha256": "78f8b58fc2f56b6195f21ad54caabd19634a3214a0b24fb4a2c3c1690a83b331",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/push/push.controller.ts",
+      "sha256": "2959575f2eb8856e6f662a145b3a968232841bed5154ab09f98d12f362b4b8e3",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/push/push.module.ts",
+      "sha256": "5bd6d72e9b2c938e50331437edcb1d035345d7d78bc631fbc0551304ed29c471",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/users/account-deletion.service.spec.ts",
+      "sha256": "5cf9ce9dd0b74184ac5a5a83b377eba0e1f3c1603d131ab9b96de675283d0028",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/users/account-deletion.service.ts",
+      "sha256": "57bfac4ded44b7497e27f86fbe13688250e12837ac96e4c2b56a1caeda3c3ddf",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/users/dto/account-deletion-impact.dto.ts",
+      "sha256": "26373d1c1046f82a975775b4e8821e7738748d3e22d468b14c950f0b25dabd01",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/users/dto/create-user.dto.ts",
+      "sha256": "58aa503bc16ea3ad2ac3b9b5608b1b7bc14bb7b7cb4940d72c01374f2b7a797c",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/users/dto/delete-account.dto.spec.ts",
+      "sha256": "ddcfa56da493b0cbc035dcc91c95211370456a5b41d16cb489c6bdaf216c777d",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/users/dto/delete-account.dto.ts",
+      "sha256": "24873bdd7f345db2fa9b6d8eb9d45242dc9919553aa15dfa7f6159309e741c69",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/users/dto/update-profile.dto.ts",
+      "sha256": "1ded5a42eb420d9a08a94fb987511b6f9165e8bd95413444d4acee67c175654d",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/users/dto/update-user.dto.ts",
+      "sha256": "854a7ba7f872125472ee6ed6aa3a7bcf589758b67f8897d30faeee6513f825ea",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/users/users.controller.spec.ts",
+      "sha256": "d24dc2313ab60f09695fd927c85c2c959f4a549d68dce3b7181c8ad7081cccb5",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/users/users.controller.ts",
+      "sha256": "04a2fd28efe3783826cd526b288d109f5add2263f1ff97ed3eeda968b64c7d44",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/users/users.module.ts",
+      "sha256": "839a871c272e6b63282839d2e71580665f9eec26a92e30f95731e7afc0d538c4",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/users/users.service.spec.ts",
+      "sha256": "8bb9ad80e03a8112ccaed5aabfb73eaf6a82bf7198c53143cd9e64dafe729302",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/src/users/users.service.ts",
+      "sha256": "1fd739125a3a758974fb5da7e4146830d565d691ffde31379f6a398c195e4857",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/account-deletion.concurrency.integration.spec.ts",
+      "sha256": "73fa7ba209bc4b71ba25bc0687dd6bacef0fb829f225d7dcaac09fca40c283c9",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/account-deletion.e2e-spec.ts",
+      "sha256": "78e520308f5a60719cea622b1c58fb71b91b9ea2026ae6e3ee3a9d763dad05e0",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/account-deletion.helper.integration.spec.ts",
+      "sha256": "452138b12b6f61ff1d5f40d2f10d4940a92ae01e710c2b8b9fced0f412bfa6c2",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/account-deletion.integration.spec.ts",
+      "sha256": "f432bb433c54b8f3dad23919a4d8f2ba43cd47d05c75d2f893f2dab8865ac85f",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/admin-user.helper.integration.spec.ts",
+      "sha256": "53f041062fa7b8be9b13e36c962bc1b7e00f057273c86fac300ed9bdfa0469e8",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/announcement-push-dispatch.integration.spec.ts",
+      "sha256": "750efc065daf443dca778ac7a17de3e3372b76b433a187d0822f394622502afa",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/announcement-push-fanout.integration.spec.ts",
+      "sha256": "03cffcf6082cd42be26ef9d939063d0bf632266deffc85695559a793a2b5114d",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/announcement-push-locks.integration.spec.ts",
+      "sha256": "6cb76f5315f4d40a6f43c882d2af6902329c27c5a5110198c8d172fe4790e2ef",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/announcement-push-migration.integration.spec.ts",
+      "sha256": "5b6749bae679e59c3080bc5dc0e2a2eae98089f78d8a494d0bdac5928af9741d",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/announcement-push-privacy.integration.spec.ts",
+      "sha256": "6167c015c0ebe0fd3b1b3cd152a9edbc97bd754fe36c4bae0d48bb67f8e89fbf",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/announcement-push-reminders.integration.spec.ts",
+      "sha256": "014a3c37e2c91e4f82a8ff94befed6de209a515ffb5ee729e41b858f56167717",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/announcement-push.e2e-spec.ts",
+      "sha256": "adca89bfb2c0a32f1837fac09f73c8ef16c713b9b96cf6b0fd9153718b6abd60",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/announcements.integration.spec.ts",
+      "sha256": "de37bd6476c8d6f93424cb3e27cb23e7a58affc02733328842b85d4a047b44c6",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/app.e2e-spec.ts",
+      "sha256": "c8209f4ece25571a31594227cc85934b57bf94a4e90fec20c66047ed4f9c85a8",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/auth.integration.spec.ts",
+      "sha256": "8e4d3c6b568b242aa9fc22a4143650ab6eef3e4f432a37f90d4024750ca29297",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/classrooms.e2e-spec.ts",
+      "sha256": "076f9fe98e5f77eab8723b8d3e3044d427e760e4cbded8ea5472fd4441520771",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/classrooms.integration.spec.ts",
+      "sha256": "e0af97212087c97a8574bb90d00962376d144dd587cdafcb23d608cb48eb1385",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/fixtures/legacy-session.sql",
+      "sha256": "afaece6d198db9cdb2034e445d55b41cf8a170876ee5a014b17f632427ec0444",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/helpers/account-deletion.helper.ts",
+      "sha256": "c184cc829263761f7f7098af74248f40d1857412841b5faf96488fb867c6b74d",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/helpers/admin-user.helper.ts",
+      "sha256": "5a1eb2d0d1cfc0f67f8c99a4e8102b98e88ddef7272914e50ce87e9ad3702058",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/helpers/announcement-push.fixture.ts",
+      "sha256": "f93a1c82b34b20f1692e41695d80e455aa730ed102a9f6b4bc7ba0a143fb0f14",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/helpers/auth.helper.ts",
+      "sha256": "e497671b56fe37f5873d2b6795b4c329618177c0c8b8d3cdcdc2be5c0f0e805d",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/helpers/profile-password.helper.ts",
+      "sha256": "a2859500e269180c09dea919c32fdb3be58d152d862b3fbabf750b572338c566",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/helpers/release-security.fixture.ts",
+      "sha256": "ffb12460919b4e503b1ca098dc6b61dd10b84c99efa9e11c3bcc7d340ea9a575",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/helpers/test-app.helper.ts",
+      "sha256": "a59f83566f9a02559d8dd2e46c2037aed6e65ae0ee538751a35f2ef37e233ea5",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/helpers/test-database.helper.ts",
+      "sha256": "cd8cd2fb1530b0586b6395a46baf21ed9e274ca015dcba22edd3af99450b8bb0",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/helpers/test-environment.ts",
+      "sha256": "e3c7ebf3bd1e41ff8e005b7ec1b71531f836df03f2293e8b7a5441c3f784617e",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/invite-codes.e2e-spec.ts",
+      "sha256": "188ad8c93bb9ae790c1322bd26148a2b101f30eb5aa05c283f885f9988f431fe",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/invite-codes.integration.spec.ts",
+      "sha256": "03cddb2706c67165057e9556166949b71b3fde1f8fe75010bdb07d1f47821926",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/jest-e2e.json",
+      "sha256": "81b0e2fbead39b9bb62386545ff6e01810566868a76dbcdf83e4a7c4de05a804",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/jest-integration.json",
+      "sha256": "84f1244571f63fb8419700642bbeba1abca0a29b83c34bd71ed4d1a78229bd18",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/openapi.contract.spec.ts",
+      "sha256": "3fd8fb44cc710eebe28764050cc84cbe727a6dafae970c1e3a47b853645060e0",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/password-change.integration.spec.ts",
+      "sha256": "750438e347202c4aa686fcd8e19dbcdfbf642484ad4cd1cfc7170b004a80f6c7",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/production-config.e2e-spec.ts",
+      "sha256": "f9586b299285986b4f34ae0c52aa94dd5ee696d748ae9461839ad7d850842ced",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/profile-password.benchmark.ts",
+      "sha256": "94e5b9181980d5a7ed7bdcf9a8639d02110381ba351d1fdf8a7182fcba021a1b",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/profile-password.helper.integration.spec.ts",
+      "sha256": "eb3a6db1d4d8198a2a3baa9ece877b799ef050af639ba4f694a2043862e95896",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/profile.e2e-spec.ts",
+      "sha256": "fea978f53750e6b9585aa9358d478d87b7d145ef592394d1a084f7653ce5361b",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/proxy-rate-limit.e2e-spec.ts",
+      "sha256": "b2c35d8d745afd3477429c6946b026a49bb63acee2c4d9d96c6d9058ffc9e96c",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/push-lifecycle.concurrency.integration.spec.ts",
+      "sha256": "5fc78171eec43f083923b0bb9f0855d8eaaa252e2a9172752407324ffb626a7c",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/push-migration.integration.spec.ts",
+      "sha256": "6d45921bf9941842ec56d66b1d1e1f45b1580e65ce4e6ac0d341a3e3071aa29b",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/push-privacy.integration.spec.ts",
+      "sha256": "576bc9119dadceec962e9f6d5afa1db8c61f2b7ee22967ddc57e5869d2f6de96",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/push-receipts.integration.spec.ts",
+      "sha256": "2b2994567e8e99016021f4306585b24c98b601381f373dcd3b73af10d9590d2c",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/push-registration.integration.spec.ts",
+      "sha256": "0df1c83589411c4949680b8c8cff90320cd234ed1e88afdbb11e8e9a742e7673",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/push-test.concurrency.integration.spec.ts",
+      "sha256": "e2210cdc4597dfd75f92aa4b354a5f546a98e5a9386df69c0ad94a1769806829",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/push.e2e-spec.ts",
+      "sha256": "0b93f44368b06b559850b0f1e8fb0562ba3ffb97b633b1decf9276e61b752aa5",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/release-authorization.integration.spec.ts",
+      "sha256": "8d69f823eb4b99e46d07960999d8cc68e00e342466e837b5ebe63f42d5b04927",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/release-database.integration.spec.ts",
+      "sha256": "b4160b0f8a9a124aca2b3361ec0ab0a21c575e568099f77b1199eb82dfee7799",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/release-error-privacy.e2e-spec.ts",
+      "sha256": "b3c785122e996b21ce88b0b49f690c8912fa5a28708169dc2d70ac9acf1447c9",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/release-fixture.integration.spec.ts",
+      "sha256": "72a3eb36e5c29810b5ba170e7112875735647114555e853558ea2323153c4cd5",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/release-input-security.e2e-spec.ts",
+      "sha256": "d9e27b82c3b4caffd9eb440a5476b54824570f791aa4e858e657f118038107d0",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/session-and-receipt-migration.integration.spec.ts",
+      "sha256": "f33db8e774d83b3efc976acab42dc1869ae4c841828600f0a8ee1a7f70584b75",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/test/users.integration.spec.ts",
+      "sha256": "6be4db984af13c2412e29a9c468d7c4b5ee11f60eb89d6bfe6d95b71be45d7a9",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/tsconfig.build.json",
+      "sha256": "3a016b4ee9713cd16295128bad42e6077e5ecd8c2ed225caa7d1e0e3f1c7f03f",
+      "normalization": "LF"
+    },
+    {
+      "path": "backend/tsconfig.json",
+      "sha256": "8d817c3c9e2a3fc1783d9bb29aa745b3d88edd5d16306d1a20f1d0f54ce46e44",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/.env.example",
+      "sha256": "4ecb7a7f2ec57ade917077264ebde829aaff661d8e0c174a3f3247fbf4275980",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/.gitignore",
+      "sha256": "4fd2037169265909272791c07fb0fda37a8ff054c14470c42eab35e71cd8cf39",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/.prettierignore",
+      "sha256": "6e3c7db7fcbdd77f701d4c31106adaafeec0658ac5b44a4ef609df70df653151",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/.prettierrc",
+      "sha256": "f05f85b3710b0912d48945e21bbac3928685ecc5ac9466332eeb57e25d4d2568",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/LICENSE",
+      "sha256": "fb3ca4a837f5779e83cef89b78253a8949cfb9429c340309f62d0465ec6610b4",
+      "normalization": "raw-bytes"
+    },
+    {
+      "path": "mobile/README.md",
+      "sha256": "3746c7712ec421774f6e6fbef7241e8ad1e87a7f15ecc28bc52f17771d0b7949",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/app.config.ts",
+      "sha256": "bc38f6cdf47894b25527268691388f8b5c126afb2712f483df2784acc01f9de7",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/app/(app)/(tabs)/_layout.tsx",
+      "sha256": "9e4f8a8cd0073b60042ee4875573f9f85bc3f83ebaea52ee7cc5b166111d8ca9",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/app/(app)/(tabs)/classrooms.tsx",
+      "sha256": "5cd7d7fed08f21c79c7d3da4b083ba2e2b6b152a2af0d459a816ef2bdadc9e92",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/app/(app)/(tabs)/index.tsx",
+      "sha256": "f32976dda85b580b0a97fd86d90e9f13c9c16632cae4cdb1ceb8fb8b4c747e39",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/app/(app)/(tabs)/profile.tsx",
+      "sha256": "295c961bb523af127312976655fd72f6222372a82142d7c81a5e363e14b64bd4",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/app/(app)/_layout.tsx",
+      "sha256": "56464e11df736548ae510d4a9a91b8faa1912fd7af990988cb6328a7469735c8",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/app/(app)/admin/teacher-invites.tsx",
+      "sha256": "205d11e5dde68299c7801e2e1b3c5b2039b830129daabe81fce59ba7be23e4dd",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/app/(app)/announcements/[id].tsx",
+      "sha256": "7121ca966733a83f5084627e61f4371e12d0aa2fed7605e02b98371e8e14e5a3",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/app/(app)/announcements/[id]/edit.tsx",
+      "sha256": "cd684be6122e42bf21c4c442e4e656bd3f0bf5906876c7d02f4af7f57a4f2c53",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/app/(app)/classrooms/[id].tsx",
+      "sha256": "50523ddb52e06ae31c53448f1aa906201e2853f5ccf25d45dd8cd18dc5391f0b",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/app/(app)/classrooms/[id]/new-announcement.tsx",
+      "sha256": "86510c7d3dcd74c12673262fb94b8431af7c92aad65e4d16ef036aae499632fa",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/app/(app)/classrooms/new.tsx",
+      "sha256": "8f29c7ddc8d50397aea5d17cae48d2707daca8e1c20351a34df91c0381ab4d34",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/app/(app)/profile/change-password.tsx",
+      "sha256": "45296416c7f2f7cf9da890c743b3a03671e649292cf356d23638c69bf99cf779",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/app/(app)/profile/delete-account.tsx",
+      "sha256": "028faa66a1eae069d954a670a912bc1c55ba4024697b0e52d7e1d607f08d3ac9",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/app/(app)/profile/edit.tsx",
+      "sha256": "2231c7bad35386bc934acd503181cbada401b42420007b3fa77c39a73d015818",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/app/(app)/profile/notifications.tsx",
+      "sha256": "72bfbf8900b622026f9bca9ff5a78a40327b867090def5649fc8a1b0a3350aba",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/app/(auth)/_layout.tsx",
+      "sha256": "65f2af498386fd6d1c86482653f9921603a5bb9951e8f5ee4c599000ea7977cd",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/app/(auth)/login.tsx",
+      "sha256": "3bcc845123b9ac317bbe065887d3bd4b5dc63e18edf4d21c2223b0c427ab76fc",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/app/(auth)/register.tsx",
+      "sha256": "c011cfcb99245e50de996c4b5748eb7993d89cce14405c8111b5f949d9176a4a",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/app/_layout.tsx",
+      "sha256": "5e26c2b1963d6a57e02c9f8733585cd8d0c1780b3abcef25485417e2b198b1c3",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/assets/android-icon-background.png",
+      "sha256": "fb139c2dee362ebf2070e23b96da6fc0d43f8492de38b8af1fd7223e19b5861d",
+      "normalization": "raw-bytes"
+    },
+    {
+      "path": "mobile/assets/android-icon-foreground.png",
+      "sha256": "9e3d0315a33c6799de601dd34cd8bf8cc3a8d16f3bf75592baec2ceb7240b391",
+      "normalization": "raw-bytes"
+    },
+    {
+      "path": "mobile/assets/android-icon-monochrome.png",
+      "sha256": "6371fc2c12e33ad2215a86c281db3d682a81bebe7c957a842c13b8bf00cceb83",
+      "normalization": "raw-bytes"
+    },
+    {
+      "path": "mobile/assets/favicon.png",
+      "sha256": "a4e030697a7571b3e95d31860e4da55d2f98e5e861e2b55e414f45a8556828ba",
+      "normalization": "raw-bytes"
+    },
+    {
+      "path": "mobile/assets/icon.png",
+      "sha256": "119462bb78eb240a65c869fc067ee599639b3cb5a41953f25c07b17d2a8c7e0f",
+      "normalization": "raw-bytes"
+    },
+    {
+      "path": "mobile/assets/splash-icon.png",
+      "sha256": "5f4c0a732b6325bf4071d9124d2ae67e037cb24fcc9c482ef82bea742109a3b8",
+      "normalization": "raw-bytes"
+    },
+    {
+      "path": "mobile/docs/visual-foundation.md",
+      "sha256": "bf843d8c35a56634d6d38aae9ee7d60b2e409eefcddb073b0d813a7dc225dd9f",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/eas.json",
+      "sha256": "60424a64ed33761a96c594674d214706cefac20f33a6b349e959acedcec891fa",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/eslint.config.js",
+      "sha256": "371a1c39ace39e764e0eb17fa44ed1302350e9ace2de229807a0a0d4688e8c45",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/jest.config.js",
+      "sha256": "81abfa43afde826cc27aca68a5ed13490a0c74e2d0848e4748428834d7917a97",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/package-lock.json",
+      "sha256": "00c88d598ba63e13fd38fb16ee5a8c8e3175046f3967caa8eaac316dcd33f8ca",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/package.json",
+      "sha256": "2b4bd1f4736237132887c0e11c08a2f7b5ebd84a70175cd5b71167b417cb47c1",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/plugins/with-push-storage-backup.d.ts",
+      "sha256": "603c78cd846a9b103d6e0f502400b55ffb74d4c45fdd3998a931cf9506ac3076",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/plugins/with-push-storage-backup.js",
+      "sha256": "2254a484918aa4d533801b04617eeab1274b57597860c2929be2016ce865ed82",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/scripts/check-android-export-security.cjs",
+      "sha256": "86a47116465367bd18ab61044bf24942b5ad9c7956568d4968c61378f72a9306",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/scripts/check-decode-security.cjs",
+      "sha256": "b352c545a42200f285538adaab2200bad8c9fd66674f24a0d89f975761f244f1",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/components/SplashScreen.tsx",
+      "sha256": "aff511f989ec9c12709f1e994277c603749069fa8ac1855437aac7a9ed1f8f16",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/components/announcements/AnnouncementCard.tsx",
+      "sha256": "db7746ea39b09299dcf1586617c81e5e9ec15bd8daf0089c3d9f19b24e6bf4dd",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/components/announcements/AnnouncementPushFeedback.tsx",
+      "sha256": "41c2eddab1abe343503310ca503d99a05b9231a864c92cc0d5f1afaf7199d4ed",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/components/announcements/index.ts",
+      "sha256": "fc765990aaae04db67d75172149c23464e0de4ab66fc724cf8a3204676883f14",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/components/auth/AuthButton.tsx",
+      "sha256": "6f179be021e8b16d47505b23b321cbff9a484700811c9632f7962179190f63b5",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/components/auth/AuthField.tsx",
+      "sha256": "d2466fba82bfed62aa85f925531f6f7181ab504ab0578e9b8e358377c58eda6d",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/components/auth/AuthRolePicker.tsx",
+      "sha256": "d7382a23e872317b2de44a8a0026e57d589bac70e7c3c962ca0f109823065600",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/components/auth/AuthScreen.tsx",
+      "sha256": "3b70966018ae0fe0f7d59ac7f680addf9fc760b0a503843e717eb506d23a394c",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/components/auth/index.ts",
+      "sha256": "9e2869d19611592ff6a534ad459b6c9ae48a63c81740113a427c9bbb46e6c546",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/components/home/ClassroomCard.tsx",
+      "sha256": "0261afa557790e5c319c7638fc28e2e1ec9001468f613600642ec441d0264d4c",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/components/home/EmptyClassroomState.tsx",
+      "sha256": "7a499f63722c980616c6e2ebcce347e6f539339fef604fe2902f7614b79b1dff",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/components/home/HomeHeader.tsx",
+      "sha256": "23c9876104bfb626ebdb0fba0f58219b004a57fcfde52bee8d0e84042774dee6",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/components/home/index.ts",
+      "sha256": "1aea72e5af24d0aee16ec64d527247f245cc5c977ee3ade52ddf3e742ca0a977",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/components/ui/BackButton.tsx",
+      "sha256": "55c3b9b21d59367cdcaa86984f0330a00acad1b9c9f161119ae3ff623e49377d",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/components/ui/Button.tsx",
+      "sha256": "b50c974cc93188ee3a4bf88a61295bc2c74a01da952a9efbad6a72444d00fab4",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/components/ui/ConfirmationDialog.tsx",
+      "sha256": "f1819455f764be14367adab5e30f2d4a9e9a4e8a7e0ae6e0b72a3db71cf45b8c",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/components/ui/FormField.tsx",
+      "sha256": "07353ee009dcc40cbebb63f5020bfee167aabcc900c3f5ef76c66c5fcf4198cd",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/components/ui/ScreenState.tsx",
+      "sha256": "1061d0f2a30b8d71ae6723109599fb4f1d753d1d25bfe36f5039b6939768c1c6",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/components/ui/SecondaryScreen.tsx",
+      "sha256": "816fc046fcf33a9f9b51b44ab8a9c69c21fa85ba657b5c892e9348870857a4b1",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/components/ui/ThemeSelector.tsx",
+      "sha256": "bbe9f2c4799403a84ef531657518969b629d9a742a189ae6a2712d24a10c21ce",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/components/ui/index.ts",
+      "sha256": "2f35f207beb8bb4e61692b190f214dbca5590cddc4e7ca9101a6eedbc0f2f69f",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/config/env.ts",
+      "sha256": "8a056af894f98790cfec7cc86da760a3af69ceeb7b8c5f086e2d3984f47fb4c9",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/config/index.ts",
+      "sha256": "6aa4550661966780ffe133388ff5367aefd00250349ca61cb3a563a1481fb088",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/config/push-config.ts",
+      "sha256": "6a6bea66a3c1a8650c6ac8b95b343d31e5ed0bdfbc049a4a6fe948f80adb7ee1",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/config/query-client.ts",
+      "sha256": "5f1c5602d5b4577f2407ec6cedee9832fe14cee24a3853248fe3328d6216cd21",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/config/query-keys.ts",
+      "sha256": "75b6fd89ec9ac96be24537c46c99aa030fa8d3a8f44e4c1999395ffdb105804a",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/constants/http-status.ts",
+      "sha256": "3a8022b273a5d004cbd04078ddb3c10cca1a16495ebe494e799000913282409d",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/constants/index.ts",
+      "sha256": "af0c8fc5a595bc00e3bcc400a9ce8b5a0cb3f4d1a8acf880bcd4d5a3099a594e",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/constants/roles.ts",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/constants/routes.ts",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/constants/storage.ts",
+      "sha256": "15b4497c458386d0f9bf3b3b4d5b20b4bfe4e4290647d6b23176722a7b2b6fbb",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/contexts/AuthContext.tsx",
+      "sha256": "6f3bdee75dd3cf4be861a31b5d264ada9698b9093321081a6c96db237d35eeda",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/contexts/ThemeContext.tsx",
+      "sha256": "20f49dd556057227e93cb92052f25e903a004c490613ec743dc5e3d5cce07b46",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/hooks/useAnnouncement.ts",
+      "sha256": "35cfe9e74f253b971beacbabfc3ed7e03c1c17b5f5439ad38b75b21a6523d5ba",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/hooks/useAuth.ts",
+      "sha256": "e4f7297e543408a9e10b73ba7446b8b97b13817d0796ad59fc10cf68b2b13e98",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/hooks/useAvailableClassrooms.ts",
+      "sha256": "bf53ccb8fe395c37c0a48ca76c071bf9562bd647f0a82e72bc4c9cb6bddce2f6",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/hooks/useChangePassword.ts",
+      "sha256": "ba8652469de5493e0c67418f0a6c628f2d7fba441a60986b31208ec03621d54e",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/hooks/useClassroomAnnouncements.ts",
+      "sha256": "2c8c5c89592cb5688235bf490068509db1dbcc96c6d242e37da970c32a201b09",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/hooks/useClassroomSearch.ts",
+      "sha256": "256d42c6d762b59fcb2f1a088c18a5a084a24f2f77789a93491cff38825b737c",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/hooks/useCreateAnnouncement.ts",
+      "sha256": "a5cf6190b89f318f135d25a70d2f749d22feb960e720a3fab0479c7dc7110b80",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/hooks/useCreateClassroom.ts",
+      "sha256": "fe4e511ec37f76ac180337f5a060647dbbc7caa45f312a0a9b31310ca6b07af6",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/hooks/useDeleteAccount.ts",
+      "sha256": "d05674aa5751175359d181790a0e3d6a2ad496fd322abc9d0a5544083bcc5851",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/hooks/useDeleteAnnouncement.ts",
+      "sha256": "43e60082f51d60ed0b48cd3b2715be6d190625304489efee9a12cbb1d8a99db3",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/hooks/useDeleteClassroom.ts",
+      "sha256": "09fcd3367741a66f0b41b328bbc9dbb82780145c448d8f77d5d79348492709f5",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/hooks/useJoinClassroom.ts",
+      "sha256": "85c72efccb732edb44e6530b0e0aa9c892df580bbc284e98201639f1a13e0312",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/hooks/useLeaveClassroom.ts",
+      "sha256": "4ede7d3c2c92a89a2c6d84838c5fedc74c8ec3d6eb63571d46950b5535f6808f",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/hooks/useMyClassrooms.ts",
+      "sha256": "95ae24e861158e32e97b99682fd80ded0f47f926cb29564773f96d8e5e1ca7d6",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/hooks/usePushNotifications.ts",
+      "sha256": "cdebb8d9140301290811771f4a565d29b2b065067254a3ddd599afbf5eea252f",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/hooks/useSessionMutation.ts",
+      "sha256": "8c2c2488f1e8b767711ba6c16876261003740f1e8d5b47144d91eec31bc0cf6b",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/hooks/useTeacherInvite.ts",
+      "sha256": "3d25bc6e463f76a28bf931237fe7a76f469cf1b5dcefd868bf1c2fc4b85fdff6",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/hooks/useTheme.ts",
+      "sha256": "a7d334606c679c064a4e79d867e0c00c2e222dbcf3c42a8079501c7732d60b8d",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/hooks/useUpdateAnnouncement.ts",
+      "sha256": "cb340e94f48ccda99c5ee3c4a25d955fc56fdc07da2d41116f7633b764cc97cc",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/hooks/useUpdateProfile.ts",
+      "sha256": "5e2ca4c39712dea4c6cba5023c38916c5971eb09e7f7e5e32ae7fa7db120b1fe",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/lib/api.ts",
+      "sha256": "a97e9a696540c0e05a1cdb3c4d0b7b2fd769f294a8b4c9915243434383825878",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/lib/classroom-expiration.ts",
+      "sha256": "820c1804962d7847feafcb0751cc12519d3c5af0a249198537b4d856e9e7fa0d",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/lib/http-error.ts",
+      "sha256": "56f28cdfca7b1b84bfc61f021d30838b06b35a7a22e95892ed358aae5ad86827",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/lib/index.ts",
+      "sha256": "087715fa389e9a302f81797ef8283d6d25830f151d94ce67ba81de3b911e48c8",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/lib/session-generation.ts",
+      "sha256": "45dddee400cea0f1a50f18fdda139f6e35c24e007da0ddf6e98bd63b4eb8b6ca",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/lib/session-notice.ts",
+      "sha256": "4c2e95db62ee0fdce5a4cbc05e32f9a2e07e6d44ee5fe840afd45f906ef42401",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/providers/AppProvider.tsx",
+      "sha256": "7d3695e7de39308bc052a517374bbebdda56b9a0ad7a0398627f9503839c75e7",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/providers/AuthProvider.tsx",
+      "sha256": "da4a059f47d849e179a7b377be48a389c913f933ae980c5a8ad6c44051228bf1",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/providers/PushProvider.tsx",
+      "sha256": "1b45bf090d8c0413216627193a43410397179be7d0d11df0f732b535c145502e",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/providers/ThemeProvider.tsx",
+      "sha256": "461f27726ff913807a1479dee47df8a7090371241e61d84c4146c116965be7d9",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/services/admin/teacher-invite.service.ts",
+      "sha256": "dec1171bf824dbdc26e509959b908acfa3375cfa13d28e1579feba267258075b",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/services/announcements/announcement.service.ts",
+      "sha256": "fd36b7c977710bd60e65adea0be21235719f78a04d42ffddd38dd65cef01bfba",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/services/announcements/findOne.ts",
+      "sha256": "76ce370845d21149dd7886e43f1f8504d49029ffaf2441faeb0ac0ee12fc9ee9",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/services/announcements/index.ts",
+      "sha256": "6154769f037192f84f07b08b169ca188867cfbdaf6668a67674e69e5a7207b9b",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/services/announcements/service.ts",
+      "sha256": "3df91670c64fad9e8de3e99d47373c1bf229ef4bed188f0f715daa2071308c01",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/services/auth/account-deletion.service.ts",
+      "sha256": "d191858773b41772ad7636877bda99e9e0823e3474f1ac0649e48dc8c6158a47",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/services/auth/auth.service.ts",
+      "sha256": "416cff4fe1606923b18b0406f8a2fcb52aa2cf2052ede0cd77c881a5f60f87a1",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/services/auth/index.ts",
+      "sha256": "7af0673fbbe3f07f320d60a57e6df0fb10536c078fb9c216e5b1d9604511985f",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/services/auth/session-revocation.service.ts",
+      "sha256": "2177d843e7ee982803ca704a1fa4b466e8091fec10ca5293c350e318db854151",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/services/classes/classroom.service.ts",
+      "sha256": "5054fbf30e73875205b12a2547f8dad5cba36e96f655510d8799eb0206119e1d",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/services/push/announcement-push-navigation.ts",
+      "sha256": "c7fcc8a798c99f74751eb85c238796a1eb2354007dc92e4cb40d9b32d6858184",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/services/push/announcement-push-presentation.ts",
+      "sha256": "546c2ecb4f7363434904451cf9909175dbbe056f3c43f0b4dfc55f7880ca2633",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/services/push/push-device.service.ts",
+      "sha256": "26b036a684d9b1296f249523c8a6d065596b80fded66b6c6ab317e1fae8b8b84",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/services/push/push-lifecycle.ts",
+      "sha256": "a7d9ba5b91aae0a47930556428120eb72a3b3c48a6245fae4ab692b89d126f9b",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/services/push/push-presentation.ts",
+      "sha256": "81012e4cf69f03b320e239aeb11eac7dee18fbb436d4ebb5b6193e03d42754f3",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/services/push/push.service.ts",
+      "sha256": "7d1adebc23467ed0969c0fde88d0999d9f8da3a1ac5d70cf018c71ea04b7f979",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/storage/auth.storage.ts",
+      "sha256": "2db3e8a44b4388053b1ce26d266b6c8d0a4748b0d94ed067f54db69b508fe210",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/storage/index.ts",
+      "sha256": "0819b977cb28a6953a076bf22a318396c58986b4eec2b77256f4b27cd1c52d07",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/storage/push.storage.ts",
+      "sha256": "598e815b03567d1a0aa1e813f5ae285219fe7dccf65ca0a2e9b07d903aaaeedb",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/storage/session-revocation.storage.ts",
+      "sha256": "0fd6d131937d29d6d02eaec33b6da7bb4f0190d7d792b3bbe3a9bce2a591426e",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/storage/theme.storage.ts",
+      "sha256": "2266d7513aeea367dd4fad2389fd1aa5b0f0ca68d409951004921729230cef04",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/theme/auth.ts",
+      "sha256": "916c872b3bf141cba140aafb61fb372582c8023290b5446a8529f6a31cb378bc",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/theme/index.ts",
+      "sha256": "b9dac156ace68d9abf8239ea289fd8b8e149ee6afff5eea15992051336165649",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/theme/tokens.ts",
+      "sha256": "8c94037434cd96bb56b6364b1ddd60a67d54f9a41a3e6cb9f2c56dd3c7c9ccef",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/types/announcement.ts",
+      "sha256": "be01586e36d751ff9af2ea085c6fc46f6d5f097ff42fea0517fff35e3f906a10",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/types/auth.ts",
+      "sha256": "9cc0e01c0160fa40b123308545e34e6ee5c2d3ae7ef5c883ffbab66b444bfa29",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/types/axios.d.ts",
+      "sha256": "df1c5bc075467f324fcb91ff65f513425b480da77b100b862075dfd1b7acfa7d",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/types/classroom.ts",
+      "sha256": "a3954ca5ad098733f00580aed193f4a68267a7d3a4d34b36ab9272faa3d1dff1",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/types/push.ts",
+      "sha256": "2f4f73f16d85d077f0579b1abdb029ae9ffcd01b9720e0b56559ecd7ac2c3feb",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/types/teacher-invite.ts",
+      "sha256": "4b918df0d7f535a0df55f4b2833f813fa6eccdfd33946e93d8f2d6eed381894b",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/validations/announcement-push.schema.ts",
+      "sha256": "24e26a198d09ebbe5f6c771ed7de666527d9fb0d52b18a8d034927c0ed85b730",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/validations/changePassword.schema.ts",
+      "sha256": "fe45ceb9a2d9376238e9f4851dbe7eb003dcc5280c118db9f55779015e41ff1c",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/validations/classroomSearch.schema.ts",
+      "sha256": "528a361a9a54d036e882dd13717e6bfc7d569c954b77b41a31e16e69adebcb40",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/validations/createAnnouncementSchema.ts",
+      "sha256": "7f075e45f12f229aa870db732afbc7746810e42702b25ccbd0790f29a729bd8e",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/validations/createClassroom.schema.ts",
+      "sha256": "e9007ad3df4bda0a3caf8b54bca61e4f91a6c3b69f389034623a72ad8b31ecd9",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/validations/deleteAccount.schema.ts",
+      "sha256": "f125a9e4bf350b26b2c5900e03c57740b41557589b09007ab586aabd94cb24cb",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/validations/login.schema.ts",
+      "sha256": "67b493d3edc3191120a0cb820c99aaf9e76d170a66a08969c1fd723cf3913238",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/validations/push.schema.ts",
+      "sha256": "4091e26d68b2bbaf8a933c566df2991a231fca3efb3cbf9420abdfce54cdc9f3",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/validations/register.schema.ts",
+      "sha256": "578de35dbc7f8adf8981440c7a01c3b224efa006624c44e733fcecc3e1e19e35",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/validations/teacherInvite.schema.ts",
+      "sha256": "841ad077fc6d1d6be0a4079a3ef64c36ebdd3bca3614eee1ddc94ee92883ed88",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/src/validations/updateProfile.schema.ts",
+      "sha256": "2695f4ac445bc40d1ba70bd1d29b5b77b348e6e63f3c634c40e017a5d201e9c3",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/accessibility/touch-targets.spec.tsx",
+      "sha256": "061e468ac0c27a0eb669f280e1fdb2b0462fc390ebc2877cff70abcfe172932f",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/components/AnnouncementCard.spec.tsx",
+      "sha256": "d1aff9c0f29f5eb6427835473ab97ff3c8a2994e3e1a1e8888bd5cd077bc2811",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/components/AuthScreen.spec.tsx",
+      "sha256": "bb5303e3b1990efa6ab515e50179b2b9a823262bff07febaf64b27c4abf5612a",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/components/BackButton.spec.tsx",
+      "sha256": "378ebad656264ceac3b47a7a3e575b0be2f93ce3add384f4d40feb8483f22a57",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/components/Button.spec.tsx",
+      "sha256": "c0898f16ed654dd864b2d2ca115b1fe5dcdbe4b85c306bc5e7b97f52a5a075b0",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/components/ConfirmationDialog.spec.tsx",
+      "sha256": "d7f4ff29fd7dfdeee90f97ce04cac46dfd81956418f2621539effdfb81a9a783",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/components/FormField.spec.tsx",
+      "sha256": "e672e0981df0f0e19a9f0059aae2e60ad89cbf16fe7d1e700974614ba82fbf01",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/components/ScreenState.spec.tsx",
+      "sha256": "8ce9e1398b8e94730615b8865fa99733b3160efb85f2ce2527e95fa1bc777672",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/components/ThemeSelector.spec.tsx",
+      "sha256": "e2e1b00496bc1e23eed4a6adcd17f3b89fff5c7627d6593234212ec59918d590",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/components/theme-auth-controls.spec.tsx",
+      "sha256": "9ac2163af2e5ba9783feb806f3f742ba7f63b091a4659313b62b9bac8677a568",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/config/app-config.spec.ts",
+      "sha256": "3e9844f4f73b252fd17003511435b572322203b14d58bb488e15e8cbce16e9fe",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/config/dynamic-import-harness.spec.ts",
+      "sha256": "f8d4163386ee6aca74699edcb1c191376371576f3ad7bd91f58740c55d41ef10",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/config/push-config.spec.ts",
+      "sha256": "b90e63c705198895d2e29909f48859a5c0ece51c3c3501e6aa8d295cb2f34dbb",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/config/query-client.spec.ts",
+      "sha256": "4b4008ad59b0db8a8892f61209fbbc1859f356321e3e318fa962f7ee43c10a00",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/config/query-keys.spec.ts",
+      "sha256": "7ecfd1ed269d0a0c2f396fc30ade755335a20c43631d74f189ddcf0cbe306b4f",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/helpers/classroom-search.spec.tsx",
+      "sha256": "1953b164389952ed1bbf810aec032cf4a171e699003f35ff43160874d0fd030a",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/helpers/classroom-search.tsx",
+      "sha256": "d023aac54ff645a37811e12d6c1686082b8c200807211ebc257d96dc745d396f",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/helpers/mocks.ts",
+      "sha256": "5f1a0fb5e13cfd5954b7295ea04f517cc40210f3992444762074dedd04d03a08",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/helpers/profile-password.tsx",
+      "sha256": "189e3e23b14b3e866aba4b5b32d0c959fe2034c560afec6c527b0e4028834f45",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/helpers/push.ts",
+      "sha256": "314b52e75110b2dcd1e8dcc6d8f74be7e35bf111291ca1adb73572f54c5fa955",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/helpers/render.tsx",
+      "sha256": "128771d7be8aa1088583e7168f582d8303d59cab6c41d8a42cae496583948ae3",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/helpers/theme.tsx",
+      "sha256": "ad47a8cd19ffc416d01e0d16a7cb46f6055128aa607f49b78a23d1c459a4ca2f",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/helpers/transform-dynamic-import.cjs",
+      "sha256": "fa44241aee92623d38af0fa826673da7b36db2a6a242bd51e538579f40c12131",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/hooks/private-session-boundaries.spec.tsx",
+      "sha256": "d096a6ca1a8ca9c0cab76591ca9ba5c6eb8a9681088163b58c8b4137815fb4b5",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/hooks/private-session-effects.spec.tsx",
+      "sha256": "5cfdbbf377a4c00684be3b188fffa4f62ec3f2c828698835b15e9f67b1fe59ea",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/hooks/useAvailableClassrooms.spec.tsx",
+      "sha256": "5d19ba9407d40b47a14a489d50f24e8875993534e8b04d3077dce86e57b9a07c",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/hooks/useChangePassword.spec.tsx",
+      "sha256": "34d282947418f6e252c0e62e3b0ddd843114c58af39cf077183a254ab3c7d832",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/hooks/useClassroomSearch.spec.tsx",
+      "sha256": "81613ced91cefabb32ca85442016912526f7b8cdaec08c184c1ac5f523e11808",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/hooks/useCreateAnnouncement.spec.tsx",
+      "sha256": "34210b44b68560488cf53af4457da94c7afb7870d4c890afc69733846a7ad8dc",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/hooks/useCreateClassroom.spec.tsx",
+      "sha256": "525fdff2a928bed885313c10ed438fe9f314af6ce145c042332d946713a1b8e2",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/hooks/useDeleteAccount.spec.tsx",
+      "sha256": "ca7bdbc4a5a8fe1a1ce4faa83d23c9b84aa74091dc3f1d510596f76fef138023",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/hooks/useDeleteAnnouncement.spec.tsx",
+      "sha256": "d7edd6cfafe697649c56ee285815d4bb38b9ac1e2f3f18a0515b22e4b1f9ecb7",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/hooks/useDeleteClassroom.spec.tsx",
+      "sha256": "50547d51be8de8909c30ee7251d793b43e6fb2b672e642888f8b9fabcf657760",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/hooks/useJoinClassroom.spec.tsx",
+      "sha256": "9890ca0e6a3c7a222ef2f82b902cad9e0bee169a875029370b18d03ff9afbd30",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/hooks/useLeaveClassroom.spec.tsx",
+      "sha256": "655195aece90023ba40b4e28fa38ffd5fd8835d07c7262b8e54220ba88a2116d",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/hooks/usePushNotifications.spec.ts",
+      "sha256": "80794ffb6f1ac6d7542de09f30b5a5a7d01c743adcb016a80d0061f5c2e5a75b",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/hooks/useTeacherInvite.spec.tsx",
+      "sha256": "f8bdaaeab729f16a62758508d7f2994037d7b38ae6be7d1f6e050802e6347d6c",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/hooks/useUpdateAnnouncement.spec.tsx",
+      "sha256": "8360164e25eab030e43826e20f47c8dd20e1c8436b6564266808d709179b6c2e",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/hooks/useUpdateProfile.spec.tsx",
+      "sha256": "72c1b68cbaa96bd7492b8e2359bbf5f62880527a1eda025f60455355d4a48e5a",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/lib/api-session.spec.ts",
+      "sha256": "16747c404ff7e0e93630970e800dc82eeb7968ff31221f535c27d279bbacb1d9",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/lib/classroom-expiration.spec.ts",
+      "sha256": "57aeabfe7937d478025ede6931745d468b328e46653941915b68be6c54e3a823",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/lib/http-error.spec.ts",
+      "sha256": "65df7ea88dfbaea17fe23ac985de9b50bdc348bc0d81d84f69cb6dc11c226794",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/lib/session-generation.spec.ts",
+      "sha256": "670d2cb4aeb171050b403eb4008036e4a9ddc849d0762adccb7b5e9f30572f91",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/plugins/with-push-storage-backup.spec.ts",
+      "sha256": "6b95b3eff34002d842e5ba81ad3f787ec33d5677d991c6b61b936c2daf506c86",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/providers/AuthProvider.spec.tsx",
+      "sha256": "2ff5debe4e303057b60829ea4396fbfe5adde85c287be5fbca2824de3223bbaf",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/providers/PushProvider.spec.tsx",
+      "sha256": "4e4c72112a7c4322e78f2be635e702a75c525972df5fec74c9f85b7d78f8b8fd",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/providers/ThemeProvider.spec.tsx",
+      "sha256": "36537a738fcccc2352bb276d8483e9e88ba1902f0c190e81aa95d9148af97349",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/providers/announcement-push-provider.spec.tsx",
+      "sha256": "c764c5e5d4310d2fa957c6618ad9ce082e5990537c92c1b51c481c6a1a5e67af",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/providers/push-reconciliation-feedback.spec.tsx",
+      "sha256": "032b728a4c887ea4b6e95a3c082e85b0ed033cc1a9916b4d34d1db98085c78dd",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/routes/admin-teacher-invites.spec.tsx",
+      "sha256": "95989a16e3fde823247264fff8a3d658d05122a0955f2d803588de279dd28198",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/routes/announcement-push-detail.spec.tsx",
+      "sha256": "2d8f68908bc5fbda63ea0b1e10c3236cd56a0706e70036fd892973fd686079aa",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/routes/auth-navigation-ux.spec.tsx",
+      "sha256": "40b409aa734284e807244c48670e10bf0883fd986fe5b6d196b393864d17e392",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/routes/auth-session-boundary.spec.tsx",
+      "sha256": "a60b06cce772ee8d89b1f74dbcb236daff821bc79882ba1ef49d3074cf18816d",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/routes/classroom-details.spec.tsx",
+      "sha256": "18e7cd0e0b26c0bb2de01c0db077d92b35d9ccdced644ee37216b4fa518e7425",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/routes/classroom-search-consistency.spec.tsx",
+      "sha256": "9938afc9267509699f35356bc99e30f845468875011eecd615db607ad56dd70f",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/routes/classrooms-list.spec.tsx",
+      "sha256": "5ea76b800f30e59b75445f1d5e5e8f864e87f78c90b9a30a81870a20006f4bcd",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/routes/confirmation-matrix.spec.tsx",
+      "sha256": "47d9ef8dd5b3743b80fcf9274449307c526f14fa65363e79bb5d43cd2e35b3de",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/routes/detail-surfaces.spec.tsx",
+      "sha256": "c1327992cbd200076b5597cd99d2cbcc053337d804cb8f94790f727dfc224b58",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/routes/home.spec.tsx",
+      "sha256": "7f3422cfa463ad5be5f7cff0ec2221c29671404cda5ccdd43972653be4095363",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/routes/new-announcement-accessibility.spec.tsx",
+      "sha256": "490fb4bd2af952ebbe829c2ce1abdae84997401a2aef58a0fa30a68de84b2a67",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/routes/primary-states.spec.tsx",
+      "sha256": "ee6b13c187311c279a4863f297ff8de3d5c8089be0c03c9a09ca9443f65d8dab",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/routes/profile-change-password.spec.tsx",
+      "sha256": "268e326c38ef180b6bfd15ee3a0f52077ce6d4e950ac6451de82df55ca3f7fc3",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/routes/profile-delete-account.spec.tsx",
+      "sha256": "a955b29d4aa881fb440695b9aeb3661d9e8f8746ec54753e2f0b9707f5eb33ea",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/routes/profile-edit.spec.tsx",
+      "sha256": "0fe603465853011afd393d99b23c15309331b306134001659718244f362426ca",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/routes/profile-notifications.spec.tsx",
+      "sha256": "603f69824b78d03526058ea9f12407e4f8a7cbc5dc2d14f2d068148f27116271",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/routes/profile.spec.tsx",
+      "sha256": "8fcf8d443dd6bd8339feb53ca66ed129d025d3a4bcf54c5a38b8c8c646e8060f",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/routes/secondary-navigation.spec.tsx",
+      "sha256": "9ba4b154ac0a1c051fffe065a2424ef74775f91c8483475bae1b00c1804b57e2",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/routes/theme-bootstrap.spec.tsx",
+      "sha256": "4ac9cef7c5b5ed3244d2bf905e9fce3a1329e22191981796b3e301614d291b29",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/routes/theme-surfaces.spec.tsx",
+      "sha256": "0de4e98ff5a08df698f6113f1ace10c77c66787816576c0616bd7c6027fc7bd5",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/services/account-deletion.service.spec.ts",
+      "sha256": "9a066a41892b0a5509dfb12aee2b9364d86914dc895396b69ec436530924d51f",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/services/announcement-push-navigation.spec.ts",
+      "sha256": "d09129bd20c6e5e0d94d03df3aa82775784a6f8734ffc9190027446de3d23635",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/services/announcement-push-presentation.spec.ts",
+      "sha256": "1251f8ba85b0df63b68a7bed32d9eeebc1a242dbabe62a226faf754acd871584",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/services/announcement-push-privacy.spec.ts",
+      "sha256": "86181b1e92e590cd39e7e481cabdb82b1fb203fd5df7f955db0e4d71215a1969",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/services/auth.service.spec.ts",
+      "sha256": "5e038cfeeeda8330d3d1371a32fc5ebe78a0e61fa78612a92329845d64817835",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/services/classroom.service.spec.ts",
+      "sha256": "e269be4b1b186485179bb204d3375368cca3c47a0c4eacf52b84f1de2b933209",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/services/push-consent-lifecycle.spec.ts",
+      "sha256": "510e89f57f711c99d9a277ee18f80eb556a4bbd8bfa1ea8e244494c42faa3e30",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/services/push-device.service.spec.ts",
+      "sha256": "1d39a71693de4eff4f94fd0c3028ad8bcb2e370332732ff8056c87a765ad63ff",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/services/push-lifecycle.spec.ts",
+      "sha256": "7cca8903ad63f5805f5214f738e0dd3836d6b1fb5b1572d31e6c676f52b64328",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/services/push-presentation.spec.ts",
+      "sha256": "07978c5c0b451ebb84677db12c10e3abeb1a864cd9d1869e0811e8410def8ade",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/services/push-privacy.spec.ts",
+      "sha256": "de5fcf64ebf8392a47e95b12b301fecfd742dd870fa9b3b7452f1683484f76ac",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/services/push-test.lifecycle.spec.ts",
+      "sha256": "41c6acbae111bbe2d817755e4343adde597efaaeece016d06f623fc4e144549e",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/services/push-test.service.spec.ts",
+      "sha256": "ad8b7c34831b9e8e0ac07f2ef567119f3f29c96ff305ed8e6854034cde705b34",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/services/push.service.spec.ts",
+      "sha256": "374e740d5da7d4a53ba480fcab94f172fadf44b37b9fdb44dc3da55e6da15036",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/services/release-error-privacy.spec.ts",
+      "sha256": "d5633cdaaeb0cdb1ede8e3e3ebe93647f8445a7486d99579033a1b11cee94bb9",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/services/session-revocation.spec.ts",
+      "sha256": "07f2a04dd56cfd4175987cfac4dabcfa627430e182e5f76aa32fa69f4dc917d7",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/services/teacher-invite.service.spec.ts",
+      "sha256": "7eb81a4da60a8e515fd1ba2a69db188b1ce5ef04e43e03fdc26f907b8a6b6462",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/setup.ts",
+      "sha256": "554204fa5c537f1846692d22cfaf6656dbbb5ce979e9e80f0fa276d012a1d172",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/storage/auth.storage.spec.ts",
+      "sha256": "d2c970e254874999b7488f63ef621beefe48036a6e03763c95c552ea7d5efae0",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/storage/push.storage.spec.ts",
+      "sha256": "514d5c73bd075396f294b85a81547266dff83e4fe686b4ee853c6f0b47149a81",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/storage/theme.storage.spec.ts",
+      "sha256": "f918752abe1da1f2b7413c751c03158903ac168a06959c0f73c365f7eced2163",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/theme/tokens.spec.ts",
+      "sha256": "4c998773ca2fd2e1d2dfa4af9bd83d66ca5173001302f02bd77f74847d1f6296",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/validations/changePassword.schema.spec.ts",
+      "sha256": "c01327825f3a69c1cb62f172159f29a2a03249d7b8c2a94e1f185b91e34210c8",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/validations/classroomSearch.schema.spec.ts",
+      "sha256": "def25db94da4937b671cb75f0a06972572b5fab76a869e88d608442c642036f5",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/validations/deleteAccount.schema.spec.ts",
+      "sha256": "dd75aa984c12840ae6e5b5eb8f415fe310ad409769921aac179e7a5ad781203c",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/validations/push.schema.spec.ts",
+      "sha256": "2f071241a34ae8edd9e51b4fbe87311e51af05dc6c24bd1d0abb87fa4243ce2f",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/validations/teacherInvite.schema.spec.ts",
+      "sha256": "8e552861021fd9c216dcc497d08de3f653a780e43561ac984b39baad4400b9ba",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tests/validations/updateProfile.schema.spec.ts",
+      "sha256": "3ee8826d0fe00d6e0d2d652f8e9991c40ba7bb5f7c0a8af82261e6f796585470",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/tsconfig.json",
+      "sha256": "b810f99867b2435d7a7fde19667816bd709a2e6a4305056b57ea75fe81e84c6c",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/vendor/decode-uri-component/README.md",
+      "sha256": "1d70d83830413a33a6e5b0b47852e230a433f211c706ac6191d69b3ff515bfd2",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/vendor/decode-uri-component/index.js",
+      "sha256": "ad329c7f73483942111e75dcdc53fef4567e1262d39a0c52e02c87e460551499",
+      "normalization": "LF"
+    },
+    {
+      "path": "mobile/vendor/decode-uri-component/license",
+      "sha256": "ed7a9a0f74e43951b2520efe1a4349cb9ed5f3dff0b0f268e2e51a4d38df7ea4",
+      "normalization": "raw-bytes"
+    },
+    {
+      "path": "mobile/vendor/decode-uri-component/package.json",
+      "sha256": "7057616d5aef49816ddf1e6f43f555ff0ce87a8a2bdff9d5aa8d0d9aff1c4ade",
+      "normalization": "LF"
+    }
+  ],
+  "trustProxyIngress": "PENDING_VERIFIED_RENDER_INGRESS; default false",
+  "PRODUCTION_API_URL": "PENDING",
+  "tasks": "47/70; T041/T043 open",
+  "gitAuthorization": "Local commits only; no push/PR/deploy/EAS/APK/AAB",
+  "remoteCI": "NOT RUN",
+  "sourceCommits": {
+    "backend": "3dec7df12fc47bd095496d181c5b251d8ebe8ce1",
+    "mobile": "f67d504c4e54e9440293f5ec13728e5097bdfbb6"
+  },
+  "resumedAfterUserReportedPowerLoss": {
+    "time": "2026-10-08T16:37:04.381Z",
+    "sourceFilesRechecked": 442,
+    "sourceDrift": false,
+    "stagedWorkLost": false,
+    "freshChecks": [
+      "proxy/production HTTP 25 tests PASS",
+      "14 migrations up to date in local avisa_ai_test",
+      "decoder PASS"
+    ]
+  }
+}

@@ -1,0 +1,244 @@
+{
+  "component": "mobile",
+  "generated": "2026-10-08T00:58:09.254Z",
+  "initialCounts": {
+    "info": 0,
+    "low": 0,
+    "moderate": 15,
+    "high": 51,
+    "critical": 1,
+    "total": 67
+  },
+  "finalCounts": {
+    "info": 0,
+    "low": 0,
+    "moderate": 12,
+    "high": 50,
+    "critical": 0,
+    "total": 62
+  },
+  "finalOmitDevCounts": {
+    "info": 0,
+    "low": 0,
+    "moderate": 12,
+    "high": 46,
+    "critical": 0,
+    "total": 58
+  },
+  "lockSHA256": "00c88d598ba63e13fd38fb16ee5a8c8e3175046f3967caa8eaac316dcd33f8ca",
+  "advisories": [
+    {
+      "component": "mobile",
+      "package": "braces",
+      "initialVersions": ["3.0.3"],
+      "currentVersions": ["3.0.3"],
+      "nodes": ["node_modules/braces"],
+      "chains": [
+        "mobile → expo@57.0.27 → @expo/metro-config@57.0.13 → @expo/metro@56.0.2 → metro-file-map@0.84.5 → micromatch@4.0.8 → braces@3.0.3",
+        "mobile → expo@57.0.27 → @expo/cli@57.0.28 → @expo/metro-config@57.0.13 → @expo/metro@56.0.2 → metro-file-map@0.84.5 → micromatch@4.0.8 → braces@3.0.3",
+        "mobile → expo@57.0.27 → @expo/metro@56.0.2 → metro-file-map@0.84.5 → micromatch@4.0.8 → braces@3.0.3",
+        "mobile → expo@57.0.27 → @expo/cli@57.0.28 → @expo/metro@56.0.2 → metro-file-map@0.84.5 → micromatch@4.0.8 → braces@3.0.3",
+        "mobile → expo@57.0.27 → @expo/metro-config@57.0.13 → @expo/metro@56.0.2 → metro@0.84.5 → metro-file-map@0.84.5 → micromatch@4.0.8 → braces@3.0.3",
+        "mobile → expo@57.0.27 → @expo/cli@57.0.28 → @expo/metro-config@57.0.13 → @expo/metro@56.0.2 → metro@0.84.5 → metro-file-map@0.84.5 → micromatch@4.0.8 → braces@3.0.3",
+        "mobile → expo@57.0.27 → @expo/metro@56.0.2 → metro@0.84.5 → metro-file-map@0.84.5 → micromatch@4.0.8 → braces@3.0.3",
+        "mobile → expo@57.0.27 → @expo/cli@57.0.28 → @expo/metro@56.0.2 → metro@0.84.5 → metro-file-map@0.84.5 → micromatch@4.0.8 → braces@3.0.3"
+      ],
+      "advisory": "GHSA-vfj7-8cjw-p6xm",
+      "cve": "CVE-2026-93687",
+      "severity": "high",
+      "runtime": "Node CLI/build/test; omit=dev inclui ferramentas do Expo",
+      "androidBundle": "Ausente neste export Android por source map completo; uuid interno do Expo é instância distinta",
+      "vector": "braces vulnerable to stack-exhaustion denial of service through deeply nested patterns",
+      "fixedVersion": "sem fix publicado",
+      "compatibility": "Sem fix oficial compatível confirmado; nenhum aceite implícito",
+      "classification": "DEV/TOOLING ONLY",
+      "remaining": true
+    },
+    {
+      "component": "mobile",
+      "package": "decode-uri-component",
+      "initialVersions": ["0.2.2"],
+      "currentVersions": ["0.5.0-avisa.1"],
+      "nodes": ["node_modules/decode-uri-component"],
+      "chains": [
+        "mobile → decode-uri-component@0.5.0-avisa.1",
+        "mobile → expo-router@57.0.25 → query-string@7.1.3 → decode-uri-component@0.5.0-avisa.1"
+      ],
+      "advisory": "GHSA-vcc3-ghjq-m6fr",
+      "cve": "CVE-2026-45822",
+      "severity": "moderate",
+      "runtime": "Sim: parsing de URLs por Expo Router",
+      "androidBundle": "Presente: vendor 0.5.0-avisa.1, source idêntico, parent e factory minificada testados",
+      "vector": "decode-uri-component: Denial of service via exponential decoding of malformed percent-encoded input",
+      "fixedVersion": "0.5.0",
+      "compatibility": "Patch CommonJS aprovado, npm ci PASS, parent query-string ligado ao patch; factory minificada/timeout PASS",
+      "classification": "MITIGADO / NÃO EXPLORÁVEL (corrigido no export auditado)",
+      "remaining": false
+    },
+    {
+      "component": "mobile",
+      "package": "image-size",
+      "initialVersions": ["1.2.1"],
+      "currentVersions": ["1.2.1"],
+      "nodes": ["node_modules/image-size"],
+      "chains": [
+        "mobile → react-native@0.86.3 → @react-native/community-cli-plugin@0.86.3 → metro@0.84.4 → image-size@1.2.1",
+        "mobile → react-native@0.86.3 → @react-native/community-cli-plugin@0.86.3 → metro-config@0.84.4 → metro@0.84.4 → image-size@1.2.1"
+      ],
+      "advisory": "GHSA-5p2g-fcmc-qvqq",
+      "cve": "CVE-2025-71329",
+      "severity": "high",
+      "runtime": "Node CLI/build/test; omit=dev inclui ferramentas do Expo",
+      "androidBundle": "Ausente neste export Android por source map completo; uuid interno do Expo é instância distinta",
+      "vector": "image-size: JXL and HEIF parsers allow denial of service through infinite loops",
+      "fixedVersion": "2.0.3",
+      "compatibility": "Fix requer major: não aplicado automaticamente",
+      "classification": "DEV/TOOLING ONLY",
+      "remaining": true
+    },
+    {
+      "component": "mobile",
+      "package": "image-size",
+      "initialVersions": ["1.2.1"],
+      "currentVersions": ["1.2.1"],
+      "nodes": ["node_modules/image-size"],
+      "chains": [
+        "mobile → react-native@0.86.3 → @react-native/community-cli-plugin@0.86.3 → metro@0.84.4 → image-size@1.2.1",
+        "mobile → react-native@0.86.3 → @react-native/community-cli-plugin@0.86.3 → metro-config@0.84.4 → metro@0.84.4 → image-size@1.2.1"
+      ],
+      "advisory": "GHSA-w3rx-r6r6-pgpr",
+      "cve": "CVE-2025-71330",
+      "severity": "high",
+      "runtime": "Node CLI/build/test; omit=dev inclui ferramentas do Expo",
+      "androidBundle": "Ausente neste export Android por source map completo; uuid interno do Expo é instância distinta",
+      "vector": "image-size: ICNS parser allows denial of service through an infinite loop",
+      "fixedVersion": "2.0.3",
+      "compatibility": "Fix requer major: não aplicado automaticamente",
+      "classification": "DEV/TOOLING ONLY",
+      "remaining": true
+    },
+    {
+      "component": "mobile",
+      "package": "node-forge",
+      "initialVersions": ["1.4.0"],
+      "currentVersions": ["1.4.0"],
+      "nodes": ["node_modules/node-forge"],
+      "chains": [
+        "mobile → expo@57.0.27 → @expo/cli@57.0.28 → @expo/code-signing-certificates@0.0.6 → node-forge@1.4.0",
+        "mobile → expo@57.0.27 → @expo/cli@57.0.28 → node-forge@1.4.0"
+      ],
+      "advisory": "GHSA-86w9-cpqp-85rv",
+      "cve": "CVE-2026-85393",
+      "severity": "high",
+      "runtime": "Node CLI/build/test; omit=dev inclui ferramentas do Expo",
+      "androidBundle": "Ausente neste export Android por source map completo; uuid interno do Expo é instância distinta",
+      "vector": "node-forge RSA PKCS#1 v1.5 signature verification accepts extra nested DigestAlgorithm elements",
+      "fixedVersion": "sem fix publicado",
+      "compatibility": "Sem fix oficial compatível confirmado; nenhum aceite implícito",
+      "classification": "DEV/TOOLING ONLY",
+      "remaining": true
+    },
+    {
+      "component": "mobile",
+      "package": "shell-quote",
+      "initialVersions": ["1.9.0"],
+      "currentVersions": ["1.12.0"],
+      "nodes": ["node_modules/shell-quote"],
+      "chains": [
+        "mobile → react-native@0.86.3 → react-devtools-core@6.1.5 → shell-quote@1.12.0"
+      ],
+      "advisory": "GHSA-pqg4-j6r4-53mv",
+      "cve": "CVE-2026-102422",
+      "severity": "critical",
+      "runtime": "Node CLI/build/test; omit=dev inclui ferramentas do Expo",
+      "androidBundle": "Ausente neste export Android por source map completo; uuid interno do Expo é instância distinta",
+      "vector": "shell-quote: `quote()` command injection via a line terminator in a token after a `{ comment }` token",
+      "fixedVersion": "1.11.0",
+      "compatibility": "Update transitivo patch/minor dentro dos parent ranges; gates locais PASS",
+      "classification": "MITIGADO / NÃO EXPLORÁVEL (corrigido)",
+      "remaining": false
+    },
+    {
+      "component": "mobile",
+      "package": "sprintf-js",
+      "initialVersions": ["1.0.3"],
+      "currentVersions": ["1.0.3"],
+      "nodes": ["node_modules/sprintf-js"],
+      "chains": [
+        "mobile → jest@29.7.0 → @jest/core@29.7.0 → @jest/transform@29.7.0 → babel-plugin-istanbul@6.1.1 → @istanbuljs/load-nyc-config@1.1.0 → js-yaml@3.15.2 → argparse@1.0.10 → sprintf-js@1.0.3",
+        "mobile → jest@29.7.0 → jest-cli@29.7.0 → @jest/core@29.7.0 → @jest/transform@29.7.0 → babel-plugin-istanbul@6.1.1 → @istanbuljs/load-nyc-config@1.1.0 → js-yaml@3.15.2 → argparse@1.0.10 → sprintf-js@1.0.3",
+        "mobile → jest@29.7.0 → @jest/core@29.7.0 → @jest/reporters@29.7.0 → @jest/transform@29.7.0 → babel-plugin-istanbul@6.1.1 → @istanbuljs/load-nyc-config@1.1.0 → js-yaml@3.15.2 → argparse@1.0.10 → sprintf-js@1.0.3",
+        "mobile → jest@29.7.0 → jest-cli@29.7.0 → @jest/core@29.7.0 → @jest/reporters@29.7.0 → @jest/transform@29.7.0 → babel-plugin-istanbul@6.1.1 → @istanbuljs/load-nyc-config@1.1.0 → js-yaml@3.15.2 → argparse@1.0.10 → sprintf-js@1.0.3",
+        "mobile → jest@29.7.0 → @jest/core@29.7.0 → jest-config@29.7.0 → babel-jest@29.7.0 → @jest/transform@29.7.0 → babel-plugin-istanbul@6.1.1 → @istanbuljs/load-nyc-config@1.1.0 → js-yaml@3.15.2 → argparse@1.0.10 → sprintf-js@1.0.3",
+        "mobile → jest@29.7.0 → jest-cli@29.7.0 → @jest/core@29.7.0 → jest-config@29.7.0 → babel-jest@29.7.0 → @jest/transform@29.7.0 → babel-plugin-istanbul@6.1.1 → @istanbuljs/load-nyc-config@1.1.0 → js-yaml@3.15.2 → argparse@1.0.10 → sprintf-js@1.0.3",
+        "mobile → jest@29.7.0 → jest-cli@29.7.0 → create-jest@29.7.0 → jest-config@29.7.0 → babel-jest@29.7.0 → @jest/transform@29.7.0 → babel-plugin-istanbul@6.1.1 → @istanbuljs/load-nyc-config@1.1.0 → js-yaml@3.15.2 → argparse@1.0.10 → sprintf-js@1.0.3",
+        "mobile → jest@29.7.0 → jest-cli@29.7.0 → jest-config@29.7.0 → babel-jest@29.7.0 → @jest/transform@29.7.0 → babel-plugin-istanbul@6.1.1 → @istanbuljs/load-nyc-config@1.1.0 → js-yaml@3.15.2 → argparse@1.0.10 → sprintf-js@1.0.3"
+      ],
+      "advisory": "GHSA-hp3w-g68c-fv3c",
+      "cve": "CVE-2026-97058",
+      "severity": "moderate",
+      "runtime": "Node CLI/build/test; omit=dev inclui ferramentas do Expo",
+      "androidBundle": "Ausente neste export Android por source map completo; uuid interno do Expo é instância distinta",
+      "vector": "sprintf-js vulnerable to denial of service through unbounded precision specifiers",
+      "fixedVersion": "sem fix publicado",
+      "compatibility": "Sem fix oficial compatível confirmado; nenhum aceite implícito",
+      "classification": "DEV/TOOLING ONLY",
+      "remaining": true
+    },
+    {
+      "component": "mobile",
+      "package": "uuid",
+      "initialVersions": ["7.0.3"],
+      "currentVersions": ["7.0.3"],
+      "nodes": ["node_modules/uuid"],
+      "chains": [
+        "mobile → expo@57.0.27 → @expo/local-build-cache-provider@57.0.8 → @expo/config@57.0.10 → @expo/config-plugins@57.0.10 → xcode@3.0.1 → uuid@7.0.3",
+        "mobile → expo@57.0.27 → @expo/metro-config@57.0.13 → @expo/config@57.0.10 → @expo/config-plugins@57.0.10 → xcode@3.0.1 → uuid@7.0.3",
+        "mobile → expo@57.0.27 → @expo/cli@57.0.28 → @expo/metro-config@57.0.13 → @expo/config@57.0.10 → @expo/config-plugins@57.0.10 → xcode@3.0.1 → uuid@7.0.3",
+        "mobile → expo@57.0.27 → @expo/cli@57.0.28 → @expo/prebuild-config@57.0.17 → @expo/config@57.0.10 → @expo/config-plugins@57.0.10 → xcode@3.0.1 → uuid@7.0.3",
+        "mobile → expo@57.0.27 → @expo/config@57.0.10 → @expo/config-plugins@57.0.10 → xcode@3.0.1 → uuid@7.0.3",
+        "mobile → expo@57.0.27 → @expo/cli@57.0.28 → @expo/config@57.0.10 → @expo/config-plugins@57.0.10 → xcode@3.0.1 → uuid@7.0.3",
+        "mobile → expo@57.0.27 → @expo/cli@57.0.28 → @expo/inline-modules@0.1.7 → @expo/config-plugins@57.0.10 → xcode@3.0.1 → uuid@7.0.3",
+        "mobile → expo@57.0.27 → @expo/cli@57.0.28 → @expo/prebuild-config@57.0.17 → @expo/config-plugins@57.0.10 → xcode@3.0.1 → uuid@7.0.3"
+      ],
+      "advisory": "GHSA-w5hq-g745-h8pq",
+      "cve": "CVE-2026-41907",
+      "severity": "moderate",
+      "runtime": "Node CLI/build/test; omit=dev inclui ferramentas do Expo",
+      "androidBundle": "Ausente neste export Android por source map completo; uuid interno do Expo é instância distinta",
+      "vector": "uuid: Missing buffer bounds check in v3/v5/v6 when buf is provided",
+      "fixedVersion": "12.0.1; 13.0.1; 11.1.1",
+      "compatibility": "Fix requer major: não aplicado automaticamente",
+      "classification": "DEV/TOOLING ONLY",
+      "remaining": true
+    }
+  ],
+  "latestAuditAt": [
+    {
+      "command": "npm audit --json",
+      "end": "2026-10-08T14:24:25.629Z",
+      "code": 1,
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 12,
+        "high": 50,
+        "critical": 0,
+        "total": 62
+      }
+    },
+    {
+      "command": "npm audit --omit=dev --json",
+      "end": "2026-10-08T14:24:25.606Z",
+      "code": 1,
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 12,
+        "high": 46,
+        "critical": 0,
+        "total": 58
+      }
+    }
+  ]
+}

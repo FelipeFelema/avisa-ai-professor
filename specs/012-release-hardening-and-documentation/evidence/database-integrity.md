@@ -1,0 +1,9 @@
+# Banco: migrations e integridade
+
+T044–T046. Todas as 14 migrations SQL e schema Prisma revisados; ledger local completo sem migration falha, checksums conferidos incluindo equivalência LF/CRLF aceita pelo Prisma. Prisma validate/generate/migrate status PASS. Replay da cadeia em schema vazio e upgrade representativo com dados pré-010 PASS: usuários/sessões/turmas/conteúdo preservados; registros antigos não ganham marker de backfill nem registros push fabricados. Migrations 010/011 aplicadas; 012 não exige nova migration. Nenhuma migration já aplicada foi editada.
+
+release-database cobre exclusão de conta/turma pelos serviços reais, graphs registrations/attempts/events/dispatches, deletion receipt, ausência de órfãos user/session, destinatário claimed sem autorização após exclusão e conta/turma externa preservada. Suites account/classroom/announcement/receipts/reminders completam cascades/lifecycle; integração final 28 suites/270 testes PASS.
+
+Cadeia histórica contém adição NOT NULL de ownerId/classroomId sem backfill e retirada de associação _ClassroomToUser. Banco realmente anterior a essas migrations com dados precisa inventário e transformação aprovada antes de deploy; o ensaio com dados começa no schema válido pré-010. Não se declara upgrade arbitrário de qualquer banco histórico seguro. Sem finding de corrupção atual que justifique migration corretiva: T046 encerrada sem alteração. Banco real não foi lido/modificado.
+
+Executor: Codex, automatizado local, 2026-10-07 America/Sao_Paulo (alguns metadados UTC já 2026-10-08). Worktree sobre HEAD `832626de96c9ad5ef7446d8aba4f759113d1385a`; não é candidato commitado. Comandos/exit/horários nos [gates](phase4-6-gates.md), hashes em [proveniência](phase4-6-provenance.json). Sem commit/push/PR/build EAS/envio externo. Banco destrutivo somente loopback avisa_ai_test, guardas ativas.

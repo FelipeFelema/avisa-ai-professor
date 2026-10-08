@@ -1,0 +1,7 @@
+# Push: lifecycle e autoridade
+
+T019/T024. Inspeção de backend/src/push, AuthSession e lifecycle mobile, mais regressão executada. Reserve/query/bind/test exigem JWT/sid ativo, dono da instalação, capability e CAS/revisão quando aplicável. Revoke sem JWT é deliberadamente limitado ao binding/revisão autorizado pela capability; não autoriza leitura, reserva ou nova ativação. Token de destino não concede autoridade. REVOKED/INVALID não elegíveis.
+
+Registro legado, sid externo/revogado, capability inválida, ownership conflitante, binding antigo, tokenRevision antiga e corrida revoke/bind/test são cobertos em push E2E/registration/lifecycle concurrency/privacy. Logout 012 revoga sid e neutraliza bindings atomicamente; exclusão de conta/cascades neutraliza destinos. Mobile troca generation/conta, descarta callbacks e preserva revoke offline limitado. Capability é hash no backend e fica em SecureStore no cliente. Não houve novo finding push confirmado; T024 encerrada sem alteração artificial de contrato/lifecycle.
+
+Executor: Codex, automatizado local, 2026-10-07 America/Sao_Paulo (alguns metadados UTC já 2026-10-08). Worktree sobre HEAD `832626de96c9ad5ef7446d8aba4f759113d1385a`; não é candidato commitado. Comandos/exit/horários nos [gates](phase4-6-gates.md), hashes em [proveniência](phase4-6-provenance.json). Sem commit/push/PR/build EAS/envio externo. Banco destrutivo somente loopback avisa_ai_test, guardas ativas.

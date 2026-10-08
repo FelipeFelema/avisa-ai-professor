@@ -1,0 +1,11 @@
+# Recovery: ensaios locais
+
+T047/T048. [Runbook](../../../docs/release-recovery.md) descreve deploy separado de migrations, falha parcial/resolve, rollback compatível, preservação de writes/ledger e kill switch. Somente loopback avisa_ai_test usado; guardas de hostname/path/current_database antes de reset/fixtures/restore.
+
+2026-10-08T00:39:05.606Z: pg_dump custom/pg_restore reais, PostgreSQL 18.2. Archive privado SHA-256 `7a90870689b34fb660e7e2363b5e427364adac072c767ae5e1ac4a84b57c5dde`. Restore efetivo após modificação controlada conferiu equality de grafo representativo, 14 migrations, registro REVOKED, dispatch UNKNOWN/occurrence publication. Sem push externo/produção. Primeiro ensaio de restore falhou por schema public recriado antes do restore; correção do script e reaplicação guardada das 14 migrations, depois repetição PASS. Logs históricos mantidos.
+
+2026-10-08T01:00:01.156Z: aplicação compilada hash `e714a1da6fcf4aeb86ec519a8ae1f065f99995f24ab4ca53e8b7ce21697b61db`: cold startup local test-mode/health 200, docs 404 e todas as flags push false; falha posterior de startup production inválido é recusada com exit 1/mensagem fixa; restauração da configuração anterior e redeploy da mesma revisão novamente health 200/docs 404, ledger de 14 migrations inalterado. Isso ensaia rollback de configuração/redeploy, não retorno a binário antigo nem ambiente production. Worker/reminder/receipt suites exercitaram restart/flags/no-resubmit; não apagar UNKNOWN/SENDING nem tombstones.
+
+Nenhum binário production anterior compatível/aprovado está disponível; o runbook proíbe fallback para HEAD pré-hardening sem preservar logout/sid. Rollback para revisão diferente exige prova de compatibilidade e aprovação própria no deploy. Restore antigo exige reconciliação de writes/exclusões/revogações/envios posteriores; não promete perda zero automática.
+
+Executor: Codex, automatizado local, 2026-10-07 America/Sao_Paulo (alguns metadados UTC já 2026-10-08). Worktree sobre HEAD `832626de96c9ad5ef7446d8aba4f759113d1385a`; não é candidato commitado. Comandos/exit/horários nos [gates](phase4-6-gates.md), hashes em [proveniência](phase4-6-provenance.json). Sem commit/push/PR/build EAS/envio externo. Banco destrutivo somente loopback avisa_ai_test, guardas ativas.

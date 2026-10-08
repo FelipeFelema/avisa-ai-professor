@@ -28,6 +28,13 @@ build/
 .expo/
 .expo-shared/
 .expo-ci-export/
+.expo-release-security-export/
+# Private credentials must never become source or build archive inputs.
+google-services.json
+*firebase-adminsdk*.json
+*service-account*.json
+*.pem
+*.key
 
 # metro bundler
 .metro-cache/

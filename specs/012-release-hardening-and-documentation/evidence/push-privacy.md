@@ -1,0 +1,7 @@
+# Push: payload e logs
+
+T021. Dados permitidos no payload de anúncio: version/type/announcementId/dispatchId. Corpo completo, nome/email do usuário, senha/JWT/capability não são enviados. Title/classe contextual permanecem conforme contrato 011: limits title 120/classroom 80. Esses campos são texto do usuário e podem conter informação pessoal se ela for colocada no título/nome da turma; não afirmar ausência absoluta de PII arbitrária. Mudar para mensagem genérica exigiria decisão contratual e não foi feito sem finding/decisão.
+
+Push token é somente destino. Expo access token é Authorization Bearer do adapter backend; não há variável EXPO_PUBLIC para ele. Adapter registra apenas operation/event/status, não headers, request/response body, destinos ou credenciais. Privacy integration e unit adapter capturam falhas/respostas e comprovam redaction. Firebase service account permanece em arquivo privado ignorado. Logs/build backend/export histórico foram escaneados sem ocorrência dos valores privados conhecidos; [limites de artefato](secrets-artifacts.md).
+
+Executor: Codex, automatizado local, 2026-10-07 America/Sao_Paulo (alguns metadados UTC já 2026-10-08). Worktree sobre HEAD `832626de96c9ad5ef7446d8aba4f759113d1385a`; não é candidato commitado. Comandos/exit/horários nos [gates](phase4-6-gates.md), hashes em [proveniência](phase4-6-provenance.json). Sem commit/push/PR/build EAS/envio externo. Banco destrutivo somente loopback avisa_ai_test, guardas ativas.

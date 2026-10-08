@@ -1,0 +1,285 @@
+{
+  "time": "2026-10-08T01:04:34.306Z",
+  "head": "832626de96c9ad5ef7446d8aba4f759113d1385a",
+  "branch": "012-release-hardening-and-documentation",
+  "node": "v22.14.0",
+  "npm": "11.10.1",
+  "worktree": true,
+  "files": [
+    {
+      "file": "backend/package.json",
+      "sha256": "36c5dddddf14eba90f78f68e940c033af88f8e73a335e4473f0d7c3fc0f08943"
+    },
+    {
+      "file": "backend/package-lock.json",
+      "sha256": "0d1853a6e0a4a314eb09dc3f89667159701618ba9f121a3d0b57e2718ae9e97e"
+    },
+    {
+      "file": "mobile/package.json",
+      "sha256": "370ad5dd32a29c7074cf5bc134dd370133a8fe9ac891bbffc9588f7b410665bb"
+    },
+    {
+      "file": "mobile/package-lock.json",
+      "sha256": "00c88d598ba63e13fd38fb16ee5a8c8e3175046f3967caa8eaac316dcd33f8ca"
+    },
+    {
+      "file": "mobile/app.config.ts",
+      "sha256": "bc38f6cdf47894b25527268691388f8b5c126afb2712f483df2784acc01f9de7"
+    },
+    {
+      "file": "mobile/eas.json",
+      "sha256": "60424a64ed33761a96c594674d214706cefac20f33a6b349e959acedcec891fa"
+    },
+    {
+      "file": "backend/src/main.ts",
+      "sha256": "494d631e2fb6090a9704b850a4cee2acb95bf3b20f7943659bf87444a75932b1"
+    },
+    {
+      "file": "backend/src/config/production.config.ts",
+      "sha256": "082be295c01e99ca2a4e7a017e02366da8d10721acfcb688892267a62b2a2e19"
+    },
+    {
+      "file": "backend/test/production-config.e2e-spec.ts",
+      "sha256": "31311ab447770ce866a106e8d8416381ae37a68cdefa717540a4307cc0a3acfa"
+    },
+    {
+      "file": "backend/test/release-database.integration.spec.ts",
+      "sha256": "b4160b0f8a9a124aca2b3361ec0ab0a21c575e568099f77b1199eb82dfee7799"
+    },
+    {
+      "file": "mobile/vendor/decode-uri-component/index.js",
+      "sha256": "ad329c7f73483942111e75dcdc53fef4567e1262d39a0c52e02c87e460551499"
+    },
+    {
+      "file": "mobile/vendor/decode-uri-component/package.json",
+      "sha256": "7057616d5aef49816ddf1e6f43f555ff0ce87a8a2bdff9d5aa8d0d9aff1c4ade"
+    },
+    {
+      "file": "mobile/scripts/check-decode-security.cjs",
+      "sha256": "b352c545a42200f285538adaab2200bad8c9fd66674f24a0d89f975761f244f1"
+    }
+  ],
+  "gates": [
+    {
+      "component": "backend",
+      "label": "phase46-format-check",
+      "start": "2026-10-08T00:54:04.605Z",
+      "end": "2026-10-08T00:54:07.516Z",
+      "code": 0,
+      "command": "npm run format:check",
+      "database": "loopback/avisa_ai_test",
+      "pid": 22280
+    },
+    {
+      "component": "backend",
+      "label": "phase46-lint3",
+      "start": "2026-10-08T00:52:57.351Z",
+      "end": "2026-10-08T00:53:14.103Z",
+      "code": 0,
+      "command": "npm run lint",
+      "database": "loopback/avisa_ai_test",
+      "pid": 19368
+    },
+    {
+      "component": "backend",
+      "label": "phase46-types",
+      "start": "2026-10-08T00:52:58.474Z",
+      "end": "2026-10-08T00:53:05.066Z",
+      "code": 0,
+      "command": "npm run typecheck",
+      "database": "loopback/avisa_ai_test",
+      "pid": 19068
+    },
+    {
+      "component": "backend",
+      "label": "phase46-coverage",
+      "start": "2026-10-08T00:48:21.095Z",
+      "end": "2026-10-08T00:48:40.084Z",
+      "code": 0,
+      "command": "npm run test:cov",
+      "database": "loopback/avisa_ai_test",
+      "pid": 18612
+    },
+    {
+      "component": "backend",
+      "label": "phase46-integration-serial",
+      "start": "2026-10-08T00:52:45.776Z",
+      "end": "2026-10-08T00:55:02.669Z",
+      "code": 0,
+      "command": "npm run test:integration",
+      "database": "loopback/avisa_ai_test",
+      "pid": 21904
+    },
+    {
+      "component": "backend",
+      "label": "phase46-e2e-serial",
+      "start": "2026-10-08T00:55:36.278Z",
+      "end": "2026-10-08T00:56:17.233Z",
+      "code": 0,
+      "command": "npm run test:e2e",
+      "database": "loopback/avisa_ai_test",
+      "pid": 10992
+    },
+    {
+      "component": "backend",
+      "label": "phase46-build3",
+      "start": "2026-10-08T00:52:08.150Z",
+      "end": "2026-10-08T00:52:15.023Z",
+      "code": 0,
+      "command": "npm run build",
+      "database": "loopback/avisa_ai_test",
+      "pid": 10352
+    },
+    {
+      "component": "backend",
+      "label": "phase46-prisma-validate",
+      "start": "2026-10-08T00:55:48.048Z",
+      "end": "2026-10-08T00:55:50.012Z",
+      "code": 0,
+      "command": "npm run prisma:validate",
+      "database": "loopback/avisa_ai_test",
+      "pid": 22632
+    },
+    {
+      "component": "backend",
+      "label": "phase46-generate",
+      "start": "2026-10-08T00:41:41.218Z",
+      "end": "2026-10-08T00:41:51.850Z",
+      "code": 0,
+      "command": "npm run prisma:generate",
+      "database": "loopback/avisa_ai_test",
+      "pid": 9820
+    },
+    {
+      "component": "backend",
+      "label": "phase46-prisma-status",
+      "start": "2026-10-08T00:55:50.066Z",
+      "end": "2026-10-08T00:55:52.039Z",
+      "code": 0,
+      "command": "node node_modules/prisma/build/index.js migrate status",
+      "database": "loopback/avisa_ai_test",
+      "pid": 24192
+    },
+    {
+      "component": "mobile",
+      "label": "decoder-ci2",
+      "start": "2026-10-08T00:49:46.771Z",
+      "end": "2026-10-08T00:52:19.875Z",
+      "code": 0,
+      "command": "npm ci --no-audit",
+      "database": "loopback/avisa_ai_test",
+      "pid": 11068
+    },
+    {
+      "component": "mobile",
+      "label": "decoder-security-ci",
+      "start": "2026-10-08T00:53:28.728Z",
+      "end": "2026-10-08T00:53:29.002Z",
+      "code": 0,
+      "command": "node scripts/check-decode-security.cjs",
+      "database": "loopback/avisa_ai_test",
+      "pid": 18148
+    },
+    {
+      "component": "mobile",
+      "label": "decoder-format-check",
+      "start": "2026-10-08T00:54:07.570Z",
+      "end": "2026-10-08T00:54:11.101Z",
+      "code": 0,
+      "command": "npm run format:check",
+      "database": "loopback/avisa_ai_test",
+      "pid": 23940
+    },
+    {
+      "component": "mobile",
+      "label": "decoder-lint",
+      "start": "2026-10-08T00:53:31.583Z",
+      "end": "2026-10-08T00:53:54.203Z",
+      "code": 0,
+      "command": "npm run lint",
+      "database": "loopback/avisa_ai_test",
+      "pid": 19984
+    },
+    {
+      "component": "mobile",
+      "label": "decoder-types",
+      "start": "2026-10-08T00:53:31.638Z",
+      "end": "2026-10-08T00:53:38.629Z",
+      "code": 0,
+      "command": "npm run typecheck",
+      "database": "loopback/avisa_ai_test",
+      "pid": 23148
+    },
+    {
+      "component": "mobile",
+      "label": "decoder-tests",
+      "start": "2026-10-08T00:53:31.703Z",
+      "end": "2026-10-08T00:54:27.101Z",
+      "code": 0,
+      "command": "npm run test:ci",
+      "database": "loopback/avisa_ai_test",
+      "pid": 21520
+    },
+    {
+      "component": "mobile",
+      "label": "production-final-config",
+      "start": "2026-10-08T00:58:41.607Z",
+      "end": "2026-10-08T00:58:44.330Z",
+      "code": 0,
+      "command": "npm test -- --runInBand --runTestsByPath tests/config/app-config.spec.ts tests/config/push-config.spec.ts",
+      "database": "loopback/avisa_ai_test",
+      "pid": 10928
+    },
+    {
+      "component": "mobile",
+      "label": "decoder-doctor",
+      "start": "2026-10-08T00:54:36.873Z",
+      "end": "2026-10-08T00:54:46.703Z",
+      "code": 0,
+      "command": "npm run doctor",
+      "database": "loopback/avisa_ai_test",
+      "pid": 19148
+    },
+    {
+      "component": "backend",
+      "label": "audit-final-full",
+      "start": "2026-10-08T00:51:13.276Z",
+      "end": "2026-10-08T00:51:17.786Z",
+      "code": 1,
+      "command": "npm audit --json",
+      "database": "loopback/avisa_ai_test",
+      "pid": 19180
+    },
+    {
+      "component": "backend",
+      "label": "audit-final-runtime",
+      "start": "2026-10-08T00:51:13.202Z",
+      "end": "2026-10-08T00:51:15.031Z",
+      "code": 0,
+      "command": "npm audit --omit=dev --json",
+      "database": "loopback/avisa_ai_test",
+      "pid": 22324
+    },
+    {
+      "component": "mobile",
+      "label": "audit-final-full",
+      "start": "2026-10-08T00:51:13.268Z",
+      "end": "2026-10-08T00:51:22.017Z",
+      "code": 1,
+      "command": "npm audit --json",
+      "database": "loopback/avisa_ai_test",
+      "pid": 14348
+    },
+    {
+      "component": "mobile",
+      "label": "audit-final-runtime",
+      "start": "2026-10-08T00:51:13.213Z",
+      "end": "2026-10-08T00:51:21.993Z",
+      "code": 1,
+      "command": "npm audit --omit=dev --json",
+      "database": "loopback/avisa_ai_test",
+      "pid": 13292
+    }
+  ],
+  "limits": "Uncommitted WIP; no final production candidate or CI proof"
+}

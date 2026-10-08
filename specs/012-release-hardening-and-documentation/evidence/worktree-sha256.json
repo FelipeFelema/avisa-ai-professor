@@ -1,0 +1,146 @@
+{
+  "baseHead": "832626de96c9ad5ef7446d8aba4f759113d1385a",
+  "generatedAt": "2026-10-08T00:07:41.786Z",
+  "files": [
+    {
+      "path": "backend/src/auth/auth-session.service.spec.ts",
+      "sha256": "a7bbb2dd41f8b3f027c9bae8bfab06712dfc14a7c877d03456376e1f31a1b6ab"
+    },
+    {
+      "path": "backend/src/auth/auth.controller.spec.ts",
+      "sha256": "59111a3f1cd4fb7b6ac5e5efd02f8f86bb8795f657151c9deb3f0fa2c3c9b6e6"
+    },
+    {
+      "path": "backend/src/auth/auth.controller.ts",
+      "sha256": "71bd2cb4a42bee82fa02b3480b70d42e02520c01e23e44d56b99c1cbcc248683"
+    },
+    {
+      "path": "backend/src/auth/auth.module.ts",
+      "sha256": "7a95faeb5b9af947fa9a99359302da856f1734863cb6ba9c086b220604da6f96"
+    },
+    {
+      "path": "backend/src/auth/auth.service.ts",
+      "sha256": "7ea8a1af6816ee09505d534f027fc8b489d5c2a609ea0624d2216121e3e66804"
+    },
+    {
+      "path": "backend/src/auth/dto/session-revocation.dto.ts",
+      "sha256": "08022ad63b8047366a1831dd641d50ccbf4b060ffb32d78e7606f0acadd32efd"
+    },
+    {
+      "path": "backend/src/auth/guards/rate-limit.guard.spec.ts",
+      "sha256": "2b7b7209c869ddd03af5885702b1524c96aeca2be56d39533e36f0f3a0522d7f"
+    },
+    {
+      "path": "backend/src/auth/guards/rate-limit.guard.ts",
+      "sha256": "44a5b73f974e6d71db21661e011db58c5ae5998197d95f52451390192d72a2c1"
+    },
+    {
+      "path": "backend/src/auth/session-revocation.service.spec.ts",
+      "sha256": "5c67ce2f6e35b06eea075f013fb99f8659abd673704055199e0ac0352e72432c"
+    },
+    {
+      "path": "backend/src/auth/session-revocation.service.ts",
+      "sha256": "d070321a2f0f6d840142ec28aa5fc9eeeca345cdcf62debb8353e4c2812154ac"
+    },
+    {
+      "path": "backend/src/auth/strategies/jwt.strategy.ts",
+      "sha256": "92d82515dcb23c1c3f62856593228961559b4f64ae1564db695cf173f4fdeba9"
+    },
+    {
+      "path": "backend/src/auth/strategies/refresh.strategy.ts",
+      "sha256": "60d87d1413691a6bb681b905bc3ef928989db3ab5d1c503bab10492cd122ee1d"
+    },
+    {
+      "path": "backend/src/common/filters/sanitized-exception.filter.ts",
+      "sha256": "d62e9bee47da08899cf40a1b99b8460b54c57fdfe058451848a0476a9a4f005a"
+    },
+    {
+      "path": "backend/src/configure-app.ts",
+      "sha256": "0fe1a44b1896b055d73a6ad04775c479592e5999baa1b332b04c727c5b0a1942"
+    },
+    {
+      "path": "backend/test/auth.integration.spec.ts",
+      "sha256": "8e4d3c6b568b242aa9fc22a4143650ab6eef3e4f432a37f90d4024750ca29297"
+    },
+    {
+      "path": "backend/test/helpers/release-security.fixture.ts",
+      "sha256": "ffb12460919b4e503b1ca098dc6b61dd10b84c99efa9e11c3bcc7d340ea9a575"
+    },
+    {
+      "path": "backend/test/openapi.contract.spec.ts",
+      "sha256": "3fd8fb44cc710eebe28764050cc84cbe727a6dafae970c1e3a47b853645060e0"
+    },
+    {
+      "path": "backend/test/release-authorization.integration.spec.ts",
+      "sha256": "8d69f823eb4b99e46d07960999d8cc68e00e342466e837b5ebe63f42d5b04927"
+    },
+    {
+      "path": "backend/test/release-error-privacy.e2e-spec.ts",
+      "sha256": "b3c785122e996b21ce88b0b49f690c8912fa5a28708169dc2d70ac9acf1447c9"
+    },
+    {
+      "path": "backend/test/release-fixture.integration.spec.ts",
+      "sha256": "72a3eb36e5c29810b5ba170e7112875735647114555e853558ea2323153c4cd5"
+    },
+    {
+      "path": "backend/test/release-input-security.e2e-spec.ts",
+      "sha256": "d9e27b82c3b4caffd9eb440a5476b54824570f791aa4e858e657f118038107d0"
+    },
+    {
+      "path": "mobile/src/constants/storage.ts",
+      "sha256": "15b4497c458386d0f9bf3b3b4d5b20b4bfe4e4290647d6b23176722a7b2b6fbb"
+    },
+    {
+      "path": "mobile/src/lib/api.ts",
+      "sha256": "a97e9a696540c0e05a1cdb3c4d0b7b2fd769f294a8b4c9915243434383825878"
+    },
+    {
+      "path": "mobile/src/providers/AuthProvider.tsx",
+      "sha256": "da4a059f47d849e179a7b377be48a389c913f933ae980c5a8ad6c44051228bf1"
+    },
+    {
+      "path": "mobile/src/services/auth/session-revocation.service.ts",
+      "sha256": "2177d843e7ee982803ca704a1fa4b466e8091fec10ca5293c350e318db854151"
+    },
+    {
+      "path": "mobile/src/storage/auth.storage.ts",
+      "sha256": "2db3e8a44b4388053b1ce26d266b6c8d0a4748b0d94ed067f54db69b508fe210"
+    },
+    {
+      "path": "mobile/src/storage/session-revocation.storage.ts",
+      "sha256": "0fd6d131937d29d6d02eaec33b6da7bb4f0190d7d792b3bbe3a9bce2a591426e"
+    },
+    {
+      "path": "mobile/tests/lib/api-session.spec.ts",
+      "sha256": "16747c404ff7e0e93630970e800dc82eeb7968ff31221f535c27d279bbacb1d9"
+    },
+    {
+      "path": "mobile/tests/providers/AuthProvider.spec.tsx",
+      "sha256": "2ff5debe4e303057b60829ea4396fbfe5adde85c287be5fbca2824de3223bbaf"
+    },
+    {
+      "path": "mobile/tests/services/release-error-privacy.spec.ts",
+      "sha256": "d5633cdaaeb0cdb1ede8e3e3ebe93647f8445a7486d99579033a1b11cee94bb9"
+    },
+    {
+      "path": "mobile/tests/services/session-revocation.spec.ts",
+      "sha256": "07f2a04dd56cfd4175987cfac4dabcfa627430e182e5f76aa32fa69f4dc917d7"
+    }
+  ],
+  "contracts": [
+    {
+      "path": "specs/012-release-hardening-and-documentation/contracts/session-revocation.openapi.json",
+      "sha256": "9562af41b610604e839c9cade548ad41047dbd0e6b3462a776e3432c39d8d1f3"
+    }
+  ],
+  "lockfiles": [
+    {
+      "path": "backend/package-lock.json",
+      "sha256": "00dfb2df8637916479644742e00e37e9f695d739f51d24f78c6c033d14a9e399"
+    },
+    {
+      "path": "mobile/package-lock.json",
+      "sha256": "dea9718dc1880cdb5610a39c6cea06457c03cc8f98941f2b7ee34f18f3317538"
+    }
+  ]
+}

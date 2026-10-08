@@ -1,0 +1,46 @@
+{
+  "paths": {
+    "/api/v1/auth/session-revocation": {
+      "get": {
+        "operationId": "auth.getSessionRevocation",
+        "tags": ["auth"],
+        "summary": "Obter capability de revogação da sessão atual",
+        "description": "Usa apenas user/sid autenticados; capability opaca não permite login, leitura ou renovação. Guardar somente em SecureStore.",
+        "security": [{"bearerAuth": []}],
+        "parameters": [],
+        "responses": {
+          "200": {"description": "Capability exclusiva do sid atual", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/SessionRevocation"}}}},
+          "401": {"description": "Credencial ausente, inválida ou expirada", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}}
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "operationId": "auth.logout",
+        "tags": ["auth"],
+        "summary": "Revogar uma única sessão",
+        "description": "Capability exclusiva do sid permite cleanup offline sem JWT. Idempotente para revogado/expirado/removido; não revoga outras sessões. Não aceita refresh/access tokens ou userId.",
+        "parameters": [],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/SessionRevocation"}}}},
+        "responses": {
+          "204": {"description": "Revogação confirmada; resposta vazia"},
+          "400": {"description": "Entrada inválida ou campo não permitido", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}},
+          "401": {"description": "Credencial ausente, inválida ou expirada", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}},
+          "429": {"description": "Limite de requisições excedido", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}},
+          "500": {"description": "Falha sanitizada; manter pendência para retry", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}}
+        }
+      }
+    }
+  },
+  "schemas": {
+    "SessionRevocation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sid", "capability"],
+      "properties": {
+        "sid": {"type": "string", "format": "uuid"},
+        "capability": {"type": "string", "minLength": 43, "maxLength": 43, "description": "Capability opaca exclusiva de revogação; nunca é JWT ou credencial de login."}
+      }
+    }
+  }
+}

@@ -1,0 +1,415 @@
+{
+  "time": "2026-10-08T14:29:07.317Z",
+  "PRODUCTION_API_URL": "PENDING",
+  "candidateApi": "https://release-audit.example.com/api/v1",
+  "realEndpointUsed": false,
+  "head": "832626de96c9ad5ef7446d8aba4f759113d1385a",
+  "worktree": true,
+  "initialExport": {
+    "start": "2026-10-08T14:23:39.194Z",
+    "end": "2026-10-08T14:24:10.898Z",
+    "code": 0,
+    "command": "node node_modules/expo/bin/cli export --platform android --no-bytecode --source-maps --output-dir .expo-release-security-export",
+    "profile": "production",
+    "nodeEnv": "production",
+    "candidateApi": "https://release-audit.example.com/api/v1",
+    "PRODUCTION_API_URL": "PENDING",
+    "realEndpointUsed": false,
+    "backendCanariesInjected": [
+      "JWT_ACCESS_SECRET",
+      "JWT_REFRESH_SECRET",
+      "DATABASE_URL",
+      "EXPO_PUSH_ACCESS_TOKEN",
+      "FCM_PRIVATE_KEY",
+      "PUSH_CAPABILITY"
+    ],
+    "output": "mobile/.expo-release-security-export",
+    "externalEasBuild": false,
+    "apk": false,
+    "aab": false,
+    "deploy": false
+  },
+  "acceptedExport": {
+    "start": "2026-10-08T14:27:35.106Z",
+    "end": "2026-10-08T14:27:54.132Z",
+    "code": 0,
+    "command": "node node_modules/expo/bin/cli export --platform android --no-bytecode --source-maps --output-dir .expo-release-security-export/cleared --clear",
+    "profile": "production",
+    "nodeEnv": "production",
+    "candidateApi": "https://release-audit.example.com/api/v1",
+    "PRODUCTION_API_URL": "PENDING",
+    "realEndpointUsed": false,
+    "backendCanariesInjected": [
+      "JWT_ACCESS_SECRET",
+      "JWT_REFRESH_SECRET",
+      "DATABASE_URL",
+      "EXPO_PUSH_ACCESS_TOKEN",
+      "FCM_PRIVATE_KEY",
+      "PUSH_CAPABILITY"
+    ],
+    "output": "mobile/.expo-release-security-export/cleared",
+    "cacheCleared": true,
+    "externalEasBuild": false,
+    "apk": false,
+    "aab": false,
+    "deploy": false
+  },
+  "bundle": {
+    "path": "mobile\\.expo-release-security-export\\cleared\\_expo\\static\\js\\android\\entry-96875021340cf1bc235713e3503752b7.js",
+    "bytes": 3483181,
+    "sha256": "733fabad83e0193de426e88d2235f7a168e7e7f5310eb9776f88126a598688fe"
+  },
+  "map": {
+    "path": "mobile\\.expo-release-security-export\\cleared\\_expo\\static\\js\\android\\entry-96875021340cf1bc235713e3503752b7.js.map",
+    "bytes": 11672343,
+    "sha256": "a9f0793ce25b2674f9d14b2fcf953acf287f91e706732b04614eea5e6d84eac6",
+    "version": 3,
+    "moduleCount": 1714,
+    "sourcesContentCount": 1714
+  },
+  "devFlagFalse": true,
+  "packageSources": [
+    {
+      "name": "decode-uri-component",
+      "sources": ["/vendor/decode-uri-component/index.js"]
+    },
+    {
+      "name": "shell-quote",
+      "sources": []
+    },
+    {
+      "name": "braces",
+      "sources": []
+    },
+    {
+      "name": "image-size",
+      "sources": []
+    },
+    {
+      "name": "node-forge",
+      "sources": []
+    },
+    {
+      "name": "sprintf-js",
+      "sources": []
+    },
+    {
+      "name": "uuid",
+      "sources": [
+        "/node_modules/expo-modules-core/src/uuid/index.ts",
+        "/node_modules/expo-modules-core/src/uuid/lib/bytesToUuid.ts",
+        "/node_modules/expo-modules-core/src/uuid/uuid.types.ts"
+      ]
+    }
+  ],
+  "decoder": {
+    "source": "/vendor/decode-uri-component/index.js",
+    "sourceEqualsReviewedVendor": true,
+    "normalizedSourceEquals": true,
+    "sha256": "ad329c7f73483942111e75dcdc53fef4567e1262d39a0c52e02c87e460551499",
+    "commonJsCallable": true,
+    "iterativeRecovery": true,
+    "oldRecursiveDecoderPresent": false,
+    "plusToSpacePreserved": true
+  },
+  "runtimeGate": {
+    "status": "PASS",
+    "expectedApi": "https://release-audit.example.com/api/v1",
+    "devFalse": true,
+    "excludedNpmPackages": [
+      "shell-quote",
+      "braces",
+      "image-size",
+      "node-forge",
+      "sprintf-js",
+      "uuid"
+    ],
+    "decoderSourceEqual": true,
+    "actualMinifiedDecoderExecuted": true,
+    "queryStringBoundToPatchedDecoder": true,
+    "measurements": [
+      {
+        "repetitions": 512,
+        "milliseconds": 0.9296000000000504
+      },
+      {
+        "repetitions": 2048,
+        "milliseconds": 1.4723999999999933
+      },
+      {
+        "repetitions": 16384,
+        "milliseconds": 7.9015000000000555
+      }
+    ],
+    "bundleSHA256": "733fabad83e0193de426e88d2235f7a168e7e7f5310eb9776f88126a598688fe",
+    "moduleCount": 1714
+  },
+  "backendCanaries": [
+    {
+      "key": "JWT_ACCESS_SECRET",
+      "bundleAbsent": true,
+      "mapAbsent": true
+    },
+    {
+      "key": "JWT_REFRESH_SECRET",
+      "bundleAbsent": true,
+      "mapAbsent": true
+    },
+    {
+      "key": "DATABASE_URL",
+      "bundleAbsent": true,
+      "mapAbsent": true
+    },
+    {
+      "key": "EXPO_PUSH_ACCESS_TOKEN",
+      "bundleAbsent": true,
+      "mapAbsent": true
+    },
+    {
+      "key": "FCM_PRIVATE_KEY",
+      "bundleAbsent": true,
+      "mapAbsent": true
+    },
+    {
+      "key": "PUSH_CAPABILITY",
+      "bundleAbsent": true,
+      "mapAbsent": true
+    }
+  ],
+  "referenceFindings": [
+    {
+      "type": "local-host",
+      "source": "/node_modules/whatwg-url-minimum/dist/whatwg-url-minimum.mjs",
+      "line": 314,
+      "originalLine": 1042
+    },
+    {
+      "type": "local-host",
+      "source": "/node_modules/react-native/Libraries/Core/Devtools/getDevServer.js",
+      "line": 634,
+      "originalLine": 15
+    },
+    {
+      "type": "local-host",
+      "source": "/node_modules/axios/dist/esm/axios.js",
+      "line": 1457,
+      "originalLine": 2590
+    },
+    {
+      "type": "local-host",
+      "source": null,
+      "line": 1796,
+      "originalLine": null
+    },
+    {
+      "type": "cleartext-url",
+      "source": "/node_modules/react-native/Libraries/Core/Devtools/getDevServer.js",
+      "line": 634,
+      "originalLine": 15
+    },
+    {
+      "type": "cleartext-url",
+      "source": "/node_modules/expo-router/build/link/href.js",
+      "line": 892,
+      "originalLine": 48
+    },
+    {
+      "type": "cleartext-url",
+      "source": "/node_modules/axios/dist/esm/axios.js",
+      "line": 1457,
+      "originalLine": 2590
+    },
+    {
+      "type": "cleartext-url",
+      "source": "/node_modules/zod/v4/core/schemas.js",
+      "line": 1487,
+      "originalLine": 321
+    },
+    {
+      "type": "cleartext-url",
+      "source": "/node_modules/zod/v4/core/schemas.js",
+      "line": 1487,
+      "originalLine": 361
+    },
+    {
+      "type": "cleartext-url",
+      "source": "/node_modules/zod/v4/core/to-json-schema.js",
+      "line": 1547,
+      "originalLine": 303
+    },
+    {
+      "type": "cleartext-url",
+      "source": "/node_modules/zod/v4/core/to-json-schema.js",
+      "line": 1547,
+      "originalLine": 306
+    },
+    {
+      "type": "cleartext-url",
+      "source": "/node_modules/zod/v4/classic/from-json-schema.js",
+      "line": 1557,
+      "originalLine": 88
+    },
+    {
+      "type": "cleartext-url",
+      "source": "/node_modules/zod/v4/classic/from-json-schema.js",
+      "line": 1557,
+      "originalLine": 91
+    },
+    {
+      "type": "cleartext-url",
+      "source": "/node_modules/zod/v4/core/schemas.cjs",
+      "line": 1594,
+      "originalLine": 352
+    },
+    {
+      "type": "cleartext-url",
+      "source": "/node_modules/zod/v4/core/schemas.cjs",
+      "line": 1594,
+      "originalLine": 392
+    },
+    {
+      "type": "cleartext-url",
+      "source": "/node_modules/zod/v4/core/to-json-schema.cjs",
+      "line": 1654,
+      "originalLine": 310
+    },
+    {
+      "type": "cleartext-url",
+      "source": "/node_modules/zod/v4/core/to-json-schema.cjs",
+      "line": 1654,
+      "originalLine": 313
+    },
+    {
+      "type": "cleartext-url",
+      "source": null,
+      "line": 1796,
+      "originalLine": null
+    }
+  ],
+  "config": {
+    "time": "2026-10-08T14:33:50.388Z",
+    "PRODUCTION_API_URL": "PENDING",
+    "candidateApi": "https://release-audit.example.com/api/v1",
+    "androidPackage": "com.avisa.aiprofessor",
+    "projectId": "70c1f8a0-48dc-4ef4-bbc0-1a1fa56da0b9",
+    "pushDiagnosticsEnabled": false,
+    "googleServicesFileEmbedded": false,
+    "publicExtraKeys": ["pushDiagnosticsEnabled", "eas", "router"],
+    "easBuild": false
+  },
+  "scan": {
+    "time": "2026-10-08T14:35:52.611Z",
+    "worktreeTextFiles": 654,
+    "historyTextBlobs": 1878,
+    "ignoredLogsScanned": 351,
+    "artifactFiles": 172,
+    "realSecretMatches": 0,
+    "artifactHeuristicIndicators": 0,
+    "allPrivatePathsIgnored": true
+  },
+  "audits": [
+    {
+      "component": "backend",
+      "mode": "full",
+      "label": "export-audit-full",
+      "start": "2026-10-08T14:24:10.625Z",
+      "end": "2026-10-08T14:24:19.996Z",
+      "code": 1,
+      "command": "npm audit --json",
+      "database": "loopback/avisa_ai_test",
+      "pid": 20004,
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 20,
+        "high": 3,
+        "critical": 0,
+        "total": 23
+      }
+    },
+    {
+      "component": "backend",
+      "mode": "runtime",
+      "label": "export-audit-runtime",
+      "start": "2026-10-08T14:24:10.321Z",
+      "end": "2026-10-08T14:24:18.938Z",
+      "code": 0,
+      "command": "npm audit --omit=dev --json",
+      "database": "loopback/avisa_ai_test",
+      "pid": 15584,
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0,
+        "total": 0
+      }
+    },
+    {
+      "component": "mobile",
+      "mode": "full",
+      "label": "export-audit-full",
+      "start": "2026-10-08T14:24:10.358Z",
+      "end": "2026-10-08T14:24:25.629Z",
+      "code": 1,
+      "command": "npm audit --json",
+      "database": "loopback/avisa_ai_test",
+      "pid": 12532,
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 12,
+        "high": 50,
+        "critical": 0,
+        "total": 62
+      }
+    },
+    {
+      "component": "mobile",
+      "mode": "runtime",
+      "label": "export-audit-runtime",
+      "start": "2026-10-08T14:24:10.967Z",
+      "end": "2026-10-08T14:24:25.606Z",
+      "code": 1,
+      "command": "npm audit --omit=dev --json",
+      "database": "loopback/avisa_ai_test",
+      "pid": 20476,
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 12,
+        "high": 46,
+        "critical": 0,
+        "total": 58
+      }
+    }
+  ],
+  "files": [
+    {
+      "file": "mobile/package.json",
+      "sha256": "2b4bd1f4736237132887c0e11c08a2f7b5ebd84a70175cd5b71167b417cb47c1"
+    },
+    {
+      "file": "mobile/package-lock.json",
+      "sha256": "00c88d598ba63e13fd38fb16ee5a8c8e3175046f3967caa8eaac316dcd33f8ca"
+    },
+    {
+      "file": "mobile/scripts/check-android-export-security.cjs",
+      "sha256": "86a47116465367bd18ab61044bf24942b5ad9c7956568d4968c61378f72a9306"
+    },
+    {
+      "file": "mobile/vendor/decode-uri-component/index.js",
+      "sha256": "ad329c7f73483942111e75dcdc53fef4567e1262d39a0c52e02c87e460551499"
+    },
+    {
+      "file": "mobile/app.config.ts",
+      "sha256": "bc38f6cdf47894b25527268691388f8b5c126afb2712f483df2784acc01f9de7"
+    },
+    {
+      "file": "mobile/eas.json",
+      "sha256": "60424a64ed33761a96c594674d214706cefac20f33a6b349e959acedcec891fa"
+    }
+  ],
+  "limits": "Local JS Android export with a synthetic URL; no real endpoint, EAS/API call, APK/AAB, deploy, native manifest, device smoke or final CI. Full bundles/maps and canary values remain ignored/private."
+}
