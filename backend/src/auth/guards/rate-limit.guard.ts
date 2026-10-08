@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Injectable,
 } from '@nestjs/common';
+import { observeSec013LimiterKey } from '../../common/middleware/proxy-diagnostics.middleware';
 
 @Injectable()
 export class RateLimitGuard implements CanActivate {
@@ -21,6 +22,7 @@ export class RateLimitGuard implements CanActivate {
     };
     const request = httpContext.getRequest();
     const ip = request.ip ?? 'unknown';
+    observeSec013LimiterKey(request, ip);
     const now = Date.now();
     if (now >= this.nextSweepAt) {
       for (const [key, timestamps] of this.requestBuckets) {

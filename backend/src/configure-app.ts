@@ -11,6 +11,7 @@ import type {
   Response,
 } from 'express';
 import { SanitizedExceptionFilter } from './common/filters/sanitized-exception.filter';
+import { createSec013ProxyDiagnostics } from './common/middleware/proxy-diagnostics.middleware';
 import { trustedProxyCidrs } from './config/trusted-proxy.config';
 import {
   productionCorsOrigins,
@@ -35,6 +36,8 @@ export function configureApp(app: INestApplication): INestApplication {
     set(key: string, value: false | string[]): void;
   };
   server.set('trust proxy', trustedProxyCidrs());
+  const diagnostics = createSec013ProxyDiagnostics();
+  if (diagnostics) app.use(diagnostics);
   const corsOrigins =
     process.env.NODE_ENV === 'production'
       ? productionCorsOrigins(process.env)
