@@ -4,6 +4,9 @@ build
 coverage
 .expo
 .expo-ci-export
+.expo-release-security-export
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
+# Preserve the reviewed upstream security patch for easy provenance comparison.
+vendor/decode-uri-component/index.js

@@ -20,6 +20,12 @@ import {
 } from '@/lib';
 import { completePushLogoutCleanup, preparePushLogout } from '@/services/push/push-lifecycle';
 import { cancelAnnouncementPush } from '@/services/push/announcement-push-navigation';
+import {
+  ensureSessionRevocation,
+  queueCurrentSessionRevocation,
+  flushPendingSessionRevocations,
+  startSessionRevocationRecovery,
+} from '@/services/auth/session-revocation.service';
 
 type AuthProviderProps = PropsWithChildren;
 
@@ -40,18 +46,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     // Invalidate first so pending requests and token writes cannot revive this session.
+    const pendingSessionRevocation = queueCurrentSessionRevocation(getSessionGeneration()).catch(
+      () => false,
+    );
     const cleanupGeneration = invalidateSessionGeneration();
     cancelAnnouncementPush();
     const pendingPushRevocation = await preparePushLogout().catch(() => null);
     void completePushLogoutCleanup(pendingPushRevocation).catch(() => undefined);
-    void queryClient.cancelQueries();
-    queryClient.clear();
-    setUser(null);
-    setIsLoading(false);
+    if (isSessionGenerationCurrent(cleanupGeneration)) {
+      void queryClient.cancelQueries();
+      queryClient.clear();
+      setUser(null);
+      setIsLoading(false);
+    }
 
-    const outcome = (await clearTokens(cleanupGeneration)) ?? failedCleanup;
-    setSessionStorageRecoveryRequired(!outcome.complete);
-    return outcome;
+    const persisted = await pendingSessionRevocation.catch(() => false);
+    const outcome =
+      (await clearTokens(cleanupGeneration).catch(() => failedCleanup)) ?? failedCleanup;
+    if (isSessionGenerationCurrent(cleanupGeneration))
+      setSessionStorageRecoveryRequired(!outcome.complete || !persisted);
+    void flushPendingSessionRevocations();
+    return { ...outcome, complete: outcome.complete && persisted };
   }, []);
 
   const expireSession = useCallback(
@@ -91,12 +106,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       const profile = await authService.getProfile({ sessionGeneration: generation });
+      await ensureSessionRevocation(generation);
       if (!isSessionGenerationCurrent(generation)) throw new SessionGenerationChangedError();
       setSessionStorageRecoveryRequired(false);
       setUser(profile);
     },
     [],
   );
+
+  useEffect(() => {
+    return startSessionRevocationRecovery();
+  }, []);
 
   useEffect(() => {
     setSessionExpiredHandler(async (generation) => {
@@ -110,7 +130,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const login = useCallback(
     async (data: LoginRequest): Promise<void> => {
-      const generation = getSessionGeneration();
+      const generation = invalidateSessionGeneration();
       setIsLoading(true);
 
       try {
@@ -129,7 +149,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const register = useCallback(
     async (data: RegisterRequest): Promise<void> => {
-      const generation = getSessionGeneration();
+      const generation = invalidateSessionGeneration();
       setIsLoading(true);
 
       try {
@@ -164,6 +184,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
 
         const profile = await authService.getProfile({ sessionGeneration: generation });
+        await ensureSessionRevocation(generation);
         if (!cancelled && isSessionGenerationCurrent(generation)) setUser(profile);
       } catch {
         if (isSessionGenerationCurrent(generation)) await clearSessionState(generation);

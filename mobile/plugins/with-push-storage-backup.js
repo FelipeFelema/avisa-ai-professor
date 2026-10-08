@@ -106,8 +106,14 @@ async function applyPushStorageBackupFiles(androidProjectRoot, references = {}) 
 function withPushStorageBackup(config) {
   config = withAndroidManifest(config, async (modConfig) => {
     const mainApplication = AndroidConfig.Manifest.getMainApplicationOrThrow(modConfig.modResults);
-    if (process.env.AVISA_PREVIEW_ALLOW_CLEARTEXT_TRAFFIC === 'true') {
+    if (
+      process.env.EAS_BUILD_PROFILE === 'preview' &&
+      process.env.AVISA_PREVIEW_ALLOW_CLEARTEXT_TRAFFIC === 'true'
+    ) {
       mainApplication.$['android:usesCleartextTraffic'] = 'true';
+    } else if (process.env.EAS_BUILD_PROFILE === 'production') {
+      mainApplication.$['android:usesCleartextTraffic'] = 'false';
+      delete mainApplication.$['android:networkSecurityConfig'];
     }
     const previousRules = {
       fullBackupContent: mainApplication.$['android:fullBackupContent'],

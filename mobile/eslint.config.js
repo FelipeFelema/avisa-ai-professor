@@ -11,6 +11,7 @@ module.exports = defineConfig([
       'build/**',
       'coverage/**',
       '.expo-ci-export/**',
+      '.expo-release-security-export/**',
       '*.min.js',
     ],
   },

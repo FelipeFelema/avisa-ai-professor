@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { AuthProvider } from '@/providers/AuthProvider';
 import * as authService from '@/services/auth';
 import * as pushLifecycle from '@/services/push/push-lifecycle';
+import * as revocation from '@/services/auth/session-revocation.service';
 import * as storage from '@/storage';
 import { queryClient } from '@/config';
 import {
@@ -20,6 +21,13 @@ jest.mock('@/services/auth', () => ({
   getProfile: jest.fn(),
   login: jest.fn(),
   register: jest.fn(),
+}));
+
+jest.mock('@/services/auth/session-revocation.service', () => ({
+  ensureSessionRevocation: jest.fn(),
+  queueCurrentSessionRevocation: jest.fn(),
+  flushPendingSessionRevocations: jest.fn(),
+  startSessionRevocationRecovery: jest.fn(),
 }));
 
 jest.mock('@/storage', () => ({
@@ -99,6 +107,10 @@ describe('AuthProvider profile/session boundaries', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.mocked(revocation.ensureSessionRevocation).mockResolvedValue(undefined);
+    jest.mocked(revocation.queueCurrentSessionRevocation).mockResolvedValue(true);
+    jest.mocked(revocation.flushPendingSessionRevocations).mockResolvedValue(true);
+    jest.mocked(revocation.startSessionRevocationRecovery).mockReturnValue(jest.fn());
     jest.mocked(storage.saveTokens).mockResolvedValue(true);
     jest.mocked(storage.clearTokens).mockResolvedValue({
       accessTokenRemoved: true,
@@ -368,6 +380,97 @@ describe('AuthProvider profile/session boundaries', () => {
     expect(storage.clearTokens).toHaveBeenCalledTimes(1);
   });
 
+  it('preserves account B when account A logout preparation finishes late', async () => {
+    let finish!: (value: null) => void;
+    jest.spyOn(pushLifecycle, 'preparePushLogout').mockReturnValueOnce(
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+    );
+    let actions!: ReturnType<typeof useAuth>;
+    const onActions = (value: ReturnType<typeof useAuth>) => {
+      actions = value;
+    };
+    const { getByText } = await render(
+      <AuthProvider>
+        <AuthProbe updatedUser={updatedUser} />
+        <AuthActionsProbe onActions={onActions} />
+      </AuthProvider>,
+    );
+    await waitFor(() => expect(getByText(currentUser.name)).toBeTruthy());
+    let logout!: Promise<void>;
+    await act(async () => {
+      logout = actions.logout();
+      await Promise.resolve();
+    });
+    const cleanupGeneration = getSessionGeneration();
+    const replacement = { ...currentUser, id: 'user-B', name: 'Account B' };
+    jest
+      .mocked(authService.login)
+      .mockResolvedValueOnce({ accessToken: 'B-access', refreshToken: 'B-refresh' });
+    jest.mocked(authService.getProfile).mockResolvedValueOnce(replacement);
+    await act(async () => {
+      await actions.login({ email: 'b@example.com', password: 'synthetic' });
+    });
+    queryClient.setQueryData(['auth', 'profile'], replacement);
+    await act(async () => {
+      finish(null);
+      await logout;
+    });
+    expect(getByText(replacement.name)).toBeTruthy();
+    expect(queryClient.getQueryData(['auth', 'profile'])).toEqual(replacement);
+    expect(getSessionGeneration()).not.toBe(cleanupGeneration);
+    expect(storage.clearTokens).toHaveBeenCalledWith(cleanupGeneration);
+  });
+
+  it('closes local logout and flags recovery even when session queue storage fails', async () => {
+    let actions!: ReturnType<typeof useAuth>;
+    const onActions = (value: ReturnType<typeof useAuth>) => {
+      actions = value;
+    };
+    const { getByText } = await render(
+      <AuthProvider>
+        <AuthProbe updatedUser={updatedUser} />
+        <AuthActionsProbe onActions={onActions} />
+      </AuthProvider>,
+    );
+    await waitFor(() => expect(getByText(currentUser.name)).toBeTruthy());
+    jest
+      .mocked(revocation.queueCurrentSessionRevocation)
+      .mockRejectedValueOnce(new Error('private store failed'));
+    jest.mocked(revocation.flushPendingSessionRevocations).mockResolvedValueOnce(false);
+    await act(async () => {
+      await expect(actions.logout()).resolves.toBeUndefined();
+    });
+    expect(getByText('NO_USER')).toBeTruthy();
+    expect(getByText('STORAGE_RECOVERY_REQUIRED')).toBeTruthy();
+    expect(storage.clearTokens).toHaveBeenCalledTimes(1);
+    expect(revocation.queueCurrentSessionRevocation).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not wait for backend revocation to finish local logout', async () => {
+    let actions!: ReturnType<typeof useAuth>;
+    const onActions = (value: ReturnType<typeof useAuth>) => {
+      actions = value;
+    };
+    const { getByText } = await render(
+      <AuthProvider>
+        <AuthProbe updatedUser={updatedUser} />
+        <AuthActionsProbe onActions={onActions} />
+      </AuthProvider>,
+    );
+    await waitFor(() => expect(getByText(currentUser.name)).toBeTruthy());
+    jest
+      .mocked(revocation.flushPendingSessionRevocations)
+      .mockReturnValueOnce(new Promise(() => undefined));
+    await act(async () => {
+      await actions.logout();
+    });
+    expect(getByText('NO_USER')).toBeTruthy();
+    expect(getByText('READY')).toBeTruthy();
+    expect(revocation.queueCurrentSessionRevocation).toHaveBeenCalledTimes(1);
+  });
+
   it('ignores a profile restore that resolves after session invalidation', async () => {
     let resolveProfile!: (profile: AuthUser) => void;
     jest.mocked(authService.getProfile).mockReturnValue(
@@ -590,4 +693,49 @@ describe('AuthProvider profile/session boundaries', () => {
     });
     expect(storage.clearTokens).toHaveBeenCalledTimes(2);
   });
+
+  it.each(['different-account', 'same-account-new-session'] as const)(
+    'does not apply old account callbacks after %s',
+    async (kind) => {
+      let actions!: ReturnType<typeof useAuth>;
+      const onActions = (value: ReturnType<typeof useAuth>) => {
+        actions = value;
+      };
+      const { getByText } = await render(
+        <AuthProvider>
+          <AuthProbe updatedUser={updatedUser} />
+          <AuthActionsProbe onActions={onActions} />
+        </AuthProvider>,
+      );
+      await waitFor(() => expect(getByText(currentUser.name)).toBeTruthy());
+      const oldGeneration = getSessionGeneration();
+      await act(async () => {
+        await actions.expireSession();
+      });
+      const replacement = {
+        ...currentUser,
+        id: kind === 'different-account' ? 'user-B' : currentUser.id,
+        name: 'Replacement session',
+      };
+      jest.mocked(authService.login).mockResolvedValueOnce({
+        accessToken: 'replacement-access',
+        refreshToken: 'replacement-refresh',
+      });
+      jest.mocked(authService.getProfile).mockResolvedValueOnce(replacement);
+      await act(async () => {
+        await actions.login({ email: 'replacement@example.com', password: 'synthetic' });
+      });
+      await waitFor(() => expect(getByText(replacement.name)).toBeTruthy());
+      await act(async () => {
+        actions.applyProfileUpdate(
+          { ...currentUser, name: 'Stale private profile' },
+          oldGeneration,
+        );
+        await actions.expireSession(oldGeneration);
+      });
+      expect(getByText(replacement.name)).toBeTruthy();
+      expect(actions.user?.id).toBe(replacement.id);
+      expect(storage.clearTokens).toHaveBeenCalledTimes(1);
+    },
+  );
 });

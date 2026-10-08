@@ -23,7 +23,7 @@ export function addConnectivityListener(listener: ConnectivityListener): () => v
 
 function notifyConnectivityAvailable(request?: { url?: string }): void {
   // Push responses must not trigger the reconciliation that produced them, including 429s.
-  if (request?.url?.startsWith('/push/')) return;
+  if (request?.url?.startsWith('/push/') || request?.url === '/auth/logout') return;
   for (const listener of connectivityListeners) {
     void Promise.resolve()
       .then(listener)
@@ -50,6 +50,54 @@ export const authApi = create({
   baseURL: env.apiUrl,
   timeout: 10000,
 });
+
+authApi.interceptors.response.use(
+  (response) => {
+    notifyConnectivityAvailable(response.config);
+    return response;
+  },
+  (error: AxiosError) => {
+    if (error.response) notifyConnectivityAvailable(error.config);
+    return Promise.reject(error);
+  },
+);
+
+// One rotation and one token write per generation. A stale completion cannot
+// overwrite another account's refresh or clear its in-flight operation.
+let refreshFlight: { generation: number; promise: Promise<string> } | undefined;
+
+function refreshSession(generation: number): Promise<string> {
+  if (refreshFlight?.generation === generation) return refreshFlight.promise;
+  const promise = (async () => {
+    try {
+      const tokens = await getTokens(generation);
+      if (!isSessionGenerationCurrent(generation) || !tokens)
+        throw new SessionGenerationChangedError();
+      const response = await authApi.post<{ access_token: string; refresh_token: string }>(
+        '/auth/refresh',
+        { refreshToken: tokens.refreshToken },
+      );
+      if (!isSessionGenerationCurrent(generation)) throw new SessionGenerationChangedError();
+      const saved = await saveTokens(
+        {
+          accessToken: response.data.access_token,
+          refreshToken: response.data.refresh_token,
+        },
+        generation,
+      );
+      if (!saved || !isSessionGenerationCurrent(generation))
+        throw new SessionGenerationChangedError();
+      return response.data.access_token;
+    } catch (error) {
+      if (isSessionGenerationCurrent(generation)) await notifySessionExpired(generation);
+      throw error;
+    } finally {
+      if (refreshFlight?.generation === generation) refreshFlight = undefined;
+    }
+  })();
+  refreshFlight = { generation, promise };
+  return promise;
+}
 
 // Atach the access token to every authenticated request.
 api.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
@@ -96,35 +144,17 @@ api.interceptors.response.use(
       const tokens = await getTokens(generation);
       if (!isSessionGenerationCurrent(generation)) throw new SessionGenerationChangedError();
 
-      if (!tokens) {
-        await notifySessionExpired(generation);
-        return Promise.reject(error);
-      }
-
-      const response = await authApi.post<{ access_token: string; refresh_token: string }>(
-        '/auth/refresh',
-        {
-          refreshToken: tokens.refreshToken,
-        },
-      );
+      const sentAuthorization = originalRequest.headers.Authorization;
+      // A delayed 401 may have used the token rotated by another request.
+      const accessToken =
+        tokens && sentAuthorization && sentAuthorization !== `Bearer ${tokens.accessToken}`
+          ? tokens.accessToken
+          : await refreshSession(generation);
       if (!isSessionGenerationCurrent(generation)) throw new SessionGenerationChangedError();
-
-      const newTokens = {
-        accessToken: response.data.access_token,
-        refreshToken: response.data.refresh_token,
-      };
-
-      const saved = await saveTokens(newTokens, generation);
-      if (!saved || !isSessionGenerationCurrent(generation)) {
-        throw new SessionGenerationChangedError();
-      }
-
-      originalRequest.headers.Authorization = `Bearer ${newTokens.accessToken}`;
+      originalRequest.headers.Authorization = `Bearer ${accessToken}`;
 
       return api(originalRequest);
     } catch {
-      if (isSessionGenerationCurrent(generation)) await notifySessionExpired(generation);
-
       return Promise.reject(error);
     }
   },

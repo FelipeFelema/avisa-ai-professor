@@ -201,6 +201,36 @@ describe('API session bridge', () => {
     }
   });
 
+  it('reports auth responses as connectivity opportunities and excludes logout and network errors', async () => {
+    const handlers = (authApi.interceptors.response as unknown as { handlers: ResponseHandler[] })
+      .handlers;
+    const fulfilled = handlers.find((handler) => handler.fulfilled)?.fulfilled;
+    const rejected = handlers.find((handler) => handler.rejected)?.rejected;
+    const connectivity = jest.fn();
+    const remove = addConnectivityListener(connectivity);
+    try {
+      const request = { ...config(), url: '/auth/login', method: 'post' };
+      const response = { data: {}, status: 200, config: request } as AxiosResponse;
+      expect(await fulfilled?.(response)).toBe(response);
+      const error = new AxiosError('server', undefined, request);
+      error.response = { ...response, status: 503 };
+      await expect(rejected?.(error)).rejects.toBe(error);
+      await Promise.resolve();
+      expect(connectivity).toHaveBeenCalledTimes(2);
+      const networkError = new AxiosError('offline', undefined, request);
+      await expect(rejected?.(networkError)).rejects.toBe(networkError);
+      const logoutResponse = { ...response, config: { ...request, url: '/auth/logout' } };
+      expect(await fulfilled?.(logoutResponse)).toBe(logoutResponse);
+      const logoutError = new AxiosError('limited', undefined, logoutResponse.config);
+      logoutError.response = { ...logoutResponse, status: 429 };
+      await expect(rejected?.(logoutError)).rejects.toBe(logoutError);
+      await Promise.resolve();
+      expect(connectivity).toHaveBeenCalledTimes(2);
+    } finally {
+      remove();
+    }
+  });
+
   it('refreshes tokens, retries a 401 request and returns the retried response', async () => {
     const request = config();
     const refreshed = { access_token: 'new-access', refresh_token: 'new-refresh' };
@@ -354,5 +384,48 @@ describe('API session bridge', () => {
     expect(storage.saveTokens).not.toHaveBeenCalled();
     expect(adapter).not.toHaveBeenCalled();
     api.defaults.adapter = previousAdapter;
+  });
+
+  it('coalesces concurrent 401 refreshes in the same generation', async () => {
+    let resolveRefresh!: (response: AxiosResponse) => void;
+    const pending = new Promise<AxiosResponse>((resolve) => {
+      resolveRefresh = resolve;
+    });
+    const refresh = jest.spyOn(authApi, 'post').mockReturnValue(pending);
+    const previousAdapter = api.defaults.adapter;
+    api.defaults.adapter = jest.fn().mockResolvedValue({ data: 'retried', status: 200 });
+    const rejected = responseHandlers().find((handler) => handler.rejected)?.rejected;
+    const outcomes = [
+      rejected?.(unauthorizedError(config())),
+      rejected?.(unauthorizedError(config())),
+    ];
+    try {
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+      const calls = refresh.mock.calls.length;
+      resolveRefresh({
+        data: { access_token: 'shared-access', refresh_token: 'shared-refresh' },
+      } as AxiosResponse);
+      await Promise.all(outcomes);
+      expect(calls).toBe(1);
+      expect(storage.saveTokens).toHaveBeenCalledTimes(1);
+    } finally {
+      api.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('expires once when shared refresh fails for concurrent requests', async () => {
+    const expired = jest.fn().mockResolvedValue(undefined);
+    setSessionExpiredHandler(expired);
+    jest.spyOn(authApi, 'post').mockRejectedValueOnce(new Error('Synthetic revoked refresh'));
+    const rejected = responseHandlers().find((handler) => handler.rejected)?.rejected;
+    await Promise.allSettled([
+      rejected?.(unauthorizedError(config())),
+      rejected?.(unauthorizedError(config())),
+    ]);
+    expect(authApi.post).toHaveBeenCalledTimes(1);
+    expect(expired).toHaveBeenCalledTimes(1);
+    expect(storage.saveTokens).not.toHaveBeenCalled();
   });
 });

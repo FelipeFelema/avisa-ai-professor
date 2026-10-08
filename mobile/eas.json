@@ -4,6 +4,13 @@
     "appVersionSource": "remote"
   },
   "build": {
+    "production": {
+      "distribution": "store",
+      "environment": "production",
+      "autoIncrement": true,
+      "env": { "AVISA_PREVIEW_ALLOW_CLEARTEXT_TRAFFIC": "false" },
+      "android": { "buildType": "app-bundle" }
+    },
     "preview": {
       "distribution": "internal",
       "environment": "preview",

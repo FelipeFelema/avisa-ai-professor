@@ -16,7 +16,7 @@ export interface TokenCleanupOutcome {
 
 let tokenOperationQueue: Promise<void> = Promise.resolve();
 
-function serializeTokenOperation<T>(operation: () => Promise<T>): Promise<T> {
+export function serializeTokenOperation<T>(operation: () => Promise<T>): Promise<T> {
   const result = tokenOperationQueue.then(operation, operation);
   tokenOperationQueue = result.then(
     () => undefined,

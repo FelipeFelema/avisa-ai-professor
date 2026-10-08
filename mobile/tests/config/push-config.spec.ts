@@ -113,7 +113,9 @@ describe('push diagnostic action configuration', () => {
     ['other', false],
   ])('build profile %s produces diagnostic visibility %s', (profile, visible) => {
     const previous = process.env.EAS_BUILD_PROFILE;
+    const previousApi = process.env.EXPO_PUBLIC_API_URL;
     try {
+      process.env.EXPO_PUBLIC_API_URL = 'https://api.example.com/api/v1';
       if (profile === undefined) delete process.env.EAS_BUILD_PROFILE;
       else process.env.EAS_BUILD_PROFILE = profile;
       const config = appConfig({
@@ -129,6 +131,8 @@ describe('push diagnostic action configuration', () => {
     } finally {
       if (previous === undefined) delete process.env.EAS_BUILD_PROFILE;
       else process.env.EAS_BUILD_PROFILE = previous;
+      if (previousApi === undefined) delete process.env.EXPO_PUBLIC_API_URL;
+      else process.env.EXPO_PUBLIC_API_URL = previousApi;
     }
   });
 });

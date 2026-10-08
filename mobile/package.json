@@ -29,7 +29,8 @@
     "react-native-screens": "~4.26.0",
     "react-native-web": "^0.21.2",
     "react-native-worklets": "0.10.1",
-    "zod": "^4.4.3"
+    "zod": "^4.4.3",
+    "decode-uri-component": "file:./vendor/decode-uri-component"
   },
   "devDependencies": {
     "@testing-library/react-native": "^14.0.1",
@@ -61,14 +62,16 @@
     "test:watch": "jest --watch",
     "test:ci": "jest --ci --runInBand --coverage",
     "doctor": "expo-doctor",
-    "export:ci": "expo export --platform all --no-bytecode --output-dir .expo-ci-export"
+    "export:ci": "expo export --platform all --no-bytecode --output-dir .expo-ci-export --clear",
+    "check:android-export": "node scripts/check-android-export-security.cjs"
   },
   "overrides": {
     "baseline-browser-mapping": "2.11.0",
     "browserslist": "4.28.7",
     "@expo/xcpretty": {
       "js-yaml": "4.3.2"
-    }
+    },
+    "decode-uri-component": "$decode-uri-component"
   },
   "private": true
 }
