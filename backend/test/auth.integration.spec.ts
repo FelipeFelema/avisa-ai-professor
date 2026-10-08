@@ -23,6 +23,14 @@ import {
   createBarrier,
 } from './helpers/account-deletion.helper';
 import { assertSafeTestDatabase } from './helpers/test-database.helper';
+import { RateLimitGuard } from '../src/auth/guards/rate-limit.guard';
+import type { SessionRevocationDto } from '../src/auth/dto/session-revocation.dto';
+import { createTestApp } from './helpers/test-app.helper';
+import {
+  createReleaseSecurityFixture,
+  cleanupReleaseSecurityFixture,
+  assertReleaseTestDatabase,
+} from './helpers/release-security.fixture';
 
 type AuthRaceHooks = {
   beforeUserLock?: () => void;
@@ -450,4 +458,285 @@ describe('Auth Integration Tests', () => {
       }
     },
   );
+});
+
+describe('Release assessment: session boundaries', () => {
+  let app: INestApplication<App>;
+  let prisma: PrismaService;
+  let fixture: Awaited<ReturnType<typeof createReleaseSecurityFixture>>;
+  beforeAll(async () => {
+    assertReleaseTestDatabase();
+    app = (await createTestApp({
+      configureBuilder: (builder) =>
+        builder
+          .overrideGuard(RateLimitGuard)
+          .useValue({ canActivate: () => true }),
+    })) as INestApplication<App>;
+    prisma = app.get(PrismaService);
+  });
+  beforeEach(async () => {
+    fixture = await createReleaseSecurityFixture(prisma, app.get(AuthService));
+  });
+  afterEach(async () => cleanupReleaseSecurityFixture(prisma, fixture));
+  afterAll(async () => app.close());
+
+  it('logout invalidates preserved access and refresh tokens on the server', async () => {
+    const { access_token, refresh_token, sid } = fixture.parentA;
+    const capability = await request(app.getHttpServer())
+      .get('/api/v1/auth/session-revocation')
+      .auth(access_token, { type: 'bearer' })
+      .expect(200);
+    const logout = await request(app.getHttpServer())
+      .post('/api/v1/auth/logout')
+      .send(capability.body as SessionRevocationDto);
+    // The replay assertion also reproduces the pre-fix missing endpoint (404).
+    await request(app.getHttpServer())
+      .get('/api/v1/users/profile')
+      .auth(access_token, { type: 'bearer' })
+      .expect(401);
+    expect(logout.status).toBe(204);
+    await request(app.getHttpServer())
+      .post('/api/v1/auth/refresh')
+      .send({ refreshToken: refresh_token })
+      .expect(401);
+    expect(
+      (await prisma.authSession.findUniqueOrThrow({ where: { id: sid } }))
+        .revokedAt,
+    ).not.toBeNull();
+    await request(app.getHttpServer())
+      .get('/api/v1/users/profile')
+      .auth(fixture.parentB.access_token, { type: 'bearer' })
+      .expect(200);
+  });
+
+  it('revokes one sid idempotently and preserves another session of the same user', async () => {
+    const a = fixture.parentA;
+    const other = await app.get(AuthService).issueTokens(a);
+    const capability = await request(app.getHttpServer())
+      .get('/api/v1/auth/session-revocation')
+      .auth(a.access_token, { type: 'bearer' })
+      .expect(200);
+    expect(Object.keys(capability.body as object).sort()).toEqual([
+      'capability',
+      'sid',
+    ]);
+    expect(capability.headers['cache-control']).toBe('no-store');
+    for (let i = 0; i < 2; i++)
+      await request(app.getHttpServer())
+        .post('/api/v1/auth/logout')
+        .send(capability.body as SessionRevocationDto)
+        .expect(204);
+    await request(app.getHttpServer())
+      .get('/api/v1/users/profile')
+      .auth(a.access_token, { type: 'bearer' })
+      .expect(401);
+    await request(app.getHttpServer())
+      .post('/api/v1/auth/refresh')
+      .send({ refreshToken: a.refresh_token })
+      .expect(401);
+    await request(app.getHttpServer())
+      .get('/api/v1/users/profile')
+      .auth(other.access_token, { type: 'bearer' })
+      .expect(200);
+    await expect(
+      app.get(AuthService).refreshToken(other.refresh_token),
+    ).resolves.toHaveProperty('access_token');
+    expect(
+      (await prisma.authSession.findUniqueOrThrow({ where: { id: other.sid } }))
+        .revokedAt,
+    ).toBeNull();
+  });
+
+  it('cannot substitute a foreign sid, gain access, or include session-selection fields', async () => {
+    const a = fixture.parentA;
+    await request(app.getHttpServer())
+      .get('/api/v1/auth/session-revocation')
+      .expect(401);
+    const capability = await request(app.getHttpServer())
+      .get('/api/v1/auth/session-revocation')
+      .query({ sid: fixture.parentB.sid, userId: fixture.parentB.id })
+      .auth(a.access_token, { type: 'bearer' })
+      .expect(200);
+    const body = capability.body as { sid: string; capability: string };
+    expect(body.sid).toBe(a.sid);
+    await request(app.getHttpServer())
+      .post('/api/v1/auth/logout')
+      .send({ ...body, sid: fixture.parentB.sid })
+      .expect(401);
+    await request(app.getHttpServer())
+      .post('/api/v1/auth/logout')
+      .send({ ...body, capability: 'A'.repeat(43) })
+      .expect(401);
+    await request(app.getHttpServer())
+      .post('/api/v1/auth/logout')
+      .send({ ...body, userId: fixture.parentB.id })
+      .expect(400);
+    await request(app.getHttpServer())
+      .get('/api/v1/users/profile')
+      .auth(body.capability, { type: 'bearer' })
+      .expect(401);
+    expect(
+      (
+        await prisma.authSession.findUniqueOrThrow({
+          where: { id: fixture.parentB.sid },
+        })
+      ).revokedAt,
+    ).toBeNull();
+  });
+
+  it('a capability survives token rotation and safely revokes after refresh/logout concurrency', async () => {
+    const a = fixture.parentA;
+    const capability = await request(app.getHttpServer())
+      .get('/api/v1/auth/session-revocation')
+      .auth(a.access_token, { type: 'bearer' })
+      .expect(200);
+    const rotated = await app.get(AuthService).refreshToken(a.refresh_token);
+    const [refresh, logout] = await Promise.all([
+      request(app.getHttpServer())
+        .post('/api/v1/auth/refresh')
+        .send({ refreshToken: rotated.refresh_token }),
+      request(app.getHttpServer())
+        .post('/api/v1/auth/logout')
+        .send(capability.body as SessionRevocationDto),
+    ]);
+    expect([200, 401]).toContain(refresh.status);
+    expect(logout.status).toBe(204);
+    for (const token of [
+      a.access_token,
+      rotated.access_token,
+      ...(refresh.status === 200
+        ? [(refresh.body as AuthResponse).access_token]
+        : []),
+    ])
+      await request(app.getHttpServer())
+        .get('/api/v1/users/profile')
+        .auth(token, { type: 'bearer' })
+        .expect(401);
+    expect(
+      (await prisma.authSession.findUniqueOrThrow({ where: { id: a.sid } }))
+        .revokedAt,
+    ).not.toBeNull();
+  });
+
+  it('acknowledges removed or expired sessions without granting another capability', async () => {
+    const capability = await request(app.getHttpServer())
+      .get('/api/v1/auth/session-revocation')
+      .auth(fixture.parentA.access_token, { type: 'bearer' })
+      .expect(200);
+    await prisma.authSession.update({
+      where: { id: fixture.parentA.sid },
+      data: { expiresAt: new Date(0) },
+    });
+    await request(app.getHttpServer())
+      .get('/api/v1/auth/session-revocation')
+      .auth(fixture.parentA.access_token, { type: 'bearer' })
+      .expect(401);
+    await request(app.getHttpServer())
+      .post('/api/v1/auth/logout')
+      .send(capability.body as SessionRevocationDto)
+      .expect(204);
+    await prisma.authSession.delete({ where: { id: fixture.parentA.sid } });
+    await request(app.getHttpServer())
+      .post('/api/v1/auth/logout')
+      .send(capability.body as SessionRevocationDto)
+      .expect(204);
+  });
+
+  it('allows one concurrent refresh and rejects the losing replay without reviving a sid', async () => {
+    const results = await Promise.all(
+      [0, 1].map(() =>
+        request(app.getHttpServer())
+          .post('/api/v1/auth/refresh')
+          .send({ refreshToken: fixture.parentA.refresh_token }),
+      ),
+    );
+    expect(results.map((r) => r.status).sort()).toEqual([200, 401]);
+    await request(app.getHttpServer())
+      .post('/api/v1/auth/refresh')
+      .send({ refreshToken: fixture.parentA.refresh_token })
+      .expect(401);
+  });
+
+  it.each([
+    'missing-sid',
+    'foreign-sid',
+    'expired-session',
+    'revoked-session',
+    'expired-token',
+    'wrong-secret',
+    'none',
+    'HS384',
+  ] as const)('rejects %s access tokens', async (kind) => {
+    const account = fixture.parentA;
+    const payload: Record<string, unknown> = {
+      sub: account.id,
+      sid: account.sid,
+      role: Role.ADMIN,
+    };
+    if (kind === 'missing-sid') delete payload.sid;
+    if (kind === 'foreign-sid') payload.sid = fixture.parentB.sid;
+    if (kind === 'expired-session')
+      await prisma.authSession.update({
+        where: { id: account.sid },
+        data: { expiresAt: new Date(0) },
+      });
+    if (kind === 'revoked-session')
+      await prisma.authSession.update({
+        where: { id: account.sid },
+        data: { revokedAt: new Date() },
+      });
+    const token = app.get(JwtService).sign(payload, {
+      secret:
+        kind === 'wrong-secret'
+          ? 'synthetic-wrong-secret'
+          : app.get(ConfigService).getOrThrow<string>('JWT_ACCESS_SECRET'),
+      expiresIn: kind === 'expired-token' ? -1 : 900,
+      algorithm:
+        kind === 'none' ? 'none' : kind === 'HS384' ? 'HS384' : 'HS256',
+    });
+    await request(app.getHttpServer())
+      .get('/api/v1/users/profile')
+      .auth(token, { type: 'bearer' })
+      .expect(401);
+  });
+
+  it('uses current database role instead of forged privileged claims', async () => {
+    const token = app.get(JwtService).sign(
+      { sub: fixture.parentA.id, sid: fixture.parentA.sid, role: Role.ADMIN },
+      {
+        secret: app.get(ConfigService).getOrThrow<string>('JWT_ACCESS_SECRET'),
+        expiresIn: 900,
+      },
+    );
+    const before = await prisma.inviteCode.count();
+    await request(app.getHttpServer())
+      .post('/api/v1/invite-codes')
+      .auth(token, { type: 'bearer' })
+      .send({})
+      .expect(403);
+    expect(await prisma.inviteCode.count()).toBe(before);
+  });
+
+  it('retains no plaintext credentials and sets the documented token TTLs', async () => {
+    const a = fixture.parentA;
+    const access = app.get(JwtService).decode<{
+      iat: number;
+      exp: number;
+      sid: string;
+    }>(a.access_token);
+    const refresh = app.get(JwtService).decode<{
+      iat: number;
+      exp: number;
+      jti: string;
+    }>(a.refresh_token);
+    expect(access.exp - access.iat).toBe(900);
+    expect(refresh.exp - refresh.iat).toBe(604800);
+    expect(access.sid).toBe(a.sid);
+    expect(refresh.jti).toEqual(expect.any(String));
+    const session = await prisma.authSession.findUniqueOrThrow({
+      where: { id: a.sid },
+    });
+    expect(session.refreshTokenHash).not.toContain(a.refresh_token);
+    expect(a.password).not.toBe(fixture.password);
+  });
 });

@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Header,
   Post,
+  Get,
   UseGuards,
   Request,
 } from '@nestjs/common';
@@ -34,6 +35,8 @@ import { AuthTokensResponseDto } from '../common/dto/auth-response.dto';
 import { ErrorResponseDto } from '../common/dto/error-response.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { SessionRevocationDto } from './dto/session-revocation.dto';
+import { SessionRevocationService } from './session-revocation.service';
 
 interface PasswordRequest extends Express.Request {
   user: { id: string; sid: string };
@@ -51,9 +54,60 @@ interface PasswordRequest extends Express.Request {
   AuthTokensResponseDto,
   ChangePasswordDto,
   ErrorResponseDto,
+  SessionRevocationDto,
 )
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private readonly revocation: SessionRevocationService,
+  ) {}
+
+  @Get('session-revocation')
+  @UseGuards(JwtAuthGuard)
+  @Header('Cache-Control', 'no-store')
+  @ApiBearerAuth('bearerAuth')
+  @ApiOperation({
+    operationId: 'auth.getSessionRevocation',
+    summary: 'Obter capability de revogação da sessão atual',
+    description:
+      'Usa apenas user/sid autenticados; capability opaca não permite login, leitura ou renovação. Guardar somente em SecureStore.',
+  })
+  @ApiResponseDto(
+    200,
+    SessionRevocationDto,
+    'Capability exclusiva do sid atual',
+  )
+  @ApiUnauthorizedResponse()
+  getSessionRevocation(@Request() req: PasswordRequest) {
+    return this.revocation.issue(req.user.id, req.user.sid);
+  }
+
+  @Post('logout')
+  @UseGuards(RateLimitGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Header('Cache-Control', 'no-store')
+  @ApiOperation({
+    operationId: 'auth.logout',
+    summary: 'Revogar uma única sessão',
+    description:
+      'Capability exclusiva do sid permite cleanup offline sem JWT. Idempotente para revogado/expirado/removido; não revoga outras sessões. Não aceita refresh/access tokens ou userId.',
+  })
+  @ApiBody({ type: SessionRevocationDto })
+  @ApiResponse({
+    status: 204,
+    description: 'Revogação confirmada; resposta vazia',
+  })
+  @ApiValidationErrorResponse()
+  @ApiUnauthorizedResponse()
+  @ApiTooManyRequestsResponse()
+  @ApiResponseDto(
+    500,
+    ErrorResponseDto,
+    'Falha sanitizada; manter pendência para retry',
+  )
+  logout(@Body() body: SessionRevocationDto): Promise<void> {
+    return this.revocation.revoke(body);
+  }
 
   @UseGuards(RateLimitGuard, JwtAuthGuard)
   @Post('change-password')

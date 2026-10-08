@@ -4,6 +4,7 @@ import { AuthService } from './auth.service';
 import { HTTP_CODE_METADATA, GUARDS_METADATA } from '@nestjs/common/constants';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RateLimitGuard } from './guards/rate-limit.guard';
+import { SessionRevocationService } from './session-revocation.service';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -13,6 +14,10 @@ describe('AuthController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
       providers: [
+        {
+          provide: SessionRevocationService,
+          useValue: { issue: jest.fn(), revoke: jest.fn() },
+        },
         {
           provide: AuthService,
           useValue: (authService = {

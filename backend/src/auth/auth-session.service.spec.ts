@@ -240,4 +240,31 @@ describe('AuthSessionService', () => {
     expect(result).toBe(true);
     expect(bcrypt.compare).toHaveBeenCalledTimes(2);
   });
+
+  it('rejects a mismatching refresh in both current and legacy representations', async () => {
+    (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+    await expect(
+      service.verifyRefreshToken(
+        { refreshTokenHash: 'stored-hash' },
+        'wrong-refresh',
+      ),
+    ).resolves.toBe(false);
+  });
+
+  it('fails closed when the conditional rotation loses its active-session snapshot', async () => {
+    tx.authSession.findFirst.mockResolvedValue({
+      refreshTokenHash: 'snapshot',
+    });
+    tx.authSession.updateMany.mockResolvedValue({ count: 0 });
+    await expect(
+      service.rotateInTransaction(
+        tx as never,
+        'user-id',
+        'sid',
+        'snapshot',
+        'replacement',
+        new Date(Date.now() + 10000),
+      ),
+    ).rejects.toThrow('Unauthorized');
+  });
 });

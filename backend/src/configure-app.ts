@@ -10,6 +10,12 @@ import type {
   Request,
   Response,
 } from 'express';
+import { SanitizedExceptionFilter } from './common/filters/sanitized-exception.filter';
+import { trustedProxyCidrs } from './config/trusted-proxy.config';
+import {
+  productionCorsOrigins,
+  validateProductionConfig,
+} from './config/production.config';
 
 function parserErrorStatus(error: unknown): number | undefined {
   if (
@@ -24,6 +30,17 @@ function parserErrorStatus(error: unknown): number | undefined {
 }
 
 export function configureApp(app: INestApplication): INestApplication {
+  validateProductionConfig(process.env);
+  const server = app.getHttpAdapter().getInstance() as {
+    set(key: string, value: false | string[]): void;
+  };
+  server.set('trust proxy', trustedProxyCidrs());
+  const corsOrigins =
+    process.env.NODE_ENV === 'production'
+      ? productionCorsOrigins(process.env)
+      : (process.env.CORS_ORIGIN?.split(',')
+          .map((value) => value.trim())
+          .filter(Boolean) ?? ['http://localhost:3000']);
   app.setGlobalPrefix('api');
   app.enableVersioning({ type: VersioningType.URI });
   app.use(
@@ -36,11 +53,8 @@ export function configureApp(app: INestApplication): INestApplication {
         request.method === 'OPTIONS' &&
         requestedMethod?.toUpperCase() === 'PUT'
       ) {
-        const origins = process.env.CORS_ORIGIN?.split(',')
-          .map((value) => value.trim())
-          .filter(Boolean) ?? ['http://localhost:3000'];
         const origin = request.header('origin');
-        if (origin && origins.includes(origin)) {
+        if (origin && corsOrigins.includes(origin)) {
           response.setHeader('Access-Control-Allow-Origin', origin);
           response.setHeader('Access-Control-Allow-Credentials', 'true');
           response.setHeader('Vary', 'Origin');
@@ -80,6 +94,25 @@ export function configureApp(app: INestApplication): INestApplication {
     next(error);
   };
   app.use('/api/v1/push', pushParserErrorHandler);
+  const parserErrorHandler: ErrorRequestHandler = (
+    error,
+    _request,
+    response,
+    next,
+  ) => {
+    const status = parserErrorStatus(error);
+    if (status === 400 || status === 413) {
+      response.status(status).json({
+        statusCode: status,
+        message: 'INVALID_REQUEST',
+        error: status === 413 ? 'Payload Too Large' : 'Bad Request',
+      });
+      return;
+    }
+    next(error);
+  };
+  app.use(parserErrorHandler);
+  app.useGlobalFilters(new SanitizedExceptionFilter());
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -89,9 +122,7 @@ export function configureApp(app: INestApplication): INestApplication {
     }),
   );
   app.enableCors({
-    origin: process.env.CORS_ORIGIN?.split(',')
-      .map((value) => value.trim())
-      .filter(Boolean) ?? ['http://localhost:3000'],
+    origin: corsOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
   });

@@ -1,17 +1,24 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { configureApp } from './configure-app';
 import { configureOpenApi } from './openapi/configure-openapi';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { bodyParser: false });
+  const { AppModule } = await import('./app.module.js');
+  const app = await NestFactory.create(AppModule, {
+    bodyParser: false,
+    abortOnError: false,
+    logger: false,
+  });
 
   configureApp(app);
   configureOpenApi(app);
+  app.useLogger(['error', 'warn', 'log']);
+  app.enableShutdownHooks();
 
   await app.listen(process.env.PORT ?? 3000);
 }
 
-bootstrap().catch((err) => {
-  console.error('Erro ao iniciar a aplicação:', err);
+bootstrap().catch(() => {
+  console.error('APPLICATION_STARTUP_FAILED');
+  process.exit(1);
 });

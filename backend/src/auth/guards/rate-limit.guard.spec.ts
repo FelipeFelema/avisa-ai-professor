@@ -13,6 +13,34 @@ describe('RateLimitGuard', () => {
     jest.useRealTimers();
   });
 
+  it('reclaims expired IP buckets on traffic from a different IP', () => {
+    const contextFor = (ip: string) =>
+      ({
+        switchToHttp: () => ({ getRequest: () => ({ ip }) }),
+      }) as ExecutionContext;
+    for (let i = 0; i < 1000; i++)
+      guard.canActivate(contextFor(`synthetic-${i}`));
+    jest.advanceTimersByTime(60_000);
+    guard.canActivate(contextFor('new-client'));
+    const buckets = (
+      guard as unknown as { requestBuckets: Map<string, number[]> }
+    ).requestBuckets;
+    expect(buckets.size).toBe(1);
+  });
+
+  it('bounds IP cardinality and fails closed until expired buckets are reclaimed', () => {
+    const contextFor = (ip: string) =>
+      ({
+        switchToHttp: () => ({ getRequest: () => ({ ip }) }),
+      }) as ExecutionContext;
+    for (let i = 0; i < 10_000; i++)
+      guard.canActivate(contextFor(`synthetic-${i}`));
+    expect(() => guard.canActivate(contextFor('overflow'))).toThrow();
+    expect(guard.canActivate(contextFor('synthetic-0'))).toBe(true);
+    jest.advanceTimersByTime(60_000);
+    expect(guard.canActivate(contextFor('overflow'))).toBe(true);
+  });
+
   it('allows requests until the configured limit and blocks the next one', () => {
     const context = {
       switchToHttp: () => ({

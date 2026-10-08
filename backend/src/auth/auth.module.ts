@@ -7,6 +7,7 @@ import { RefreshStrategy } from './strategies/refresh.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { UsersModule } from '../users/users.module';
 import { AuthSessionService } from './auth-session.service';
+import { SessionRevocationService } from './session-revocation.service';
 
 @Module({
   imports: [
@@ -19,7 +20,13 @@ import { AuthSessionService } from './auth-session.service';
       }),
     }),
   ],
-  providers: [AuthService, AuthSessionService, JwtStrategy, RefreshStrategy],
+  providers: [
+    AuthService,
+    AuthSessionService,
+    SessionRevocationService,
+    JwtStrategy,
+    RefreshStrategy,
+  ],
   controllers: [AuthController],
 })
 export class AuthModule {}

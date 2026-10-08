@@ -61,7 +61,7 @@ type OpenApiDocument = {
   };
 };
 
-const designContract = JSON.parse(
+const baseDesignContract = JSON.parse(
   readFileSync(
     resolve(
       __dirname,
@@ -70,6 +70,30 @@ const designContract = JSON.parse(
     'utf8',
   ),
 ) as OpenApiDocument;
+
+const revocationContract = JSON.parse(
+  readFileSync(
+    resolve(
+      __dirname,
+      '../../specs/012-release-hardening-and-documentation/contracts/session-revocation.openapi.json',
+    ),
+    'utf8',
+  ),
+) as {
+  paths: OpenApiDocument['paths'];
+  schemas: Record<string, OpenApiSchema>;
+};
+const designContract: OpenApiDocument = {
+  ...baseDesignContract,
+  paths: { ...baseDesignContract.paths, ...revocationContract.paths },
+  components: {
+    ...baseDesignContract.components,
+    schemas: {
+      ...baseDesignContract.components.schemas,
+      ...revocationContract.schemas,
+    },
+  },
+};
 
 const httpMethods = new Set([
   'get',

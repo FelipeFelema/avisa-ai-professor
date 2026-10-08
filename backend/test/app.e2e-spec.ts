@@ -1,4 +1,10 @@
 import { INestApplication } from '@nestjs/common';
+import { Test } from '@nestjs/testing';
+import { randomBytes } from 'node:crypto';
+import { AppController } from '../src/app.controller';
+import { AppService } from '../src/app.service';
+import { configureApp } from '../src/configure-app';
+import { configureOpenApi } from '../src/openapi/configure-openapi';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { createTestApp } from './helpers/test-app.helper';
@@ -37,15 +43,32 @@ describe('AppController (e2e)', () => {
   });
 
   it('denies the OpenAPI reference in production even with the override enabled', async () => {
+    const previousEnvironment = { ...process.env };
     const previousNodeEnv = process.env.NODE_ENV;
     const previousDocsFlag = process.env.API_DOCS_ENABLED;
 
     await app.close();
     process.env.NODE_ENV = 'production';
     process.env.API_DOCS_ENABLED = 'true';
+    Object.assign(process.env, {
+      JWT_ACCESS_SECRET: randomBytes(32).toString('hex'),
+      JWT_REFRESH_SECRET: randomBytes(32).toString('hex'),
+      DATABASE_URL: `postgresql://fixture:${randomBytes(24).toString('hex')}@localhost:5432/avisa_ai_test`,
+      CORS_ORIGIN: 'https://app.example.com',
+      EXPO_PUSH_ENABLED: 'false',
+      ANNOUNCEMENT_PUSH_ENABLED: 'false',
+      ANNOUNCEMENT_PUSH_REMINDERS_ENABLED: 'false',
+    });
 
     try {
-      app = (await createTestApp()) as INestApplication<App>;
+      const module = await Test.createTestingModule({
+        controllers: [AppController],
+        providers: [AppService],
+      }).compile();
+      app = module.createNestApplication({ bodyParser: false });
+      configureApp(app);
+      configureOpenApi(app);
+      await app.init();
 
       await request(app.getHttpServer()).get('/api/v1/docs').expect(404);
       await request(app.getHttpServer())
@@ -53,6 +76,7 @@ describe('AppController (e2e)', () => {
         .expect(404);
     } finally {
       await app.close();
+      process.env = previousEnvironment;
       if (previousNodeEnv === undefined) {
         delete process.env.NODE_ENV;
       } else {

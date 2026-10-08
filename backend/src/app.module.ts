@@ -9,10 +9,14 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ClassroomsModule } from './classrooms/classrooms.module';
 import { InvitesCodeModule } from './invites-code/invites-code.module';
 import { PushModule } from './push/push.module';
+import { validateProductionConfig } from './config/production.config';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      validate: validateProductionConfig,
+    }),
     PrismaModule,
     UsersModule,
     AuthModule,
