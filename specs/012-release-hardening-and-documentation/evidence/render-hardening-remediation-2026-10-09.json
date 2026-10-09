@@ -1,0 +1,1319 @@
+{
+  "date": "2026-10-09",
+  "timezone": "America/Sao_Paulo",
+  "executor": "Codex",
+  "baselineLiveSHA": "0381690ac13af7f18da20faeb3001071933c97c1",
+  "localHEAD": "c2d4f0b783ec477e4669b7f23a53613dba7a1d40",
+  "candidate": "uncommitted worktree; exact source hashes below; no deployed candidate SHA yet",
+  "node": "v22.14.0",
+  "npm": "11.10.1",
+  "lockSHA256": "30e9e08b9e494d9300c14967d887ce055df5d7876bfe01cc3711d3c09ff4cb88",
+  "manifestSHA256": "fe56f7498809aec0ed7bd660869d8ce8ab07418e9bdd6966727ed55587cd14d6",
+  "dependencyChanges": ["node_modules/handlebars"],
+  "handlebars": {
+    "before": "4.7.9",
+    "after": "4.7.10",
+    "parent": "ts-jest@29.4.6",
+    "parentRange": "^4.7.8",
+    "criticalAdvisoriesAbsent": ["GHSA-8r5x-fm3f-whwj", "GHSA-p8wg-vrv2-v86f"],
+    "allHandlebarsAdvisoriesAbsent": true
+  },
+  "cleanInstall": {
+    "command": "npm ci --include=dev --no-fund",
+    "exit": 0,
+    "lifecycleScripts": "enabled"
+  },
+  "unitTests": {
+    "suites": 36,
+    "tests": 466,
+    "exit": 0
+  },
+  "productionE2E": {
+    "suites": 3,
+    "tests": 31,
+    "exit": 0
+  },
+  "fullAudit": {
+    "command": "npm audit --json",
+    "startedUTC": "2026-10-09T13:41:02.1896237Z",
+    "finishedUTC": "2026-10-09T13:41:05.1510543Z",
+    "exit": 1,
+    "counts": {
+      "info": 0,
+      "low": 0,
+      "moderate": 20,
+      "high": 3,
+      "critical": 0,
+      "total": 23
+    },
+    "error": null,
+    "vulnerabilities": {
+      "@istanbuljs/load-nyc-config": {
+        "name": "@istanbuljs/load-nyc-config",
+        "severity": "moderate",
+        "isDirect": false,
+        "via": ["js-yaml"],
+        "effects": ["babel-plugin-istanbul"],
+        "range": "*",
+        "nodes": ["node_modules/@istanbuljs/load-nyc-config"],
+        "fixAvailable": {
+          "name": "ts-jest",
+          "version": "27.0.3",
+          "isSemVerMajor": true
+        }
+      },
+      "@jest/core": {
+        "name": "@jest/core",
+        "severity": "moderate",
+        "isDirect": false,
+        "via": [
+          "@jest/reporters",
+          "@jest/transform",
+          "jest-config",
+          "jest-resolve-dependencies",
+          "jest-runner",
+          "jest-runtime",
+          "jest-snapshot"
+        ],
+        "effects": ["jest"],
+        "range": ">=25.1.0",
+        "nodes": ["node_modules/@jest/core"],
+        "fixAvailable": {
+          "name": "jest",
+          "version": "25.0.0",
+          "isSemVerMajor": true
+        }
+      },
+      "@jest/expect": {
+        "name": "@jest/expect",
+        "severity": "moderate",
+        "isDirect": false,
+        "via": ["jest-snapshot"],
+        "effects": ["@jest/globals", "jest-circus"],
+        "range": "*",
+        "nodes": ["node_modules/@jest/expect"],
+        "fixAvailable": {
+          "name": "jest",
+          "version": "25.0.0",
+          "isSemVerMajor": true
+        }
+      },
+      "@jest/globals": {
+        "name": "@jest/globals",
+        "severity": "moderate",
+        "isDirect": false,
+        "via": ["@jest/expect"],
+        "effects": ["jest-runtime"],
+        "range": ">=28.0.0-alpha.0",
+        "nodes": ["node_modules/@jest/globals"],
+        "fixAvailable": {
+          "name": "jest",
+          "version": "25.0.0",
+          "isSemVerMajor": true
+        }
+      },
+      "@jest/reporters": {
+        "name": "@jest/reporters",
+        "severity": "moderate",
+        "isDirect": false,
+        "via": ["@jest/transform"],
+        "effects": [],
+        "range": ">=25.1.0",
+        "nodes": ["node_modules/@jest/reporters"],
+        "fixAvailable": true
+      },
+      "@jest/transform": {
+        "name": "@jest/transform",
+        "severity": "moderate",
+        "isDirect": false,
+        "via": ["babel-plugin-istanbul"],
+        "effects": [
+          "@jest/core",
+          "@jest/reporters",
+          "jest-runner",
+          "jest-runtime",
+          "jest-snapshot",
+          "ts-jest"
+        ],
+        "range": ">=25.1.0",
+        "nodes": ["node_modules/@jest/transform"],
+        "fixAvailable": {
+          "name": "ts-jest",
+          "version": "27.0.3",
+          "isSemVerMajor": true
+        }
+      },
+      "argparse": {
+        "name": "argparse",
+        "severity": "moderate",
+        "isDirect": false,
+        "via": ["sprintf-js"],
+        "effects": ["js-yaml"],
+        "range": "1.0.0 - 1.0.10",
+        "nodes": [
+          "node_modules/@istanbuljs/load-nyc-config/node_modules/argparse"
+        ],
+        "fixAvailable": {
+          "name": "ts-jest",
+          "version": "27.0.3",
+          "isSemVerMajor": true
+        }
+      },
+      "babel-jest": {
+        "name": "babel-jest",
+        "severity": "moderate",
+        "isDirect": false,
+        "via": ["@jest/transform", "babel-plugin-istanbul"],
+        "effects": ["jest-config", "ts-jest"],
+        "range": ">=25.1.0",
+        "nodes": ["node_modules/babel-jest"],
+        "fixAvailable": {
+          "name": "ts-jest",
+          "version": "27.0.3",
+          "isSemVerMajor": true
+        }
+      },
+      "babel-plugin-istanbul": {
+        "name": "babel-plugin-istanbul",
+        "severity": "moderate",
+        "isDirect": false,
+        "via": ["@istanbuljs/load-nyc-config"],
+        "effects": ["@jest/transform", "babel-jest"],
+        "range": ">=6.0.0-beta.0",
+        "nodes": ["node_modules/babel-plugin-istanbul"],
+        "fixAvailable": {
+          "name": "ts-jest",
+          "version": "27.0.3",
+          "isSemVerMajor": true
+        }
+      },
+      "braces": {
+        "name": "braces",
+        "severity": "high",
+        "isDirect": false,
+        "via": [
+          {
+            "source": 1240992,
+            "name": "braces",
+            "dependency": "braces",
+            "title": "braces vulnerable to stack-exhaustion denial of service through deeply nested patterns",
+            "url": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+            "severity": "high",
+            "cwe": ["CWE-674"],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": "<=3.0.3"
+          }
+        ],
+        "effects": ["micromatch"],
+        "range": "*",
+        "nodes": ["node_modules/braces"],
+        "fixAvailable": true
+      },
+      "jest": {
+        "name": "jest",
+        "severity": "moderate",
+        "isDirect": true,
+        "via": ["@jest/core", "jest-cli"],
+        "effects": ["ts-jest"],
+        "range": ">=25.1.0",
+        "nodes": ["node_modules/jest"],
+        "fixAvailable": {
+          "name": "jest",
+          "version": "25.0.0",
+          "isSemVerMajor": true
+        }
+      },
+      "jest-circus": {
+        "name": "jest-circus",
+        "severity": "moderate",
+        "isDirect": false,
+        "via": ["@jest/expect", "jest-runtime", "jest-snapshot"],
+        "effects": ["jest-config"],
+        "range": ">=25.2.4",
+        "nodes": ["node_modules/jest-circus"],
+        "fixAvailable": true
+      },
+      "jest-cli": {
+        "name": "jest-cli",
+        "severity": "moderate",
+        "isDirect": false,
+        "via": ["@jest/core", "jest-config"],
+        "effects": [],
+        "range": ">=25.1.0",
+        "nodes": ["node_modules/jest-cli"],
+        "fixAvailable": true
+      },
+      "jest-config": {
+        "name": "jest-config",
+        "severity": "moderate",
+        "isDirect": false,
+        "via": ["babel-jest", "jest-circus", "jest-runner"],
+        "effects": ["jest-cli"],
+        "range": ">=25.1.0",
+        "nodes": ["node_modules/jest-config"],
+        "fixAvailable": true
+      },
+      "jest-resolve-dependencies": {
+        "name": "jest-resolve-dependencies",
+        "severity": "moderate",
+        "isDirect": false,
+        "via": ["jest-snapshot"],
+        "effects": [],
+        "range": ">=27.0.0-next.0",
+        "nodes": ["node_modules/jest-resolve-dependencies"],
+        "fixAvailable": true
+      },
+      "jest-runner": {
+        "name": "jest-runner",
+        "severity": "moderate",
+        "isDirect": false,
+        "via": ["@jest/transform", "jest-runtime"],
+        "effects": ["@jest/core", "jest-config"],
+        "range": ">=25.1.0",
+        "nodes": ["node_modules/jest-runner"],
+        "fixAvailable": {
+          "name": "jest",
+          "version": "25.0.0",
+          "isSemVerMajor": true
+        }
+      },
+      "jest-runtime": {
+        "name": "jest-runtime",
+        "severity": "moderate",
+        "isDirect": false,
+        "via": ["@jest/globals", "@jest/transform", "jest-snapshot"],
+        "effects": ["jest-circus", "jest-runner"],
+        "range": ">=25.1.0",
+        "nodes": ["node_modules/jest-runtime"],
+        "fixAvailable": {
+          "name": "jest",
+          "version": "25.0.0",
+          "isSemVerMajor": true
+        }
+      },
+      "jest-snapshot": {
+        "name": "jest-snapshot",
+        "severity": "moderate",
+        "isDirect": false,
+        "via": ["@jest/transform"],
+        "effects": [
+          "@jest/expect",
+          "jest-circus",
+          "jest-resolve-dependencies",
+          "jest-runtime"
+        ],
+        "range": ">=27.0.0-next.0",
+        "nodes": ["node_modules/jest-snapshot"],
+        "fixAvailable": {
+          "name": "jest",
+          "version": "25.0.0",
+          "isSemVerMajor": true
+        }
+      },
+      "js-yaml": {
+        "name": "js-yaml",
+        "severity": "moderate",
+        "isDirect": false,
+        "via": ["argparse"],
+        "effects": ["@istanbuljs/load-nyc-config"],
+        "range": "3.2.7 - 3.15.2",
+        "nodes": [
+          "node_modules/@istanbuljs/load-nyc-config/node_modules/js-yaml"
+        ],
+        "fixAvailable": {
+          "name": "ts-jest",
+          "version": "27.0.3",
+          "isSemVerMajor": true
+        }
+      },
+      "micromatch": {
+        "name": "micromatch",
+        "severity": "high",
+        "isDirect": false,
+        "via": ["braces"],
+        "effects": ["ts-loader"],
+        "range": ">=0.2.0",
+        "nodes": ["node_modules/micromatch"],
+        "fixAvailable": true
+      },
+      "sprintf-js": {
+        "name": "sprintf-js",
+        "severity": "moderate",
+        "isDirect": false,
+        "via": [
+          {
+            "source": 1241202,
+            "name": "sprintf-js",
+            "dependency": "sprintf-js",
+            "title": "sprintf-js vulnerable to denial of service through unbounded precision specifiers",
+            "url": "https://github.com/advisories/GHSA-hp3w-g68c-fv3c",
+            "severity": "moderate",
+            "cwe": ["CWE-1284"],
+            "cvss": {
+              "score": 5.3,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+            },
+            "range": "<=1.1.3"
+          }
+        ],
+        "effects": ["argparse"],
+        "range": "*",
+        "nodes": ["node_modules/sprintf-js"],
+        "fixAvailable": {
+          "name": "ts-jest",
+          "version": "27.0.3",
+          "isSemVerMajor": true
+        }
+      },
+      "ts-jest": {
+        "name": "ts-jest",
+        "severity": "moderate",
+        "isDirect": true,
+        "via": ["@jest/transform", "babel-jest", "jest"],
+        "effects": [],
+        "range": ">=25.10.0-alpha.1",
+        "nodes": ["node_modules/ts-jest"],
+        "fixAvailable": {
+          "name": "ts-jest",
+          "version": "27.0.3",
+          "isSemVerMajor": true
+        }
+      },
+      "ts-loader": {
+        "name": "ts-loader",
+        "severity": "high",
+        "isDirect": true,
+        "via": ["micromatch"],
+        "effects": [],
+        "range": "3.3.0 - 9.6.1",
+        "nodes": ["node_modules/ts-loader"],
+        "fixAvailable": true
+      }
+    }
+  },
+  "productionAudit": {
+    "command": "npm audit --omit=dev --json",
+    "startedUTC": "2026-10-09T13:41:01.9345308Z",
+    "finishedUTC": "2026-10-09T13:41:03.8126199Z",
+    "exit": 0,
+    "counts": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "error": null
+  },
+  "sequence": {
+    "date": "2026-10-09T13:39:05.650Z",
+    "realNeonContacted": false,
+    "database": "isolated loopback avisa_ai_test",
+    "tls": "temporary certificate with trusted CA and hostname/IP SAN",
+    "results": [
+      {
+        "step": "isolated-initdb",
+        "exit": 0
+      },
+      {
+        "step": "isolated-certificate",
+        "exit": 0
+      },
+      {
+        "step": "isolated-postgres-start",
+        "exit": 0
+      },
+      {
+        "step": "isolated-password-setup",
+        "exit": 0
+      },
+      {
+        "step": "isolated-auth-reload",
+        "exit": 0
+      },
+      {
+        "step": "isolated-createdb",
+        "exit": 0
+      },
+      {
+        "step": "production-e2e",
+        "exit": 0
+      },
+      {
+        "step": "typecheck",
+        "exit": 0
+      },
+      {
+        "step": "lint",
+        "exit": 0
+      },
+      {
+        "step": "format-check",
+        "exit": 0
+      },
+      {
+        "step": "build-production-prune",
+        "exit": 0
+      },
+      {
+        "step": "post-prune-migrate-deploy",
+        "exit": 0
+      },
+      {
+        "step": "post-prune-migrate-status",
+        "exit": 0
+      },
+      {
+        "step": "post-prune-select-one",
+        "exit": 0
+      },
+      {
+        "step": "production-startup",
+        "exit": 0,
+        "healthStatus": 200
+      },
+      {
+        "step": "privacy-and-ssl-warning",
+        "exit": 0,
+        "secretCanariesFound": false,
+        "sslWarningFound": false,
+        "originalCLIURLPreserved": true
+      },
+      {
+        "step": "runtime-packages-after-prune",
+        "handlebarsPresent": false,
+        "tsJestPresent": false,
+        "prismaCliPresent": true
+      },
+      {
+        "step": "isolated-postgres-stop",
+        "exit": 0
+      }
+    ]
+  },
+  "negativeProbes": [
+    {
+      "scenario": "missing-production-mode",
+      "exit": 1,
+      "pass": true,
+      "secretCanaryFound": false
+    },
+    {
+      "scenario": "invalid-database-private-error",
+      "exit": 1,
+      "pass": true,
+      "secretCanaryFound": false
+    }
+  ],
+  "sourceInventory": [
+    {
+      "path": "backend/scripts/check-production-database.cjs",
+      "sha256": "436361b251dc041b9e87df8dbc251edbf3f75261f98a8d90f3dc5c2ad8d46985"
+    },
+    {
+      "path": "backend/src/common/middleware/proxy-diagnostics.middleware.spec.ts",
+      "sha256": "39246cb24d0ae9798ab24e9d8e0162cf5dea98d52d1f78be978d2a72160b4e67"
+    },
+    {
+      "path": "backend/src/common/middleware/proxy-diagnostics.middleware.ts",
+      "sha256": "91d11624784d2c8d7ab7a425b90ef8c5f005e5680492b4652b159565ce24da19"
+    },
+    {
+      "path": "backend/src/config/proxy-diagnostics.config.ts",
+      "sha256": "bd888d8a1449827cbd805eebc5f295961e8e0ca0007368feb95b0b84a42395a5"
+    },
+    {
+      "path": "backend/src/prisma/prisma.service.spec.ts",
+      "sha256": "f53681ac4be1a6fec9f8f50dcfc43b1ae2fafdabba803ce6b68631249ee23540"
+    },
+    {
+      "path": "backend/src/prisma/runtime-connection-string.spec.ts",
+      "sha256": "8474edc7fa7a24ac6b13c49b811f4026d6d6b38c5d7ebf81a38d5d86da9e0cc5"
+    },
+    {
+      "path": "backend/src/prisma/runtime-connection-string.ts",
+      "sha256": "178f7caa9a5c0972faef3bba5146ce9be3df86bb68d176c188d87c80fe5f1fdf"
+    },
+    {
+      "path": "backend/test/proxy-diagnostics.e2e-spec.ts",
+      "sha256": "ef7c9f392d27f5ccf83a3e75fe3d0ec35b25d9d4f65910841277139dae80c854"
+    },
+    {
+      "path": "backend/.prettierignore",
+      "sha256": "11e8af429205e86e6be7f9333938dec268673aed69a17eabe18ad4f7911d074d"
+    },
+    {
+      "path": "backend/.prettierrc",
+      "sha256": "e51419e8206a0a5493e85ef1f4dea080982dc9187992bb253220a93d0784f6b2"
+    },
+    {
+      "path": "backend/eslint.config.mjs",
+      "sha256": "1657e6765d9f3490222e35b838e9bcdf443199cf146cc3b7cfe74d92e7e6f7b0"
+    },
+    {
+      "path": "backend/nest-cli.json",
+      "sha256": "bcb15e3049ff5d131762d2bfe3a6f917c3c64c83ac772467a4073975cd423b5b"
+    },
+    {
+      "path": "backend/package-lock.json",
+      "sha256": "30e9e08b9e494d9300c14967d887ce055df5d7876bfe01cc3711d3c09ff4cb88"
+    },
+    {
+      "path": "backend/package.json",
+      "sha256": "fe56f7498809aec0ed7bd660869d8ce8ab07418e9bdd6966727ed55587cd14d6"
+    },
+    {
+      "path": "backend/prisma.config.ts",
+      "sha256": "912fabc788d36a38c61ccaad28ff160c019fdb5642c856c182c0872fc560d3ef"
+    },
+    {
+      "path": "backend/prisma/migrations/20260327214559_init/migration.sql",
+      "sha256": "712c579851f44094382ebc7911b75e5d0c8a892188a934223eccd9fbd5904c4f"
+    },
+    {
+      "path": "backend/prisma/migrations/20260327215207_init/migration.sql",
+      "sha256": "dca8940add97f3bac8cb0da66c55c0e5e6ddecbf94466b455bc18eda744c46c4"
+    },
+    {
+      "path": "backend/prisma/migrations/20260331190759_add_admin_role/migration.sql",
+      "sha256": "7bc857a05a0862100fbce3fb3d7a8e99590075546cb22f4ac145613710d4790a"
+    },
+    {
+      "path": "backend/prisma/migrations/20260331194502_create_announcements/migration.sql",
+      "sha256": "f532c3878ee4d2d550135031de04599019da3b595c4a6a30b874be62a50e0602"
+    },
+    {
+      "path": "backend/prisma/migrations/20260407200932_create_classroom/migration.sql",
+      "sha256": "cd5cb853665321142dd525f2f0e0e748983fc1efe371f550632108eca0a4964d"
+    },
+    {
+      "path": "backend/prisma/migrations/20260407202639_add_announcement_classroom_relation/migration.sql",
+      "sha256": "c6e97c7ef5dd25bb466746cce236941187069d058702c7d0df3051579f44838f"
+    },
+    {
+      "path": "backend/prisma/migrations/20260409192224_add_userclassroom_relation/migration.sql",
+      "sha256": "6434f645288dd8ba81829a9aa8406ec0c175bb958b5f28a73d9c74e82af69800"
+    },
+    {
+      "path": "backend/prisma/migrations/20260414184149_add_invite_code/migration.sql",
+      "sha256": "506c3096af8b5a411b0d39b3849d32f8a50c577af90f1416e576a2fe04d85202"
+    },
+    {
+      "path": "backend/prisma/migrations/20260807202044_add_classroom_owner/migration.sql",
+      "sha256": "593a9df5de533956e0302fdf1887084f6fbdad62f9d9de74bba89a5bf70f850d"
+    },
+    {
+      "path": "backend/prisma/migrations/20260807203647_add_classroom_delete_cascade/migration.sql",
+      "sha256": "45796b872b89c11a8224cdc3920e649b16080e37a13d8cd8542395112adb563c"
+    },
+    {
+      "path": "backend/prisma/migrations/20260824_add_auth_sessions_and_deletion_receipts/migration.sql",
+      "sha256": "6e1bb8b8831c5711c34423c3526c16423be48991f1f2913554747f2ac7eb40e1"
+    },
+    {
+      "path": "backend/prisma/migrations/20261005130000_push_notification_foundation/migration.sql",
+      "sha256": "35640bb947296bd32ed1c93bb1dedbf3ded849c83b612e4e607b65d8a39deb78"
+    },
+    {
+      "path": "backend/prisma/migrations/20261006190000_release_critical_notifications/migration.sql",
+      "sha256": "af12c63536aba55358fcd024b067217991a657396c2b577d1adc60364d5d6dde"
+    },
+    {
+      "path": "backend/prisma/migrations/20261007120000_announcement_expiration_occurrences/migration.sql",
+      "sha256": "f9c5272b55c7c671bb45fcce9d2d653fd7076846150bbe1e9a29e0b105ba525f"
+    },
+    {
+      "path": "backend/prisma/migrations/migration_lock.toml",
+      "sha256": "99836963713b4f5b269ad49af0ed3d7b0b2e336115c2f92dc9ac683d139d0900"
+    },
+    {
+      "path": "backend/prisma/schema.prisma",
+      "sha256": "495e55984062499449ee24d955d8c3141318fd645d378dff93be69fced2c5fda"
+    },
+    {
+      "path": "backend/scripts/start-production.cjs",
+      "sha256": "06b045f13b95f9f67a851bcce84a92b1db20dc0761740f434b0f735abb782bf2"
+    },
+    {
+      "path": "backend/src/announcements/announcements.controller.spec.ts",
+      "sha256": "a511b869348c9e64cc29b191af2800b3ce4f4d367cf82ef872c4237af06f2ea7"
+    },
+    {
+      "path": "backend/src/announcements/announcements.controller.ts",
+      "sha256": "3b00c3c5f7f89fc69e587261855ff3a98f9b8e8816b931f7c4f763257eef0d81"
+    },
+    {
+      "path": "backend/src/announcements/announcements.module.ts",
+      "sha256": "c508364bb0e1323033fa12fc5a9d0b1035d63c20276c77d7883983992f5a8bee"
+    },
+    {
+      "path": "backend/src/announcements/announcements.service.spec.ts",
+      "sha256": "0411c6db5e45c6a50a98bc94e4918381e8e3c010eb114db8d14078ccb91e1aa3"
+    },
+    {
+      "path": "backend/src/announcements/announcements.service.ts",
+      "sha256": "90a0393ea2fe2c5ce9b0dfd33d6052ec11e5058886e9b34440962619f2dbc998"
+    },
+    {
+      "path": "backend/src/announcements/dto/create-announcement.dto.ts",
+      "sha256": "47f7fa2aa4ab25f4550920f060d54262acf83906e483a22e878564f97fc7c8fa"
+    },
+    {
+      "path": "backend/src/announcements/dto/update-announcement.dto.ts",
+      "sha256": "125ef025ba555b4e491605419ac73c4c287043aca8b7a108c8042b09fa8c63c8"
+    },
+    {
+      "path": "backend/src/app.controller.spec.ts",
+      "sha256": "dbfd6f13587e3ce5284c6c673f0d3324de3032bd9ff9fe192f471446dda6f375"
+    },
+    {
+      "path": "backend/src/app.controller.ts",
+      "sha256": "32abd84233429aa3f07d16030f1664f8b75dd9ebcabaa690008a0dd2df33ce8e"
+    },
+    {
+      "path": "backend/src/app.module.ts",
+      "sha256": "dd720b8638013c1701bb1db180c961771f3e4305d340d52acae05003dac9cd14"
+    },
+    {
+      "path": "backend/src/app.service.ts",
+      "sha256": "6a58843aaa27480da70c5ec480529fc876fdd504e75de5fea5e7391e8871d2ce"
+    },
+    {
+      "path": "backend/src/auth/auth-session.service.spec.ts",
+      "sha256": "a7bbb2dd41f8b3f027c9bae8bfab06712dfc14a7c877d03456376e1f31a1b6ab"
+    },
+    {
+      "path": "backend/src/auth/auth-session.service.ts",
+      "sha256": "9b386b41314a1588ac1ead36f44533cc274836a7b76adac5df69e9b8437921e7"
+    },
+    {
+      "path": "backend/src/auth/auth.controller.spec.ts",
+      "sha256": "59111a3f1cd4fb7b6ac5e5efd02f8f86bb8795f657151c9deb3f0fa2c3c9b6e6"
+    },
+    {
+      "path": "backend/src/auth/auth.controller.ts",
+      "sha256": "71bd2cb4a42bee82fa02b3480b70d42e02520c01e23e44d56b99c1cbcc248683"
+    },
+    {
+      "path": "backend/src/auth/auth.module.ts",
+      "sha256": "7a95faeb5b9af947fa9a99359302da856f1734863cb6ba9c086b220604da6f96"
+    },
+    {
+      "path": "backend/src/auth/auth.service.spec.ts",
+      "sha256": "28d913832c241f7da133443b6750b510fb2a9e701f05e80be5036834840dd11b"
+    },
+    {
+      "path": "backend/src/auth/auth.service.ts",
+      "sha256": "7ea8a1af6816ee09505d534f027fc8b489d5c2a609ea0624d2216121e3e66804"
+    },
+    {
+      "path": "backend/src/auth/decorator/roles.decorator.ts",
+      "sha256": "a5cba706165b56d912154199188019cebd3bdc9fb8703278a80050b26753b51f"
+    },
+    {
+      "path": "backend/src/auth/dto/change-password.dto.spec.ts",
+      "sha256": "cb0a212953638fb1df4cf4b426248873442c8a5a25692655683c449e08bd015f"
+    },
+    {
+      "path": "backend/src/auth/dto/change-password.dto.ts",
+      "sha256": "baf1445ec2f3030a8887ce7407f9716e32a845ba69c1f93a583dbd89f8567426"
+    },
+    {
+      "path": "backend/src/auth/dto/login.dto.ts",
+      "sha256": "9af727d2d4d65e1962f55fc988e6c2ea9ec5f0ef46e2d3c732a9462e098e4e35"
+    },
+    {
+      "path": "backend/src/auth/dto/session-revocation.dto.ts",
+      "sha256": "08022ad63b8047366a1831dd641d50ccbf4b060ffb32d78e7606f0acadd32efd"
+    },
+    {
+      "path": "backend/src/auth/guards/jwt-auth.guard.ts",
+      "sha256": "51fc903ffa25cb72c7ecc1aa1fed8c9d5bf7c6dd2f7f0efe9d5fa1d7490b020c"
+    },
+    {
+      "path": "backend/src/auth/guards/rate-limit.guard.spec.ts",
+      "sha256": "2b7b7209c869ddd03af5885702b1524c96aeca2be56d39533e36f0f3a0522d7f"
+    },
+    {
+      "path": "backend/src/auth/guards/rate-limit.guard.ts",
+      "sha256": "edfca48c9f0cfcb9d47f5e265303c291795f4fcd05376c6359ab150a57d4ed9b"
+    },
+    {
+      "path": "backend/src/auth/guards/roles.guard.ts",
+      "sha256": "6dad8c4246084386ba4a2c4ef8879301fcbde0df8b202efeca09b2962c919811"
+    },
+    {
+      "path": "backend/src/auth/guards/self-or-admin.guard.ts",
+      "sha256": "c9f53d07572b5b95a36d1147efd3664956f681a264e67bfcfc4868fa3d42fee7"
+    },
+    {
+      "path": "backend/src/auth/session-revocation.service.spec.ts",
+      "sha256": "5c67ce2f6e35b06eea075f013fb99f8659abd673704055199e0ac0352e72432c"
+    },
+    {
+      "path": "backend/src/auth/session-revocation.service.ts",
+      "sha256": "d070321a2f0f6d840142ec28aa5fc9eeeca345cdcf62debb8353e4c2812154ac"
+    },
+    {
+      "path": "backend/src/auth/strategies/jwt.strategy.ts",
+      "sha256": "92d82515dcb23c1c3f62856593228961559b4f64ae1564db695cf173f4fdeba9"
+    },
+    {
+      "path": "backend/src/auth/strategies/refresh.strategy.ts",
+      "sha256": "60d87d1413691a6bb681b905bc3ef928989db3ab5d1c503bab10492cd122ee1d"
+    },
+    {
+      "path": "backend/src/classrooms/classrooms.controller.spec.ts",
+      "sha256": "d1675774cf47a40105bb7280a780d24817ac9b8b5ec3b7dd1d89020dd44927e9"
+    },
+    {
+      "path": "backend/src/classrooms/classrooms.controller.ts",
+      "sha256": "fb721fdf97ea75c521d200c244ca98f4cdcfec92c8f27432c0789de5fda928d1"
+    },
+    {
+      "path": "backend/src/classrooms/classrooms.module.ts",
+      "sha256": "42fc19cbcd712025c7929d2224c6e28ee91443067cd8b9b3113d61b1a2b8fbe1"
+    },
+    {
+      "path": "backend/src/classrooms/classrooms.service.spec.ts",
+      "sha256": "96d094f879f9acb5aeab7bf6080c31ffddf1e1200f41ac1bf1e4b0b6d7abf2ba"
+    },
+    {
+      "path": "backend/src/classrooms/classrooms.service.ts",
+      "sha256": "e4745d1c0b34f23aad0a77e978de9b6bbdb106b9205a032f0631f500e1b2af44"
+    },
+    {
+      "path": "backend/src/classrooms/dto/classroom-summary.dto.ts",
+      "sha256": "709564f767b2106d472244b3619de728540f932e589ef4a2241485ccad33d861"
+    },
+    {
+      "path": "backend/src/classrooms/dto/create-classroom.dto.ts",
+      "sha256": "a2a2d05c1a71e3ba7b776ed073df0198ea437ba29e688d267591c6210cac036d"
+    },
+    {
+      "path": "backend/src/classrooms/dto/find-available-classrooms-query.dto.spec.ts",
+      "sha256": "c4547761394471e715bb3f426f44fb305a9d562a5dc5e57035a054daffe218c0"
+    },
+    {
+      "path": "backend/src/classrooms/dto/find-available-classrooms-query.dto.ts",
+      "sha256": "8ab6806d66eb97a0fb949dd3065c49c81e6e6cde037db7e3c6a66ac19b7f4bab"
+    },
+    {
+      "path": "backend/src/common/constants/classroom.constants.ts",
+      "sha256": "dcfe6c6176c752d7b46c214c277d2cfde1b00122ccfe5c2d5d2979fc30aafb16"
+    },
+    {
+      "path": "backend/src/common/dto/auth-response.dto.ts",
+      "sha256": "b1b34c1f31828535e203164cc81eb66ee18e17efc7132b2899a80fc9816394b1"
+    },
+    {
+      "path": "backend/src/common/dto/error-response.dto.ts",
+      "sha256": "87905dea1d58cfbab450f793914dcbff1d6ee440b8461bd413a95749aa74bb82"
+    },
+    {
+      "path": "backend/src/common/dto/health-response.dto.ts",
+      "sha256": "f0de70a6f106a700492c622f8f906b4090aa35e80daa8ecfd7e92c7025c24cb0"
+    },
+    {
+      "path": "backend/src/common/filters/sanitized-exception.filter.ts",
+      "sha256": "d62e9bee47da08899cf40a1b99b8460b54c57fdfe058451848a0476a9a4f005a"
+    },
+    {
+      "path": "backend/src/common/normalizers/user-normalizer.ts",
+      "sha256": "b47457029cac8be4bfb36206dd337d09085dfd4e0c015aeb0571ac163377bc60"
+    },
+    {
+      "path": "backend/src/common/security/password-hasher.spec.ts",
+      "sha256": "0220b0477540097b8869d9921ddf1f225ede96987cfcdc2632ce4580158e5712"
+    },
+    {
+      "path": "backend/src/common/security/password-hasher.ts",
+      "sha256": "c0bb7a6cf67c98b8340a701165a9db6b3e62a8508eedf135ef232541dce7fa8f"
+    },
+    {
+      "path": "backend/src/common/types/auth-user.type.ts",
+      "sha256": "bc7ef21cdcc67695d77a73eda8ab63ba4340f1d5e18be3092f56f5a77f08b049"
+    },
+    {
+      "path": "backend/src/common/types/classroom-with-users.type.ts",
+      "sha256": "8532f755dde52981c6ff30ec5c823340009c4475a414e13d2deffccc9fed7e4f"
+    },
+    {
+      "path": "backend/src/common/types/jwt-payload.type.ts",
+      "sha256": "a13166fcaac10b817641257a98f61e5e9e12cc78263dbb3f66f04a4861daed7c"
+    },
+    {
+      "path": "backend/src/config/production.config.ts",
+      "sha256": "9b36bdd2ab993a886c90fcbcca9461fd2e88f4dc4c0acfd51db662aa51b6599a"
+    },
+    {
+      "path": "backend/src/config/trusted-proxy.config.spec.ts",
+      "sha256": "f42a45b915037dd1cc864207eba82857bbb2dcd3820fb7db70fb5e4a4f36d372"
+    },
+    {
+      "path": "backend/src/config/trusted-proxy.config.ts",
+      "sha256": "fd39e16ecd11efb7992ea2acd069c9b37019343ca1d3acc784c60ab3fe5ee8b6"
+    },
+    {
+      "path": "backend/src/configure-app.ts",
+      "sha256": "c23e5558b37e083c09c7cc3e4fb0eb867b1174c719fd4880fc8f8e1c8554381c"
+    },
+    {
+      "path": "backend/src/invites-code/dto/create-invite-code.dto.spec.ts",
+      "sha256": "067894cee3a476cbfdfa84f227c2fac28c979273ece61c50599944b527908403"
+    },
+    {
+      "path": "backend/src/invites-code/dto/create-invite-code.dto.ts",
+      "sha256": "0fa66600a09f2d46bca0936f80257d4c7af78fd333c3cef3bc49f14af777ef9c"
+    },
+    {
+      "path": "backend/src/invites-code/invite-code-random.ts",
+      "sha256": "e9c8103164a67b2f3c4be309bad12c08a94db40e98851157f114164221128e50"
+    },
+    {
+      "path": "backend/src/invites-code/invite-code.controller.spec.ts",
+      "sha256": "773d91e79b03a7ebf206958d22da0127795887b35d408a0e8d7cf2adefc7b4e1"
+    },
+    {
+      "path": "backend/src/invites-code/invite-code.controller.ts",
+      "sha256": "a3f6ca17d17d9f5643a872cdbf74975bb5fd391932180721895094fc6f2e1b8a"
+    },
+    {
+      "path": "backend/src/invites-code/invite-code.service.spec.ts",
+      "sha256": "3b1240775738e697e1e1ca8e633f45ea9a9bb189c7e5f25a75201a5446cade88"
+    },
+    {
+      "path": "backend/src/invites-code/invite-code.service.ts",
+      "sha256": "52136ec74a6a7c1558659af047fc8119cebc20478ae9119ade2b7192626c082c"
+    },
+    {
+      "path": "backend/src/invites-code/invites-code.module.ts",
+      "sha256": "6b7dc46ff98335bf2c07b883d0c18741760335f9a6429bff234daaa6808e7308"
+    },
+    {
+      "path": "backend/src/invites-code/types/invite-code-role.types.ts",
+      "sha256": "cf804d1416fa57582dce3c3b61e3281100e66cf2934a40140dfeb01edc1cc243"
+    },
+    {
+      "path": "backend/src/main.ts",
+      "sha256": "494d631e2fb6090a9704b850a4cee2acb95bf3b20f7943659bf87444a75932b1"
+    },
+    {
+      "path": "backend/src/openapi/api-responses.decorator.ts",
+      "sha256": "65c281f1ba2282adea10e39d79444fbd68c2b66502241485c4ebeaf63f4be527"
+    },
+    {
+      "path": "backend/src/openapi/configure-openapi.ts",
+      "sha256": "4798459f5976864ec0489a65f28fcedf3ac50027f530530663d731c99f0e0eeb"
+    },
+    {
+      "path": "backend/src/prisma/prisma.module.ts",
+      "sha256": "9223a0889abb0669020e94a9b8c1e68274cdc05533c1f79d84fe516450e94ebd"
+    },
+    {
+      "path": "backend/src/prisma/prisma.service.ts",
+      "sha256": "68de89d139207a7dfee141e6f4f804dc1d3037711d6a958ca01e50fa5cd5dc40"
+    },
+    {
+      "path": "backend/src/push/announcement-push-locks.spec.ts",
+      "sha256": "322f6f83fd8c4e381b86bad7512412fb6e24c3c324e17c5097818eb9d90beb75"
+    },
+    {
+      "path": "backend/src/push/announcement-push.config.spec.ts",
+      "sha256": "e3a5a5caaacc2d77157ef7e6d8a92f427111d1815d0048ad6f1e91b778124753"
+    },
+    {
+      "path": "backend/src/push/announcement-push.config.ts",
+      "sha256": "ab8ebf797daab672a67209f284d14b1df8c458f3f231e09f6455ba3f7afec46e"
+    },
+    {
+      "path": "backend/src/push/announcement-push.service.spec.ts",
+      "sha256": "9367cd1f5b2323ec6a5262cc390761f4a9cff3c74e759561e30319f5ce8ab1e4"
+    },
+    {
+      "path": "backend/src/push/announcement-push.service.ts",
+      "sha256": "e08739af304b06db3aaa359e96cf44e7dae927d9b48ec5909075aa21c61c182e"
+    },
+    {
+      "path": "backend/src/push/announcement-push.worker.spec.ts",
+      "sha256": "c3c5e8ac874acdd334e2e0bc11d9aa2e761d6ccafb47f6e12e9d4aab43d072a9"
+    },
+    {
+      "path": "backend/src/push/announcement-push.worker.ts",
+      "sha256": "6cb62739439b1799265144a2699d3dc708a613faf8bb6ad0f7aac44e9893c640"
+    },
+    {
+      "path": "backend/src/push/announcement-reminders.worker.spec.ts",
+      "sha256": "afc43e14b6f49ac3beb9c65123748507b37a0d4e17ce0323515c79347f7786cf"
+    },
+    {
+      "path": "backend/src/push/announcement-reminders.worker.ts",
+      "sha256": "eb7d84d4b4b63215830055d2a8854c658eab41d8bf7d8dcfffb693ac552f7c2e"
+    },
+    {
+      "path": "backend/src/push/dto/activate-push.dto.ts",
+      "sha256": "c6453eaad1c07d8909e4b16ac681f0c66e2519aace4e6b8e14fb7b3d258b9275"
+    },
+    {
+      "path": "backend/src/push/dto/empty-push.dto.ts",
+      "sha256": "827da0d6fd78dcbca98767e2a83d627d077f63eb220dadfa3209fdceb6588da6"
+    },
+    {
+      "path": "backend/src/push/dto/push-installation-headers.dto.ts",
+      "sha256": "a24d4c5b11e554d15f82b19efc7c02977e7feeff98877d76d8747e89b8b7a8cd"
+    },
+    {
+      "path": "backend/src/push/dto/push-request.validation.ts",
+      "sha256": "d14717dfed00ab568c605f1fabb508e39040083e6471119a1247f414552614c9"
+    },
+    {
+      "path": "backend/src/push/dto/push-view.dto.ts",
+      "sha256": "b78777e4c6d1d3ca7d2c3f03d8505f7941bd084ce4ecac6e5fd928227af2b975"
+    },
+    {
+      "path": "backend/src/push/dto/push.dto.spec.ts",
+      "sha256": "30a5bd823334900cdb7fe754e83fb24860c39a29d7624f7a07c5fafe1f8e3e6b"
+    },
+    {
+      "path": "backend/src/push/dto/revoke-push.dto.ts",
+      "sha256": "0f679ca771b56a35be309203cde999814bcb7ccb16f24b52371bcf20cb3bc88d"
+    },
+    {
+      "path": "backend/src/push/expo-push.adapter.spec.ts",
+      "sha256": "d5f0add2ea544e520f5dbcc07df416c7c03145b6813fc92c36f8bbfb056cbdfb"
+    },
+    {
+      "path": "backend/src/push/expo-push.adapter.ts",
+      "sha256": "530272363b6bdbd8dddac239bb40c3a715678421f1888db9b96e988109cf4542"
+    },
+    {
+      "path": "backend/src/push/guards/installation-capability.guard.spec.ts",
+      "sha256": "78611229d7af72a625658ca1bf225092aff5a71b9b822010fdf223cf3f44122d"
+    },
+    {
+      "path": "backend/src/push/guards/installation-capability.guard.ts",
+      "sha256": "120b22481cedc08d94014d0ac7fbda5765c731ee1a355ed783165e30d0abbf81"
+    },
+    {
+      "path": "backend/src/push/push-receipts.worker.spec.ts",
+      "sha256": "11db808482be8efdff21e76ecc7fbbfbe19927cc37c1ce641bf4dfa52ff7aed2"
+    },
+    {
+      "path": "backend/src/push/push-receipts.worker.ts",
+      "sha256": "0619efe0e42ef69bd28e9c0240ca60b7fcbe5e9707a58d8e0578f2fb1bd644df"
+    },
+    {
+      "path": "backend/src/push/push-registration.service.spec.ts",
+      "sha256": "fce6f7034201f0df6768f0359c90a007c3966143ab954fe3efd515309f23a955"
+    },
+    {
+      "path": "backend/src/push/push-registration.service.ts",
+      "sha256": "051977740c0ed132fafd4167fef7a5f8961ec0712baed7871845a1bc53943789"
+    },
+    {
+      "path": "backend/src/push/push-test.service.spec.ts",
+      "sha256": "6a701ffa3ed12d84857544c8969e7262b22688b8f5df4d6b85a394ab78d55159"
+    },
+    {
+      "path": "backend/src/push/push-test.service.ts",
+      "sha256": "82efb8d0b4ef93facb366a808da70c249656a523e6138e9d9f5cdb1a68eb0551"
+    },
+    {
+      "path": "backend/src/push/push.config.spec.ts",
+      "sha256": "6a5ffc22bab8c2bba91cfd3b7abd81859c6eff529e368827c2ab45127c3a6c9f"
+    },
+    {
+      "path": "backend/src/push/push.config.ts",
+      "sha256": "78f8b58fc2f56b6195f21ad54caabd19634a3214a0b24fb4a2c3c1690a83b331"
+    },
+    {
+      "path": "backend/src/push/push.controller.ts",
+      "sha256": "2959575f2eb8856e6f662a145b3a968232841bed5154ab09f98d12f362b4b8e3"
+    },
+    {
+      "path": "backend/src/push/push.module.ts",
+      "sha256": "5bd6d72e9b2c938e50331437edcb1d035345d7d78bc631fbc0551304ed29c471"
+    },
+    {
+      "path": "backend/src/users/account-deletion.service.spec.ts",
+      "sha256": "5cf9ce9dd0b74184ac5a5a83b377eba0e1f3c1603d131ab9b96de675283d0028"
+    },
+    {
+      "path": "backend/src/users/account-deletion.service.ts",
+      "sha256": "57bfac4ded44b7497e27f86fbe13688250e12837ac96e4c2b56a1caeda3c3ddf"
+    },
+    {
+      "path": "backend/src/users/dto/account-deletion-impact.dto.ts",
+      "sha256": "26373d1c1046f82a975775b4e8821e7738748d3e22d468b14c950f0b25dabd01"
+    },
+    {
+      "path": "backend/src/users/dto/create-user.dto.ts",
+      "sha256": "58aa503bc16ea3ad2ac3b9b5608b1b7bc14bb7b7cb4940d72c01374f2b7a797c"
+    },
+    {
+      "path": "backend/src/users/dto/delete-account.dto.spec.ts",
+      "sha256": "ddcfa56da493b0cbc035dcc91c95211370456a5b41d16cb489c6bdaf216c777d"
+    },
+    {
+      "path": "backend/src/users/dto/delete-account.dto.ts",
+      "sha256": "24873bdd7f345db2fa9b6d8eb9d45242dc9919553aa15dfa7f6159309e741c69"
+    },
+    {
+      "path": "backend/src/users/dto/update-profile.dto.ts",
+      "sha256": "1ded5a42eb420d9a08a94fb987511b6f9165e8bd95413444d4acee67c175654d"
+    },
+    {
+      "path": "backend/src/users/dto/update-user.dto.ts",
+      "sha256": "854a7ba7f872125472ee6ed6aa3a7bcf589758b67f8897d30faeee6513f825ea"
+    },
+    {
+      "path": "backend/src/users/users.controller.spec.ts",
+      "sha256": "d24dc2313ab60f09695fd927c85c2c959f4a549d68dce3b7181c8ad7081cccb5"
+    },
+    {
+      "path": "backend/src/users/users.controller.ts",
+      "sha256": "04a2fd28efe3783826cd526b288d109f5add2263f1ff97ed3eeda968b64c7d44"
+    },
+    {
+      "path": "backend/src/users/users.module.ts",
+      "sha256": "839a871c272e6b63282839d2e71580665f9eec26a92e30f95731e7afc0d538c4"
+    },
+    {
+      "path": "backend/src/users/users.service.spec.ts",
+      "sha256": "8bb9ad80e03a8112ccaed5aabfb73eaf6a82bf7198c53143cd9e64dafe729302"
+    },
+    {
+      "path": "backend/src/users/users.service.ts",
+      "sha256": "1fd739125a3a758974fb5da7e4146830d565d691ffde31379f6a398c195e4857"
+    },
+    {
+      "path": "backend/test/account-deletion.concurrency.integration.spec.ts",
+      "sha256": "73fa7ba209bc4b71ba25bc0687dd6bacef0fb829f225d7dcaac09fca40c283c9"
+    },
+    {
+      "path": "backend/test/account-deletion.e2e-spec.ts",
+      "sha256": "78e520308f5a60719cea622b1c58fb71b91b9ea2026ae6e3ee3a9d763dad05e0"
+    },
+    {
+      "path": "backend/test/account-deletion.helper.integration.spec.ts",
+      "sha256": "452138b12b6f61ff1d5f40d2f10d4940a92ae01e710c2b8b9fced0f412bfa6c2"
+    },
+    {
+      "path": "backend/test/account-deletion.integration.spec.ts",
+      "sha256": "f432bb433c54b8f3dad23919a4d8f2ba43cd47d05c75d2f893f2dab8865ac85f"
+    },
+    {
+      "path": "backend/test/admin-user.helper.integration.spec.ts",
+      "sha256": "53f041062fa7b8be9b13e36c962bc1b7e00f057273c86fac300ed9bdfa0469e8"
+    },
+    {
+      "path": "backend/test/announcement-push-dispatch.integration.spec.ts",
+      "sha256": "750efc065daf443dca778ac7a17de3e3372b76b433a187d0822f394622502afa"
+    },
+    {
+      "path": "backend/test/announcement-push-fanout.integration.spec.ts",
+      "sha256": "03cffcf6082cd42be26ef9d939063d0bf632266deffc85695559a793a2b5114d"
+    },
+    {
+      "path": "backend/test/announcement-push-locks.integration.spec.ts",
+      "sha256": "6cb76f5315f4d40a6f43c882d2af6902329c27c5a5110198c8d172fe4790e2ef"
+    },
+    {
+      "path": "backend/test/announcement-push-migration.integration.spec.ts",
+      "sha256": "5b6749bae679e59c3080bc5dc0e2a2eae98089f78d8a494d0bdac5928af9741d"
+    },
+    {
+      "path": "backend/test/announcement-push-privacy.integration.spec.ts",
+      "sha256": "6167c015c0ebe0fd3b1b3cd152a9edbc97bd754fe36c4bae0d48bb67f8e89fbf"
+    },
+    {
+      "path": "backend/test/announcement-push-reminders.integration.spec.ts",
+      "sha256": "014a3c37e2c91e4f82a8ff94befed6de209a515ffb5ee729e41b858f56167717"
+    },
+    {
+      "path": "backend/test/announcement-push.e2e-spec.ts",
+      "sha256": "adca89bfb2c0a32f1837fac09f73c8ef16c713b9b96cf6b0fd9153718b6abd60"
+    },
+    {
+      "path": "backend/test/announcements.integration.spec.ts",
+      "sha256": "de37bd6476c8d6f93424cb3e27cb23e7a58affc02733328842b85d4a047b44c6"
+    },
+    {
+      "path": "backend/test/app.e2e-spec.ts",
+      "sha256": "c8209f4ece25571a31594227cc85934b57bf94a4e90fec20c66047ed4f9c85a8"
+    },
+    {
+      "path": "backend/test/auth.integration.spec.ts",
+      "sha256": "8e4d3c6b568b242aa9fc22a4143650ab6eef3e4f432a37f90d4024750ca29297"
+    },
+    {
+      "path": "backend/test/classrooms.e2e-spec.ts",
+      "sha256": "076f9fe98e5f77eab8723b8d3e3044d427e760e4cbded8ea5472fd4441520771"
+    },
+    {
+      "path": "backend/test/classrooms.integration.spec.ts",
+      "sha256": "e0af97212087c97a8574bb90d00962376d144dd587cdafcb23d608cb48eb1385"
+    },
+    {
+      "path": "backend/test/fixtures/legacy-session.sql",
+      "sha256": "afaece6d198db9cdb2034e445d55b41cf8a170876ee5a014b17f632427ec0444"
+    },
+    {
+      "path": "backend/test/helpers/account-deletion.helper.ts",
+      "sha256": "c184cc829263761f7f7098af74248f40d1857412841b5faf96488fb867c6b74d"
+    },
+    {
+      "path": "backend/test/helpers/admin-user.helper.ts",
+      "sha256": "5a1eb2d0d1cfc0f67f8c99a4e8102b98e88ddef7272914e50ce87e9ad3702058"
+    },
+    {
+      "path": "backend/test/helpers/announcement-push.fixture.ts",
+      "sha256": "f93a1c82b34b20f1692e41695d80e455aa730ed102a9f6b4bc7ba0a143fb0f14"
+    },
+    {
+      "path": "backend/test/helpers/auth.helper.ts",
+      "sha256": "e497671b56fe37f5873d2b6795b4c329618177c0c8b8d3cdcdc2be5c0f0e805d"
+    },
+    {
+      "path": "backend/test/helpers/profile-password.helper.ts",
+      "sha256": "a2859500e269180c09dea919c32fdb3be58d152d862b3fbabf750b572338c566"
+    },
+    {
+      "path": "backend/test/helpers/release-security.fixture.ts",
+      "sha256": "ffb12460919b4e503b1ca098dc6b61dd10b84c99efa9e11c3bcc7d340ea9a575"
+    },
+    {
+      "path": "backend/test/helpers/test-app.helper.ts",
+      "sha256": "a59f83566f9a02559d8dd2e46c2037aed6e65ae0ee538751a35f2ef37e233ea5"
+    },
+    {
+      "path": "backend/test/helpers/test-database.helper.ts",
+      "sha256": "cd8cd2fb1530b0586b6395a46baf21ed9e274ca015dcba22edd3af99450b8bb0"
+    },
+    {
+      "path": "backend/test/helpers/test-environment.ts",
+      "sha256": "e3c7ebf3bd1e41ff8e005b7ec1b71531f836df03f2293e8b7a5441c3f784617e"
+    },
+    {
+      "path": "backend/test/invite-codes.e2e-spec.ts",
+      "sha256": "188ad8c93bb9ae790c1322bd26148a2b101f30eb5aa05c283f885f9988f431fe"
+    },
+    {
+      "path": "backend/test/invite-codes.integration.spec.ts",
+      "sha256": "03cddb2706c67165057e9556166949b71b3fde1f8fe75010bdb07d1f47821926"
+    },
+    {
+      "path": "backend/test/jest-e2e.json",
+      "sha256": "81b0e2fbead39b9bb62386545ff6e01810566868a76dbcdf83e4a7c4de05a804"
+    },
+    {
+      "path": "backend/test/jest-integration.json",
+      "sha256": "84f1244571f63fb8419700642bbeba1abca0a29b83c34bd71ed4d1a78229bd18"
+    },
+    {
+      "path": "backend/test/openapi.contract.spec.ts",
+      "sha256": "3fd8fb44cc710eebe28764050cc84cbe727a6dafae970c1e3a47b853645060e0"
+    },
+    {
+      "path": "backend/test/password-change.integration.spec.ts",
+      "sha256": "750438e347202c4aa686fcd8e19dbcdfbf642484ad4cd1cfc7170b004a80f6c7"
+    },
+    {
+      "path": "backend/test/production-config.e2e-spec.ts",
+      "sha256": "f9586b299285986b4f34ae0c52aa94dd5ee696d748ae9461839ad7d850842ced"
+    },
+    {
+      "path": "backend/test/profile-password.benchmark.ts",
+      "sha256": "94e5b9181980d5a7ed7bdcf9a8639d02110381ba351d1fdf8a7182fcba021a1b"
+    },
+    {
+      "path": "backend/test/profile-password.helper.integration.spec.ts",
+      "sha256": "eb3a6db1d4d8198a2a3baa9ece877b799ef050af639ba4f694a2043862e95896"
+    },
+    {
+      "path": "backend/test/profile.e2e-spec.ts",
+      "sha256": "fea978f53750e6b9585aa9358d478d87b7d145ef592394d1a084f7653ce5361b"
+    },
+    {
+      "path": "backend/test/proxy-rate-limit.e2e-spec.ts",
+      "sha256": "2d181d74d45b7c30bea2c257b3db767ac77af3012b1cb71394c8862fae866ef2"
+    },
+    {
+      "path": "backend/test/push-lifecycle.concurrency.integration.spec.ts",
+      "sha256": "5fc78171eec43f083923b0bb9f0855d8eaaa252e2a9172752407324ffb626a7c"
+    },
+    {
+      "path": "backend/test/push-migration.integration.spec.ts",
+      "sha256": "6d45921bf9941842ec56d66b1d1e1f45b1580e65ce4e6ac0d341a3e3071aa29b"
+    },
+    {
+      "path": "backend/test/push-privacy.integration.spec.ts",
+      "sha256": "576bc9119dadceec962e9f6d5afa1db8c61f2b7ee22967ddc57e5869d2f6de96"
+    },
+    {
+      "path": "backend/test/push-receipts.integration.spec.ts",
+      "sha256": "2b2994567e8e99016021f4306585b24c98b601381f373dcd3b73af10d9590d2c"
+    },
+    {
+      "path": "backend/test/push-registration.integration.spec.ts",
+      "sha256": "0df1c83589411c4949680b8c8cff90320cd234ed1e88afdbb11e8e9a742e7673"
+    },
+    {
+      "path": "backend/test/push-test.concurrency.integration.spec.ts",
+      "sha256": "e2210cdc4597dfd75f92aa4b354a5f546a98e5a9386df69c0ad94a1769806829"
+    },
+    {
+      "path": "backend/test/push.e2e-spec.ts",
+      "sha256": "0b93f44368b06b559850b0f1e8fb0562ba3ffb97b633b1decf9276e61b752aa5"
+    },
+    {
+      "path": "backend/test/release-authorization.integration.spec.ts",
+      "sha256": "8d69f823eb4b99e46d07960999d8cc68e00e342466e837b5ebe63f42d5b04927"
+    },
+    {
+      "path": "backend/test/release-database.integration.spec.ts",
+      "sha256": "b4160b0f8a9a124aca2b3361ec0ab0a21c575e568099f77b1199eb82dfee7799"
+    },
+    {
+      "path": "backend/test/release-error-privacy.e2e-spec.ts",
+      "sha256": "b3c785122e996b21ce88b0b49f690c8912fa5a28708169dc2d70ac9acf1447c9"
+    },
+    {
+      "path": "backend/test/release-fixture.integration.spec.ts",
+      "sha256": "72a3eb36e5c29810b5ba170e7112875735647114555e853558ea2323153c4cd5"
+    },
+    {
+      "path": "backend/test/release-input-security.e2e-spec.ts",
+      "sha256": "d9e27b82c3b4caffd9eb440a5476b54824570f791aa4e858e657f118038107d0"
+    },
+    {
+      "path": "backend/test/session-and-receipt-migration.integration.spec.ts",
+      "sha256": "f33db8e774d83b3efc976acab42dc1869ae4c841828600f0a8ee1a7f70584b75"
+    },
+    {
+      "path": "backend/test/users.integration.spec.ts",
+      "sha256": "6be4db984af13c2412e29a9c468d7c4b5ee11f60eb89d6bfe6d95b71be45d7a9"
+    },
+    {
+      "path": "backend/tsconfig.build.json",
+      "sha256": "3a016b4ee9713cd16295128bad42e6077e5ecd8c2ed225caa7d1e0e3f1c7f03f"
+    },
+    {
+      "path": "backend/tsconfig.json",
+      "sha256": "8d817c3c9e2a3fc1783d9bb29aa745b3d88edd5d16306d1a20f1d0f54ce46e44"
+    }
+  ],
+  "remote": {
+    "newDeploy": "NOT RUN",
+    "NeonQuery": "NOT RUN",
+    "T041": "OPEN",
+    "T043": "NOT RUN",
+    "push": "not enabled",
+    "EASBuild": "NOT RUN"
+  },
+  "gitOperations": "no staging/commit/push/PR"
+}

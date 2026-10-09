@@ -7,7 +7,8 @@ Preparação local da Spec 012, 2026-10-08. Não é autorização de push/deploy
 Web Service, runtime Node, Root Directory `backend`, uma instância inicialmente. Selecionar uma revisão publicada que inclua o hardening 012; o antigo HEAD pré-hardening não é fallback seguro. Auto-Deploy Off para controlar o rollout. Criar o serviço já inicia seu primeiro deploy: configurar tudo antes de confirmar.
 
 - `NODE_VERSION=22.x` (mínimo 22.12.0 nessa família).
-- Build Command: `npm ci --include=dev && npm run prisma:validate && npm run prisma:generate && npm run build`.
+- Build Command: `npm ci --include=dev && npm run build:prod`.
+  `build:prod` executa validate → generate → build → `npm prune --omit=dev`; o prune ocorre somente após a compilação bem-sucedida. Testes usam a instalação completa antes do prune.
 - Pre-Deploy Command, quando disponível: `npm run prisma:migrate:deploy && npx prisma migrate status`.
 - Start Command: `npm run start:prod` (wrapper exige production e carrega `dist/src/main.js`).
 - Health Check Path: `/api/v1/health`; esperado HTTP 200, `{"status":"ok"}`. É liveness, não consulta schema/banco/push.
@@ -43,3 +44,11 @@ RateLimitGuard conserva 10/min/IP por guard/processo, cap e expurgo. Uma instân
 Confirmar SHA, migrations/status/schema, HTTPS real e health; docs `/api/v1/docs` e `/api/v1/docs/openapi.json` devem retornar 404; revisar CORS e logs privados sanitizados. Só então substituir PENDING pela URL real em evidência/configuração mobile. URL mobile incluirá `/api/v1`. Não fechar T043 sem candidato Android e autorização de build externa. Push continua false até decisão própria.
 
 Fontes: [Render deploys](https://render.com/docs/deploys), [Node](https://render.com/docs/node-version), [ingresso/limiter](https://render.com/articles/how-render-handles-ddos-attacks), [Free](https://render.com/docs/free), [Express proxies](https://expressjs.com/en/guide/behind-proxies/), [Neon](https://github.com/neondatabase/website/blob/main/content/docs/guides/prisma.md).
+
+## Assessment SSL e prune — 2026-10-09
+
+[Conclusão antes de mudar build/ambiente](../specs/012-release-hardening-and-documentation/evidence/render-build-startup-hardening-2026-10-09.md). Não substituir isoladamente sslmode=require por verify-full na DATABASE_URL compartilhada: runtime pg é compatível, Prisma CLI 7.10.0 faz fallback prefer (reproduzido localmente). Proposta mínima: normalização somente no adapter runtime, preservando CLI e demais parâmetros; não aplicada. Audits do SHA implantado 0381690: 24 full, zero omit-dev; critical Handlebars via ts-jest, patch 4.7.10 compatível proposto. Prune no fim do build é compatível com o lock/ensaio isolado e mantém Prisma CLI por peer; exige confirmação de startup/query/migrations no pipeline final. Build Command acima permanece vigente, sem alteração nesta rodada.
+
+## Remediações aprovadas/aplicadas — 2026-10-09
+
+O assessment propositivo anterior foi seguido pela autorização e [validação local completa](../specs/012-release-hardening-and-documentation/evidence/render-hardening-remediation-2026-10-09.md). O Build Command no início deste documento agora usa build:prod com prune ao fim; aplicar essa configuração no dashboard somente no próximo deploy controlado. Normalização acontece exclusivamente no PrismaPg, DATABASE_URL da CLI permanece intacta. [Roteiro completo, probe Neon privado e rollback dos comandos](render-hardening-controlled-deploy.md). Nenhum novo deploy/dashboard/Git nesta rodada; T041/T043 abertas.

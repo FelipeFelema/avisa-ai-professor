@@ -148,3 +148,11 @@ Os seguintes parents não são novos CVEs: herdam os advisories raiz listados ac
 T028/T029/T033/T034/T035 concluídas no escopo local. [Evidência](evidence/android-bundle-security.md) confirma seis instâncias npm excluídas (incluindo uuid 7.0.3), patch de decoder presente/ligado/executado e ausência de secrets conhecidos/canaries. Classificações DEV/TOOLING ONLY são agora sustentadas pelo inventário do artefato; vulnerabilities dos tools continuam presentes, sem major/override adicional/aceite temporário. Não confundir Expo modules core uuid nativo com npm uuid via xcode.
 
 SEC-012 corrigido: primeiro artefato saiu com API LAN antiga por cache de transformação; --clear + gate persistente recompilaram/validaram API candidata. Export:ci agora limpa cache; qualquer candidato final precisa passar inspeção de valor compilado, não apenas app.config. PRODUCTION_API_URL = PENDING; nenhuma API production real avaliada.
+
+## Render — hardening avaliado em 2026-10-09
+
+[Assessment atual e propostas](evidence/render-build-startup-hardening-2026-10-09.md): mesmo lock, audit backend 24/0; handlebars@4.7.9 via ts-jest@29.4.6 agrega dois novos critical (GHSA-8r5x-fm3f-whwj, GHSA-p8wg-vrv2-v86f). DEV/TOOLING ONLY, sem caminho runtime identificado e sem blocker automático. Patch transitivo 4.7.10 compatível proposto, não aplicado. Prune após build compatível no ensaio isolado, preserva CLI por peer e remove Handlebars; precisa startup/query reais no pipeline final. Nenhum aceite de risco implícito/major/fix --force. Resultados mobile não reexecutados nesta rodada.
+
+## Remediações aprovadas — 2026-10-09
+
+[Remediações aplicadas e evidências](evidence/render-hardening-remediation-2026-10-09.md): Handlebars 4.7.10 aplicado somente no nó transitivo do lock; full 23 (20 moderate/3 high/0 critical), omit-dev 0, todos advisories de Handlebars ausentes. Sem major/force/override novo. Prune implementado em build:prod e validado com scripts normais, startup/query TLS em cluster isolado e CLI preservada. Dashboard/deploy/Neon ainda NOT RUN; T041 aberta e T043 NOT RUN. Os registros anteriores de patch/prune propostos descrevem o checkpoint anterior à autorização.

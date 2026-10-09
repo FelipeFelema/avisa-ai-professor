@@ -68,3 +68,11 @@ Fases 1–3: **18/18 tasks concluídas**, T010/T018 [X] após auth/contrato rete
 ## Backend preparado para push, publicação ainda não executada — 2026-10-08
 
 Proprietário autorizou correção segura de proxy/rate limit, gates e commits locais. [Gates/evidência](evidence/render-proxy-readiness.md), [agrupamento](commit-plan.md), [configuração Render](../../docs/render-backend-deploy.md). Nenhum push/deploy/PR/EAS/APK/AAB/CI remoto realizado. Ranges de ingresso Render exigem verificação real antes de liberar tráfego regular; default conservador pode agrupar clientes. PRODUCTION_API_URL = PENDING; T041/T043 abertas, fases seguintes não iniciadas, decisão de release Android permanece NOT READY.
+
+## Hardening do build/startup Render — 2026-10-09
+
+[Conclusão e evidências](evidence/render-build-startup-hardening-2026-10-09.md): no SHA implantado 0381690, backend audit 24/0. Handlebars crítico é DEV/TOOLING ONLY, sem caminho de exploração runtime observado; não blocker automático, patch compatível pendente de decisão. Aviso require/verify-full não blocker atual; alteração global isolada incompatível com a política da Prisma CLI e não deve ser aplicada como solução pronta. Prune pós-build ensaiado em cópia isolada, sem modificar pipeline; startup production/query Neon após eventual alteração ainda precisam de prova. Health não comprova banco. T041 permanece aberta, T043 NOT RUN, gates finais/SEC-013/provas privadas existentes preservados.
+
+## Checkpoint das remediações Render — 2026-10-09
+
+[Remediações aplicadas e evidências](evidence/render-hardening-remediation-2026-10-09.md): patch Handlebars aplicado, zero critical e omit-dev 0; normalização runtime/CLI preservada e pipeline prune após build/generate validado em cópia limpa com scripts normais. Startup/health/SELECT 1 por TLS PASS apenas no cluster temporário isolado. Novo SHA/deploy/Neon/CI finais pendentes; release não liberada. T041/T043 e demais dependências permanecem abertas. [Roteiro remoto](../../docs/render-hardening-controlled-deploy.md).

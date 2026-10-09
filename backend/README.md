@@ -147,6 +147,9 @@ Em `development` e `test`, a referência OpenAPI fica em:
 | -------------------------- | ---------------------------------------- |
 | `npm run start:dev`        | Inicia a API em modo de desenvolvimento. |
 | `npm run build`            | Gera a build de produção.                |
+| `npm run build:prod`       | Valida/gera Prisma, compila e depois remove devDependencies com prune. |
+| `npm run start:prod`       | Inicia o entrypoint compilado com NODE_ENV=production. |
+| `npm run check:prod:database` | Executa SELECT 1 pelo Prisma runtime, com saída sanitizada. |
 | `npm run lint`             | Executa o ESLint.                        |
 | `npm run format:check`     | Verifica a formatação com Prettier.      |
 | `npm run typecheck`        | Verifica os tipos sem emitir build.      |

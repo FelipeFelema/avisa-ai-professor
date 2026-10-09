@@ -17,3 +17,7 @@ PRODUCTION_API_URL = PENDING. Proprietário confirmou API não publicada. Este d
 ## Revalidação pré-Render — 2026-10-08
 
 O default trust proxy=false foi preservado; configuração opcional TRUST_PROXY_CIDRS permite allowlist explícita de ingresso, com negativos reais HTTP contra spoofing e budget compartilhado. [Correção e gates](render-proxy-readiness.md). Ranges reais de ingresso Render ainda pendentes; não são seus IPs de saída. Commits locais agora autorizados; push/deploy e PRODUCTION_API_URL permanecem pendentes.
+
+## Remediações aprovadas — 2026-10-09
+
+[Ensaio completo](render-hardening-remediation-2026-10-09.md): normalização TLS somente no PrismaPg; CLI/environment não alterados. build:prod realiza prune somente após generate/build. Instalação normal limpa, migrations CLI pós-prune, query TLS/startup production/health e negativos sanitizados PASS em cluster temporário loopback avisa_ai_test. Prova remota Neon/deploy ainda NOT RUN; T041 aberta.

@@ -1,6 +1,7 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
+import { runtimeConnectionString } from './runtime-connection-string';
 
 @Injectable()
 export class PrismaService
@@ -16,7 +17,9 @@ export class PrismaService
     }
 
     super({
-      adapter: new PrismaPg({ connectionString }),
+      adapter: new PrismaPg({
+        connectionString: runtimeConnectionString(connectionString),
+      }),
     });
   }
 
